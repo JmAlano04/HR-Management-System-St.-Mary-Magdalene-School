@@ -1,18 +1,15 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+@extends('layouts.home')
 
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
+@section('title', 'Home | St. Mary Magdalene School')
 
-        @vite(['resources/css/Home/HOMEPAGEStyle.css'])
-    </head>
-   <body>
+@section('styles')
+    @vite(['resources/css/Home/HOMEPAGEStyle.css'])
+@endsection
+
+
+
+@section('content')
 
     <header class="topbar">
         <a class="brand-link" href="HOMEPAGE.html" aria-label="Go to home page">
@@ -25,10 +22,18 @@
             <span></span>
         </button>
         <nav class="top-actions" id="top-nav">
+            @auth
+            <a href="{{ route('dashboard') }}">
+                <button  class="top-btn primary" aria-label="Dashboard">Dashboard</button>
+            </a>
+            @else
             <button id="login-btn" class="top-btn primary" aria-label="Log in">Log In</button>
+            @endauth
             <button id="apply-btn" class="top-btn primary" type="button" aria-haspopup="dialog" aria-controls="apply-modal">Apply Now</button>
         </nav>
     </header>
+
+    
 
     <main>
         <section class="banner">
@@ -202,25 +207,7 @@
                         <button class="login-tab" data-role="accounting">Accounting</button>
                         <button class="login-tab" data-role="employee">Employee</button>
                     </div>
-                    <form id="login-form" class="login-form">
-                        <div class="form-group">
-                            <label for="email">Email</label>
-                            <input type="email" id="email" placeholder="Enter your email" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="password">Password</label>
-                            <div class="password-input-wrap">
-                                <input type="password" id="password" placeholder="Enter your password" required>
-                                <button class="password-toggle" type="button" data-target="password" aria-label="Show password" aria-pressed="false">
-                                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                                        <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                                        <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                        <button type="submit" class="login-submit">Log In</button>
-                    </form>
+                    @include('auth.login')
                 <div class="demo-credentials" id="demo-credentials">
                     <h3>Demo Credentials</h3>
                     <p id="credentials-text">Choose a role button to view the matching demo email and password.</p>
@@ -258,8 +245,11 @@
             </div>
         </div>
     </footer>
+@endsection
 
-    <script src="../shared-sync.js"></script>
-     @vite(['resources/js/Home/HOMEPAGEScript.js'])
-</body>
-</html>
+
+@section('scripts')
+    <script src="{{ asset('shared-sync.js') }}"></script>
+
+    @vite(['resources/js/Home/HOMEPAGEScript.js'])
+@endsection

@@ -29,7 +29,7 @@
             @else
             <button id="login-btn" class="top-btn primary" aria-label="Log in">Log In</button>
             @endauth
-            <button id="apply-btn" class="top-btn primary" type="button" aria-haspopup="dialog" aria-controls="apply-modal">Apply Now</button>
+            <button id="apply-btn" class="top-btn primary"  type="button" aria-haspopup="dialog" aria-controls="apply-modal">Apply Now</button>
         </nav>
     </header>
 
@@ -76,27 +76,8 @@
             </div>
         </section>
 
-        <!-- Apply Now Modal -->
-        <div class="modal-overlay" id="apply-modal" hidden>
-            <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="apply-modal-title">
-             <button class="modal-close" type="button" aria-label="Close dialog">×</button>
-                <h2 id="apply-modal-title">Continue your application</h2>
-                <div class="modal-choice">
-                 <div class="modal-choicetext">
-                     <p>Already have an account?</p>
-                     <span>Continue to login.</span>
-                    </div>
-                 <button class="modal-btn secondary" type="button" id="apply-login-btn">Login</button>
-             </div>
-                <div class="modal-choice">
-                 <div class="modal-choicetext">
-                     <p>Don't have an account?</p>
-                     <span>Start your application.</span>
-                    </div>
-                     <button class="modal-btn primary" type="button" id="signup-open-btn">Sign up</button>
-             </div>
-            </div>
-        </div>
+        {{-- Apply Now Modal --}}
+        <x-apply-now-modal />
 
         <!-- Sign Up Modal -->
         <div class="modal-overlay" id="signup-modal" hidden>
@@ -149,72 +130,24 @@
                 </form>
             </div>
         </div>
-        
-        <!-- Apply Login Modal -->
-        <div id="apply-login-modal" class="login-modal" onclick="closeApplyLoginModal()">
-            <div class="login-modal-content" onclick="event.stopPropagation();">
-                <span class="login-modal-close" onclick="closeApplyLoginModal();">&times;</span>
-                <div class="login-modal-inner">
-                    <div class="login-header">
-                        <h2>Login to Apply</h2>
-                    </div>
-                    <form id="apply-login-form" class="login-form">
-                        <div class="form-group">
-                            <label for="apply-email">Email Address</label>
-                            <input type="email" id="apply-email" placeholder="Email address" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="apply-password">Password</label>
-                            <div class="password-input-wrap">
-                                <input type="password" id="apply-password" placeholder="Password" required>
-                                <button class="password-toggle" type="button" data-target="apply-password" aria-label="Show password" aria-pressed="false">
-                                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                                        <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                                        <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <label class="remember-me"><input type="checkbox" id="apply-remember"> Remember me</label>
-                            <a href="#" class="forgot-link">Forgot password?</a>
-                        </div>
-                        <button type="submit" class="login-submit">Login</button>
-                    </form>
-                    <div class="login-note">Don’t have an account? <a href="#" id="apply-login-signup-link">Sign up</a></div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Facilities Modal -->
+
+      
+        
+       <!-- Facilities Modal -->
         <div id="FacilitiesModal" class="FacilitiesModal" onclick="closeFacilitiesModal()">
             <span class="FacilitiesModal-close" onclick="closeFacilitiesModal(); event.stopPropagation();">&times;</span>
             <img class="FacilitiesModal-img" id="FacilitiesModal-img" src="" alt="">
         </div>
 
-        <!-- Login Modal -->
-        <div id="login-modal" class="login-modal" onclick="closeLoginModal()">
-            <div class="login-modal-content" onclick="event.stopPropagation();">
-                <span class="login-modal-close" onclick="closeLoginModal();">&times;</span>
-                <div class="login-modal-inner">
-                    <div class="login-header">
-                        <img src="image/SMMS Logo.png" alt="School Logo" class="login-logo">
-                        <h2>St. Mary Magdalene School</h2>
-                    </div>
-                    <div class="login-tabs">
-                        <button class="login-tab active" data-role="admin">Admin</button>
-                        <button class="login-tab" data-role="hr">HR</button>
-                        <button class="login-tab" data-role="accounting">Accounting</button>
-                        <button class="login-tab" data-role="employee">Employee</button>
-                    </div>
-                    @include('auth.login')
-                <div class="demo-credentials" id="demo-credentials">
-                    <h3>Demo Credentials</h3>
-                    <p id="credentials-text">Choose a role button to view the matching demo email and password.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
+
+
+        {{-- Apply Login Modal --}}
+       <x-apply-login-modal />
+
+        {{-- Login Modal --}}
+        <x-login-modal />
+      
     </main> 
 
     <footer class="footer">

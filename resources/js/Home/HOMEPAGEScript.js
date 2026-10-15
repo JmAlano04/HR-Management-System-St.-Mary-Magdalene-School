@@ -1,13 +1,16 @@
-// resources/js/Home/HOMEPAGEScript.js
+/* ==========================================================
+   resources/js/Home/HOMEPAGEScript.js
+   HR Management System - Homepage Script (fixed)
+   ========================================================== */
 
 /* ==========================================================
-   MODAL FUNCTIONS (top level, then exposed to window so the
-   inline onclick="..." attributes in the Blade file work)
+   MODAL FUNCTIONS
    ========================================================== */
 
 // ----- Login modal -----
 function openLoginModal() {
     const modal = document.getElementById('login-modal');
+
     if (modal) {
         modal.classList.add('active');
         document.body.style.overflow = 'hidden';
@@ -16,16 +19,18 @@ function openLoginModal() {
 
 function closeLoginModal() {
     const modal = document.getElementById('login-modal');
+
     if (modal) {
         modal.classList.remove('active');
         document.body.style.overflow = '';
     }
 }
 
-// ----- Apply modal (uses the hidden attribute) -----
+// ----- Apply modal -----
 function openApplyModal() {
     const modal = document.getElementById('apply-modal');
     if (!modal) return;
+
     modal.hidden = false;
     document.body.style.overflow = 'hidden';
 }
@@ -33,23 +38,38 @@ function openApplyModal() {
 function closeApplyModal() {
     const modal = document.getElementById('apply-modal');
     if (!modal) return;
+
     modal.hidden = true;
     document.body.style.overflow = '';
 }
 
-// ----- Sign up modal (uses the hidden attribute) -----
+// ----- Signup modal -----
 function openSignupModal() {
     const modal = document.getElementById('signup-modal');
     if (!modal) return;
+
     modal.hidden = false;
     document.body.style.overflow = 'hidden';
-    const pr = document.getElementById('password-requirements');
-    if (pr) pr.style.display = 'block';
+
+    const requirements = document.getElementById('password-requirements');
+
+    if (requirements) {
+        requirements.style.display = 'block';
+    }
+
+    // "autofocus" does not work while the modal is hidden,
+    // so focus the first field manually.
+    const nameInput = document.getElementById('signup-name');
+
+    if (nameInput) {
+        setTimeout(() => nameInput.focus(), 50);
+    }
 }
 
 function closeSignupModal() {
     const modal = document.getElementById('signup-modal');
     if (!modal) return;
+
     modal.hidden = true;
     document.body.style.overflow = '';
 }
@@ -57,6 +77,7 @@ function closeSignupModal() {
 // ----- Apply login modal -----
 function openApplyLoginModal() {
     const modal = document.getElementById('apply-login-modal');
+
     if (modal) {
         modal.classList.add('active');
         document.body.style.overflow = 'hidden';
@@ -65,6 +86,7 @@ function openApplyLoginModal() {
 
 function closeApplyLoginModal() {
     const modal = document.getElementById('apply-login-modal');
+
     if (modal) {
         modal.classList.remove('active');
         document.body.style.overflow = '';
@@ -75,9 +97,12 @@ function closeApplyLoginModal() {
 function openFacilitiesModal(src, alt) {
     const modal = document.getElementById('FacilitiesModal');
     const img = document.getElementById('FacilitiesModal-img');
+
     if (!modal || !img) return;
+
     img.src = src;
-    img.alt = alt;
+    img.alt = alt || '';
+
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
 }
@@ -85,311 +110,443 @@ function openFacilitiesModal(src, alt) {
 function closeFacilitiesModal() {
     const modal = document.getElementById('FacilitiesModal');
     if (!modal) return;
+
     modal.classList.remove('active');
     document.body.style.overflow = '';
 }
 
-// Expose to the global scope (needed because Vite loads this as a module)
+// Expose functions for inline onclick attributes
 window.openLoginModal = openLoginModal;
 window.closeLoginModal = closeLoginModal;
+
 window.openApplyModal = openApplyModal;
 window.closeApplyModal = closeApplyModal;
+
 window.openSignupModal = openSignupModal;
 window.closeSignupModal = closeSignupModal;
+
 window.openApplyLoginModal = openApplyLoginModal;
 window.closeApplyLoginModal = closeApplyLoginModal;
+
 window.openFacilitiesModal = openFacilitiesModal;
 window.closeFacilitiesModal = closeFacilitiesModal;
 
-/* ==========================================================
-   DEMO CREDENTIALS
-   ========================================================== */
-const demoCredentials = {
-    admin: { email: 'admin@stmary.edu', password: 'admin123' },
-    hr: { email: 'hr@stmary.edu', password: 'hr123' },
-    accounting: { email: 'accounting@stmary.edu', password: 'acct123' },
-    employee: { email: 'john.doe@stmary.edu', password: 'employee123' }
-};
 
 /* ==========================================================
    PAGE SETUP
    ========================================================== */
+
 document.addEventListener('DOMContentLoaded', function () {
-    console.log('HOMEPAGE script loaded');
 
     // ---------- Element references ----------
     const menuToggle = document.querySelector('.menu-toggle');
     const topNav = document.getElementById('top-nav');
+
     const loginBtn = document.getElementById('login-btn');
     const applyBtn = document.getElementById('apply-btn');
 
     const applyModal = document.getElementById('apply-modal');
     const signupModal = document.getElementById('signup-modal');
+
     const signupOpenBtn = document.getElementById('signup-open-btn');
     const signupCloseBtn = signupModal?.querySelector('.modal-close');
-    const closeModalBtn = applyModal?.querySelector('.modal-close');
+    const applyCloseBtn = applyModal?.querySelector('.modal-close');
+
     const signupForm = document.getElementById('signup-form');
 
     const applyLoginBtn = document.getElementById('apply-login-btn');
     const applyLoginForm = document.getElementById('apply-login-form');
-    const applyLoginSignupLink = document.getElementById('apply-login-signup-link');
+    const applyLoginSignupLink =
+        document.getElementById('apply-login-signup-link');
 
-    // ---------- Apply modal ----------
+
+    /* ======================================================
+       APPLY MODAL
+       ====================================================== */
+
     if (applyBtn && applyModal) {
-        applyBtn.addEventListener('click', function (e) {
-            e.preventDefault();
+        applyBtn.addEventListener('click', function (event) {
+            event.preventDefault();
             openApplyModal();
         });
     }
 
-    if (closeModalBtn) {
-        closeModalBtn.addEventListener('click', closeApplyModal);
+    if (applyCloseBtn) {
+        applyCloseBtn.addEventListener('click', closeApplyModal);
     }
 
     if (applyModal) {
-        applyModal.addEventListener('click', function (e) {
-            if (e.target === applyModal) closeApplyModal();
+        applyModal.addEventListener('click', function (event) {
+            if (event.target === applyModal) {
+                closeApplyModal();
+            }
         });
     }
 
     if (signupOpenBtn && signupModal) {
-        signupOpenBtn.addEventListener('click', function (e) {
-            e.preventDefault();
+        signupOpenBtn.addEventListener('click', function (event) {
+            event.preventDefault();
+
             closeApplyModal();
             openSignupModal();
         });
     }
 
     if (applyLoginBtn) {
-        applyLoginBtn.addEventListener('click', function (e) {
-            e.preventDefault();
+        applyLoginBtn.addEventListener('click', function (event) {
+            event.preventDefault();
+
             closeApplyModal();
             openApplyLoginModal();
         });
     }
 
     if (applyLoginSignupLink) {
-        applyLoginSignupLink.addEventListener('click', function (e) {
-            e.preventDefault();
+        applyLoginSignupLink.addEventListener('click', function (event) {
+            event.preventDefault();
+
             closeApplyLoginModal();
             openSignupModal();
         });
     }
 
-    // ---------- Sign up modal close ----------
+
+    /* ======================================================
+       SIGNUP MODAL CLOSE
+       ====================================================== */
+
     if (signupCloseBtn) {
         signupCloseBtn.addEventListener('click', closeSignupModal);
     }
 
     if (signupModal) {
-        signupModal.addEventListener('click', function (e) {
-            if (e.target === signupModal) closeSignupModal();
+        signupModal.addEventListener('click', function (event) {
+            if (event.target === signupModal) {
+                closeSignupModal();
+            }
         });
     }
 
-    // ---------- Password visibility toggles ----------
+
+    /* ======================================================
+       REOPEN SIGNUP MODAL AFTER SERVER VALIDATION ERRORS
+       The form has data-has-errors="true" when Laravel
+       returned validation errors (see signup-form.blade.php).
+       ====================================================== */
+
+    if (signupForm && signupForm.dataset.hasErrors === 'true') {
+        openSignupModal();
+    }
+
+
+    /* ======================================================
+       PASSWORD VISIBILITY TOGGLES
+       ====================================================== */
+
     function updatePasswordIcon(toggle, isVisible) {
         if (isVisible) {
-            toggle.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>`;
+            // Eye open (password is visible)
+            toggle.innerHTML = `
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                        d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    />
+                    <circle
+                        cx="12"
+                        cy="12"
+                        r="3"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                    />
+                </svg>
+            `;
         } else {
-            toggle.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 17l-10-10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+            // Eye with slash (password is hidden)
+            toggle.innerHTML = `
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                        d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    />
+                    <path
+                        d="M17 17l-10-10"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    />
+                </svg>
+            `;
         }
     }
 
     document.querySelectorAll('.password-toggle').forEach(toggle => {
+        // Set the correct initial icon (password starts hidden)
+        updatePasswordIcon(toggle, false);
+
         toggle.addEventListener('click', function () {
-            const input = document.getElementById(this.getAttribute('data-target'));
+            const targetId = this.getAttribute('data-target');
+            const input = document.getElementById(targetId);
+
             if (!input) return;
+
             const shouldShow = input.type === 'password';
+
             input.type = shouldShow ? 'text' : 'password';
+
             this.setAttribute('aria-pressed', String(shouldShow));
-            this.setAttribute('aria-label', shouldShow ? 'Hide password' : 'Show password');
+            this.setAttribute(
+                'aria-label',
+                shouldShow ? 'Hide password' : 'Show password'
+            );
+
             updatePasswordIcon(this, shouldShow);
         });
     });
 
-    // ---------- Sign up: password requirements + match check ----------
-    const signupPassword = document.getElementById('signup-password');
-    const signupConfirmPassword = document.getElementById('signup-confirm-password');
-    const signupErrorMessage = document.getElementById('signup-error-message');
-    const passwordRequirementsContainer = document.getElementById('password-requirements');
-    const passwordCount = document.getElementById('password-count');
-    const signupSubmitButton = signupForm ? signupForm.querySelector('button[type="submit"]') : null;
-    if (signupSubmitButton) signupSubmitButton.disabled = true;
+
+    /* ======================================================
+       SIGNUP PASSWORD REQUIREMENTS + CONFIRM PASSWORD
+       Rules must match Password::defaults() in
+       AppServiceProvider (min 12, mixed case, numbers, symbols).
+       ====================================================== */
+
+    const signupPassword =
+        document.getElementById('signup-password');
+
+    const signupConfirmPassword =
+        document.getElementById('signup-confirm-password');
+
+    const signupErrorMessage =
+        document.getElementById('signup-error-message');
+
+    const passwordRequirementsContainer =
+        document.getElementById('password-requirements');
+
+    const passwordCount =
+        document.getElementById('password-count');
+
+    const signupSubmitButton = signupForm
+        ? signupForm.querySelector('button[type="submit"]')
+        : null;
 
     const passwordRequirements = [
-        { key: 'length', test: p => p.length >= 12 },
-        { key: 'capital', test: p => /[A-Z]/.test(p) },
-        { key: 'number', test: p => /\d/.test(p) },
-        { key: 'symbol', test: p => /[^A-Za-z0-9]/.test(p) }
+        { key: 'length',  test: value => value.length >= 12 },
+        { key: 'capital', test: value => /[A-Z]/.test(value) },
+        { key: 'number',  test: value => /[0-9]/.test(value) },
+        { key: 'symbol',  test: value => /[^A-Za-z0-9]/.test(value) }
     ];
 
-    function updatePasswordRequirements(pass) {
-        if (!passwordRequirementsContainer) return;
-        let metCount = 0;
-        passwordRequirements.forEach(r => {
-            const el = passwordRequirementsContainer.querySelector(`.requirement[data-requirement="${r.key}"]`);
-            if (!el) return;
-            const met = r.test(pass);
-            el.classList.toggle('met', met);
-            if (met) metCount++;
-        });
-        if (passwordCount) passwordCount.textContent = `(${metCount}/${passwordRequirements.length})`;
-        if (signupSubmitButton) signupSubmitButton.disabled = metCount !== passwordRequirements.length;
+    function allRequirementsMet(value) {
+        return passwordRequirements.every(rule => rule.test(value));
     }
 
-    function allRequirementsMet(pass) {
-        return passwordRequirements.every(r => r.test(pass));
+    function updatePasswordRequirements() {
+        if (!signupPassword) return false;
+
+        const value = signupPassword.value;
+        let metCount = 0;
+
+        passwordRequirements.forEach(rule => {
+            const requirement = passwordRequirementsContainer?.querySelector(
+                `.requirement[data-requirement="${rule.key}"]`
+            );
+
+            const met = rule.test(value);
+
+            if (met) {
+                metCount++;
+            }
+
+            if (requirement) {
+                requirement.classList.toggle('met', met);
+            }
+        });
+
+        if (passwordCount) {
+            passwordCount.textContent =
+                `(${metCount}/${passwordRequirements.length})`;
+        }
+
+        return metCount === passwordRequirements.length;
     }
 
     function checkPasswords() {
-        if (!signupPassword || !signupConfirmPassword || !signupErrorMessage) return true;
-
-        const pass = signupPassword.value.trim();
-        const confirmPass = signupConfirmPassword.value.trim();
-
-        updatePasswordRequirements(pass);
-
-        if (confirmPass.length > 0) {
-            if (pass !== confirmPass) {
-                signupErrorMessage.style.display = 'block';
-                return false;
-            }
-            signupErrorMessage.style.display = 'none';
-            return true;
+        if (!signupPassword || !signupConfirmPassword) {
+            return false;
         }
-        signupErrorMessage.style.display = 'none';
-        return true;
+
+        const password = signupPassword.value;
+        const confirmation = signupConfirmPassword.value;
+
+        const hasConfirmation = confirmation.length > 0;
+        const matches = password === confirmation;
+
+        if (signupErrorMessage) {
+            const showError = hasConfirmation && !matches;
+
+            signupErrorMessage.hidden = !showError;
+            signupErrorMessage.style.display = showError ? 'block' : 'none';
+        }
+
+        signupConfirmPassword.setCustomValidity(
+            hasConfirmation && !matches
+                ? 'Passwords do not match.'
+                : ''
+        );
+
+        return hasConfirmation && matches;
     }
 
-    if (signupPassword) signupPassword.addEventListener('input', checkPasswords);
-    if (signupConfirmPassword) signupConfirmPassword.addEventListener('input', checkPasswords);
+    function validateSignup() {
+        const requirementsMet = updatePasswordRequirements();
+        const passwordsMatch = checkPasswords();
 
-    if (signupForm) {
-        signupForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-            const name = document.getElementById('signup-name').value.trim();
-            const email = document.getElementById('signup-email').value.trim();
-            const password = signupPassword ? signupPassword.value.trim() : '';
-            const confirmPassword = signupConfirmPassword ? signupConfirmPassword.value.trim() : '';
+        return requirementsMet && passwordsMatch;
+    }
 
-            if (!name || !email || !password || !confirmPassword) {
-                alert('Please fill in all fields.');
-                return;
-            }
+    function updateSignupButton() {
+        if (!signupSubmitButton) return;
 
-            if (!allRequirementsMet(password)) {
-                alert('Password does not meet requirements.');
-                if (signupPassword) signupPassword.focus();
-                return;
-            }
+        const requirementsMet = updatePasswordRequirements();
 
-            if (!checkPasswords()) {
-                if (signupConfirmPassword) signupConfirmPassword.focus();
-                return;
-            }
+        signupSubmitButton.disabled = !requirementsMet;
+    }
 
-            alert('Account created successfully!');
-            signupForm.reset();
-            if (signupErrorMessage) signupErrorMessage.style.display = 'none';
-            if (passwordRequirementsContainer) {
-                passwordRequirementsContainer.querySelectorAll('.requirement').forEach(el => el.classList.remove('met'));
-            }
-            if (passwordCount) passwordCount.textContent = `(0/${passwordRequirements.length})`;
-            if (signupSubmitButton) signupSubmitButton.disabled = true;
-            closeSignupModal();
+    if (signupPassword) {
+        signupPassword.addEventListener('input', function () {
+            updateSignupButton();
+            checkPasswords();
         });
     }
 
-    // ---------- Apply login form ----------
+    if (signupConfirmPassword) {
+        signupConfirmPassword.addEventListener('input', function () {
+            checkPasswords();
+        });
+    }
+
+    // A valid registration must submit to Laravel's register route.
+    if (signupForm) {
+        signupForm.addEventListener('submit', function (event) {
+            const nameInput = document.getElementById('signup-name');
+            const emailInput = document.getElementById('signup-email');
+
+            // Check the basic fields first.
+            if (
+                !nameInput?.value.trim() ||
+                !emailInput?.value.trim() ||
+                !signupPassword?.value ||
+                !signupConfirmPassword?.value
+            ) {
+                event.preventDefault();
+
+                if (!nameInput?.value.trim()) {
+                    nameInput?.focus();
+                } else if (!emailInput?.value.trim()) {
+                    emailInput?.focus();
+                } else if (!signupPassword?.value) {
+                    signupPassword?.focus();
+                } else {
+                    signupConfirmPassword?.focus();
+                }
+
+                return;
+            }
+
+            if (!validateSignup()) {
+                event.preventDefault();
+
+                if (!allRequirementsMet(signupPassword.value)) {
+                    signupPassword.focus();
+                } else {
+                    signupConfirmPassword.focus();
+                    signupConfirmPassword.reportValidity();
+                }
+
+                return;
+            }
+
+            // Valid: allow native submission (POST to route('register')).
+        });
+    }
+
+    // Initial state
+    updateSignupButton();
+    checkPasswords();
+
+
+    /* ======================================================
+       APPLY LOGIN FORM
+       Submits natively to Laravel. Only blocks empty fields.
+       Make sure the form has method="POST", @csrf and
+       action="{{ route('login') }}".
+       ====================================================== */
+
     if (applyLoginForm) {
-        applyLoginForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-            const email = document.getElementById('apply-email').value.trim();
-            const password = document.getElementById('apply-password').value.trim();
+        applyLoginForm.addEventListener('submit', function (event) {
+            const email =
+                document.getElementById('apply-email')?.value.trim();
+
+            const password =
+                document.getElementById('apply-password')?.value;
 
             if (!email || !password) {
+                event.preventDefault();
                 alert('Please enter your email and password.');
-                return;
             }
-
-            alert('Login successful!');
-            closeApplyLoginModal();
         });
     }
 
-    // ---------- Main login modal ----------
+
+    /* ======================================================
+       MAIN LOGIN MODAL
+       Uses real Laravel authentication. The role-based
+       redirect (admin / hr / accounting / employee) must be
+       done on the server after login. See the controller
+       example in the notes.
+       ====================================================== */
+
     if (loginBtn) {
-        loginBtn.addEventListener('click', function (e) {
-            e.preventDefault();
+        loginBtn.addEventListener('click', function (event) {
+            event.preventDefault();
             openLoginModal();
         });
     }
 
-    const loginTabs = document.querySelectorAll('.login-tab');
-    const credentialsText = document.getElementById('credentials-text');
     const loginForm = document.getElementById('login-form');
-    let currentRole = 'admin';
-
-    function showCredentials(role) {
-        const creds = demoCredentials[role];
-        if (!creds || !credentialsText) return;
-        const roleLabel = role.charAt(0).toUpperCase() + role.slice(1);
-        credentialsText.innerHTML = `<strong>${roleLabel}:</strong> ${creds.email} / ${creds.password}`;
-    }
-
-    loginTabs.forEach(tab => {
-        tab.addEventListener('click', function () {
-            currentRole = this.dataset.role;
-            loginTabs.forEach(t => t.classList.remove('active'));
-            this.classList.add('active');
-            showCredentials(currentRole);
-        });
-    });
-
-    if (loginTabs.length > 0) showCredentials('admin');
 
     if (loginForm) {
-        loginForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value.trim();
+        loginForm.addEventListener('submit', function (event) {
+            const email = document.getElementById('email')?.value.trim();
+            const password = document.getElementById('password')?.value;
 
             if (!email || !password) {
-                alert('Please enter email and password');
-                return;
+                event.preventDefault();
+                alert('Please enter email and password.');
             }
-
-            const selected = demoCredentials[currentRole];
-            if (!selected || email !== selected.email || password !== selected.password) {
-                alert('Invalid email or password for the selected role');
-                return;
-            }
-
-            const dashboardRoutes = {
-                admin: '../Admin_Dashboard/Admin_Dashboard.html',
-                hr: '../HR_DASHBOARD/HR_DASHBOARD.html',
-                accounting: '../ACCOUNTING_DASHBOARD/ACC_DASHBOARD.html',
-                employee: '../EMPLOYEE_DASHBOARD/EMPLOYEE_DASHBOARD.html'
-            };
-
-            const dashboardURL = dashboardRoutes[currentRole];
-
-            if (dashboardURL) {
-                closeLoginModal();
-                sessionStorage.setItem('userRole', currentRole);
-                sessionStorage.setItem('userEmail', email);
-                window.location.href = dashboardURL;
-            } else {
-                alert('Invalid role selected');
-            }
+            // Otherwise let the form POST to route('login').
         });
     }
 
-    // ---------- Close every modal with Escape ----------
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') {
+
+    /* ======================================================
+       CLOSE MODALS WITH ESCAPE
+       ====================================================== */
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
             closeLoginModal();
             closeApplyLoginModal();
             closeFacilitiesModal();
@@ -398,10 +555,15 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // ---------- Navigation menu toggle ----------
+
+    /* ======================================================
+       NAVIGATION MENU
+       ====================================================== */
+
     if (menuToggle && topNav) {
         menuToggle.addEventListener('click', function () {
             const isOpen = topNav.classList.toggle('open');
+
             menuToggle.classList.toggle('active', isOpen);
             menuToggle.setAttribute('aria-expanded', String(isOpen));
         });
@@ -423,39 +585,72 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // ---------- Slider (kept last so an early return can't skip anything above) ----------
+
+    /* ======================================================
+       HOMEPAGE SLIDER
+       ====================================================== */
+
     const slides = Array.from(document.querySelectorAll('.slide'));
     const dotsContainer = document.getElementById('dots');
     const banner = document.querySelector('.banner');
-    if (!slides.length || !dotsContainer || !banner) return;
 
-    let current = 0;
-    let timer = null;
-
-    function show(index) {
-        slides.forEach((s, i) => s.classList.toggle('active', i === index));
-        Array.from(dotsContainer.children).forEach((d, i) => d.classList.toggle('active', i === index));
-        current = index;
+    // Everything above must still work if no slider exists.
+    if (!slides.length || !dotsContainer || !banner) {
+        return;
     }
 
-    function next() {
-        show((current + 1) % slides.length);
+    let currentSlide = 0;
+    let sliderTimer = null;
+
+    function showSlide(index) {
+        slides.forEach((slide, i) => {
+            slide.classList.toggle('active', i === index);
+        });
+
+        Array.from(dotsContainer.children).forEach((dot, i) => {
+            dot.classList.toggle('active', i === index);
+        });
+
+        currentSlide = index;
     }
 
-    function restartTimer() {
-        clearInterval(timer);
-        timer = setInterval(next, 4000);
+    function nextSlide() {
+        showSlide((currentSlide + 1) % slides.length);
     }
 
-    slides.forEach((s, i) => {
-        const b = document.createElement('button');
-        b.addEventListener('click', () => { show(i); restartTimer(); });
-        if (i === 0) b.classList.add('active');
-        dotsContainer.appendChild(b);
+    function restartSliderTimer() {
+        clearInterval(sliderTimer);
+        sliderTimer = setInterval(nextSlide, 4000);
+    }
+
+    // Prevent duplicate dots if the script is initialized again.
+    dotsContainer.innerHTML = '';
+
+    slides.forEach((slide, index) => {
+        const dot = document.createElement('button');
+
+        dot.type = 'button';
+        dot.setAttribute('aria-label', `Show slide ${index + 1}`);
+
+        dot.addEventListener('click', function () {
+            showSlide(index);
+            restartSliderTimer();
+        });
+
+        if (index === 0) {
+            dot.classList.add('active');
+        }
+
+        dotsContainer.appendChild(dot);
     });
 
-    banner.addEventListener('mouseenter', () => clearInterval(timer));
-    banner.addEventListener('mouseleave', restartTimer);
+    showSlide(0);
 
-    timer = setInterval(next, 4000);
+    banner.addEventListener('mouseenter', () => {
+        clearInterval(sliderTimer);
+    });
+
+    banner.addEventListener('mouseleave', restartSliderTimer);
+
+    sliderTimer = setInterval(nextSlide, 4000);
 });

@@ -1,52 +1,140 @@
-<x-guest-layout>
-    <form method="POST" action="{{ route('register') }}">
-        @csrf
+{{-- data-has-errors lets HOMEPAGEScript.js reopen the modal after a failed server validation --}}
+<form
+    method="POST"
+    action="{{ route('register') }}"
+    id="signup-form"
+    class="signup-form"
+    data-has-errors="{{ $errors->hasAny(['name', 'email', 'password', 'password_confirmation']) ? 'true' : 'false' }}"
+>
+    @csrf
 
-        <!-- Name -->
-        <div>
-            <x-input-label for="name" :value="__('Name')" />
-            <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" />
-            <x-input-error :messages="$errors->get('name')" class="mt-2" />
+    <!-- Full Name -->
+    <div class="form-group">
+        <x-input-label for="signup-name" :value="__('Full Name')" />
+
+        <x-text-input
+            id="signup-name"
+            class="block mt-1 w-full"
+            type="text"
+            name="name"
+            placeholder="Enter your full name"
+            :value="old('name')"
+            required
+            autocomplete="name"
+        />
+
+        <x-input-error :messages="$errors->get('name')" class="mt-2" />
+    </div>
+
+    <!-- Email Address -->
+    <div class="form-group">
+        <x-input-label for="signup-email" :value="__('Email Address')" />
+
+        <x-text-input
+            id="signup-email"
+            class="block mt-1 w-full"
+            type="email"
+            name="email"
+            placeholder="Enter your email address"
+            :value="old('email')"
+            required
+            autocomplete="username"
+        />
+
+        <x-input-error :messages="$errors->get('email')" class="mt-2" />
+    </div>
+
+    <!-- Password -->
+    <div class="form-group">
+        <x-input-label for="signup-password" :value="__('Password')" />
+
+        <div class="password-input-wrap">
+            <x-text-input
+                id="signup-password"
+                class="block mt-1 w-full"
+                type="password"
+                name="password"
+                placeholder="Create a password"
+                required
+                autocomplete="new-password"
+            />
+
+            {{-- The icon inside this button is set by HOMEPAGEScript.js --}}
+            <button
+                class="password-toggle"
+                type="button"
+                data-target="signup-password"
+                aria-label="Show password"
+                aria-pressed="false"
+            ></button>
         </div>
 
-        <!-- Email Address -->
-        <div class="mt-4">
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        <x-input-error :messages="$errors->get('password')" class="mt-2" />
+
+        <!-- Password Requirements -->
+        <div id="password-requirements" class="password-requirements mt-3" aria-live="polite">
+            <div class="pr-header">
+                <strong>Password requirements</strong>
+                <span id="password-count">(0/4)</span>
+            </div>
+
+            <div class="requirement" data-requirement="length">
+                <span class="dot"></span>
+                <span class="text">Minimum 12 characters</span>
+            </div>
+
+            <div class="requirement" data-requirement="capital">
+                <span class="dot"></span>
+                <span class="text">One capitalized letter</span>
+            </div>
+
+            <div class="requirement" data-requirement="number">
+                <span class="dot"></span>
+                <span class="text">One number</span>
+            </div>
+
+            <div class="requirement" data-requirement="symbol">
+                <span class="dot"></span>
+                <span class="text">At least one special character (e.g. !@#$%^&*)</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Password -->
+    <div class="form-group">
+        <x-input-label for="signup-confirm-password" :value="__('Confirm Password')" />
+
+        <div class="password-input-wrap">
+            <x-text-input
+                id="signup-confirm-password"
+                class="block mt-1 w-full"
+                type="password"
+                name="password_confirmation"
+                placeholder="Confirm your password"
+                required
+                autocomplete="new-password"
+            />
+
+            <button
+                class="password-toggle"
+                type="button"
+                data-target="signup-confirm-password"
+                aria-label="Show password"
+                aria-pressed="false"
+            ></button>
         </div>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
+        <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
 
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="new-password" />
+        <span id="signup-error-message" class="error-text" hidden>
+            Passwords do not match
+        </span>
+    </div>
 
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
-
-        <!-- Confirm Password -->
-        <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
-
-            <x-text-input id="password_confirmation" class="block mt-1 w-full"
-                            type="password"
-                            name="password_confirmation" required autocomplete="new-password" />
-
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
-        </div>
-
-        <div class="flex items-center justify-end mt-4">
-            <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('login') }}">
-                {{ __('Already registered?') }}
-            </a>
-
-            <x-primary-button class="ms-4">
-                {{ __('Register') }}
-            </x-primary-button>
-        </div>
-    </form>
-</x-guest-layout>
+    <!-- Submit -->
+    <div class="form-group mt-4">
+        <x-primary-button class="login-submit w-full justify-center">
+            {{ __('Register') }}
+        </x-primary-button>
+    </div>
+</form>

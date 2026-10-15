@@ -79,57 +79,8 @@
         {{-- Apply Now Modal --}}
         <x-apply-now-modal />
 
-        <!-- Sign Up Modal -->
-        <div class="modal-overlay" id="signup-modal" hidden>
-            <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="signup-modal-title">
-                <button class="modal-close" type="button" aria-label="Close sign up dialog">×</button>
-                <h2 id="signup-modal-title">Create your account</h2>
-                <form id="signup-form" class="signup-form">
-                    <div class="form-group">
-                        <label for="signup-name">Full Name</label>
-                        <input type="text" id="signup-name" placeholder="Enter your full name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="signup-email">Email Address</label>
-                        <input type="email" id="signup-email" placeholder="Enter your email address" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="signup-password">Password</label>
-                        <div class="password-input-wrap">
-                            <input type="password" id="signup-password" placeholder="Create a password" required>
-                            <button class="password-toggle" type="button" data-target="signup-password" aria-label="Show password" aria-pressed="false">
-                                <svg viewBox="0 0 24 24" aria-hidden="true">
-                                    <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                                    <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/>
-                                </svg>
-                            </button>
-                        </div>
-                        <div id="password-requirements" class="password-requirements" aria-live="polite">
-                            <div class="pr-header"><strong>Password requirements</strong> <span id="password-count">(0/4)</span></div>
-                            <div class="requirement" data-requirement="length"><span class="dot"></span><span class="text">Minimum 12 characters</span></div>
-                            <div class="requirement" data-requirement="capital"><span class="dot"></span><span class="text">One capitalized letter</span></div>
-                            <div class="requirement" data-requirement="number"><span class="dot"></span><span class="text">One number</span></div>
-                            <div class="requirement" data-requirement="symbol"><span class="dot"></span><span class="text">At least one non letter / number (i.e. !@#$%^&*)</span></div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="signup-confirm-password">Confirm Password</label>
-                        <div class="password-input-wrap">
-                            <input type="password" id="signup-confirm-password" placeholder="Confirm your password" required>
-                            <button class="password-toggle" type="button" data-target="signup-confirm-password" aria-label="Show password" aria-pressed="false">
-                                <svg viewBox="0 0 24 24" aria-hidden="true">
-                                    <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                                    <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/>
-                                </svg>
-                            </button>
-                        </div>
-                        <!-- Password Mismatch Error Element -->
-                        <span id="signup-error-message" class="error-text">Passwords do not match</span>
-                    </div>
-                    <button type="submit" class="login-submit">Submit</button>
-                </form>
-            </div>
-        </div>
+        {{-- registration --}}
+        <x-registration-modal/>
 
 
       
@@ -182,7 +133,7 @@
 
 
 @section('scripts')
-    <script src="{{ asset('shared-sync.js') }}"></script>
-
+  
+    @vite(['resources/js/shared-sync.js'])
     @vite(['resources/js/Home/HOMEPAGEScript.js'])
 @endsection

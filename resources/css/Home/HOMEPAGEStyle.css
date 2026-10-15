@@ -808,8 +808,9 @@ body {
 .form-row {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: end;
     gap: 12px;
+ 
     margin-bottom: 18px;
     flex-wrap: wrap;
 }
@@ -817,7 +818,9 @@ body {
 .remember-me {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 8px;
+    background-color: red;
     font-size: 13px;
     color: #444;
 }
@@ -830,6 +833,7 @@ body {
     color: var(--primary);
     text-decoration: none;
     font-size: 13px;
+    
 }
 
 .forgot-link:hover {

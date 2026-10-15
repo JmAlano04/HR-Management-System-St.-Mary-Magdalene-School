@@ -1,5 +1,12 @@
 <x-app-layout>
-    <x-slot name="header">
+
+     {{-- Browser Tab Title --}}
+    <x-slot name="title">
+        Admin Dashboard
+    </x-slot>
+
+    <x-slot name="header" name="title">
+        
         <div class="flex items-center justify-between">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Dashboard') }}

@@ -1,7 +1,7 @@
 {{-- data-has-errors lets HOMEPAGEScript.js reopen the modal after a failed server validation --}}
 <form
     method="POST"
-    action="{{ route('register') }}"
+    action="{{ route('register-create') }}"
     id="signup-form"
     class="signup-form"
     data-has-errors="{{ $errors->hasAny(['name', 'email', 'password', 'password_confirmation']) ? 'true' : 'false' }}"
@@ -59,14 +59,24 @@
                 autocomplete="new-password"
             />
 
-            {{-- The icon inside this button is set by HOMEPAGEScript.js --}}
+           {{-- Eye icon is written here so it always shows; the JS swaps it on click --}}
             <button
                 class="password-toggle"
                 type="button"
                 data-target="signup-password"
                 aria-label="Show password"
                 aria-pressed="false"
-            ></button>
+            >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"
+                          fill="none" stroke="currentColor" stroke-width="1.8"
+                          stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M17 17l-10-10"
+                          fill="none" stroke="currentColor" stroke-width="1.8"
+                          stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+
         </div>
 
         <x-input-error :messages="$errors->get('password')" class="mt-2" />
@@ -115,13 +125,22 @@
                 autocomplete="new-password"
             />
 
-            <button
+              <button
                 class="password-toggle"
                 type="button"
                 data-target="signup-confirm-password"
                 aria-label="Show password"
                 aria-pressed="false"
-            ></button>
+            >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"
+                          fill="none" stroke="currentColor" stroke-width="1.8"
+                          stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M17 17l-10-10"
+                          fill="none" stroke="currentColor" stroke-width="1.8"
+                          stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
         </div>
 
         <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
@@ -134,7 +153,7 @@
     <!-- Submit -->
     <div class="form-group mt-4">
         <x-primary-button class="login-submit w-full justify-center">
-            {{ __('Register') }}
+            {{ __('Submit') }}
         </x-primary-button>
     </div>
 </form>

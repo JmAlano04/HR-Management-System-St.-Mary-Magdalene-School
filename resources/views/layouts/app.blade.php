@@ -30,6 +30,8 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+     
+
     </head>
     <body class="font-sans antialiased">
         {{-- sidebarOpen controls the sidebar on mobile (shared with layouts.navigation) --}}
@@ -58,17 +60,19 @@
                     </div>
 
                     <!-- Profile dropdown -->
-                    <x-dropdown align="right" width="48" content-classes="p-2 bg-white">
+                    <x-dropdown align="right" width="48"  content-classes=" p-2 bg-white">
                         <x-slot name="trigger">
                             <button type="button"
-                                    class="inline-flex items-center gap-3 rounded-full border border-gray-200 bg-white py-2 pl-2 pr-4 text-lg shadow-sm transition hover:bg-gray-50 focus:outline-none">
+                                    class="inline-flex items-center gap-3 mr-[110px] rounded-full border border-gray-200 bg-white py-2 pl-2 pr-4 text-lg shadow-sm transition hover:bg-gray-50 focus:outline-none">
                                 <span class="flex h-9 w-9 items-center justify-center rounded-full bg-red-700 text-sm font-bold text-white">
                                     {{ $initials }}
                                 </span>
 
                                 <span class="hidden text-left leading-tight sm:block">
                                     <span class="block font-semibold text-gray-900">{{ $user->name }}</span>
-                                    <span class="block text-xs text-gray-500">{{ $role }}</span>
+                                    <span class="block text-xs text-gray-500">
+                                       {{ $user->getRoleNames()->first() ?? 'No role assigned' }}
+                                    </span>
                                 </span>
 
                                 <i class="fa-solid fa-chevron-down text-xs text-gray-500"></i>

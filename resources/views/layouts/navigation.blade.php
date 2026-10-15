@@ -1,23 +1,56 @@
-{{-- resources/views/layouts/navigation.blade.php (left sidebar) --}}
+{{-- resources/views/layouts/navigation.blade.php (left sidebar, menu depends on the user's role) --}}
 @php
+    $user = auth()->user();
+
+    // Spatie role name, e.g. Admin, HR, Accounting, Employee, Applicant
+    $role = $user->getRoleNames()->first() ?? 'No Role';
+
     /*
-     * Menu items. 'route' is the route name, 'match' is the pattern used to
-     * highlight the active link. If a route does not exist yet, the link
-     * falls back to "#" so the page does not crash. Rename these to match
-     * your real routes.
+     * All possible menu items, defined once.
+     * 'route' = route name, 'match' = pattern used to highlight the active link.
+     * If a route does not exist yet the link falls back to "#" so nothing crashes.
      */
-    $menu = [
-        ['label' => 'Dashboard',                 'icon' => 'fa-table-cells',          'route' => 'dashboard',          'match' => 'dashboard'],
-        ['label' => 'Employee Management',       'icon' => 'fa-users',                'route' => 'employees.index',    'match' => 'employees.*'],
-        ['label' => 'Attendance Monitoring',     'icon' => 'fa-calendar-check',       'route' => 'attendance.index',   'match' => 'attendance.*'],
-        ['label' => 'Time Correction Management','icon' => 'fa-clock-rotate-left',    'route' => 'time-corrections.index', 'match' => 'time-corrections.*'],
-        ['label' => 'Leave Management',          'icon' => 'fa-calendar-days',        'route' => 'leaves.index',       'match' => 'leaves.*'],
-        ['label' => 'Onboarding Management',     'icon' => 'fa-user-plus',            'route' => 'onboarding.index',   'match' => 'onboarding.*'],
-        ['label' => 'Payroll Management',        'icon' => 'fa-wallet',               'route' => 'payroll.index',      'match' => 'payroll.*'],
-        ['label' => 'Financial Loan Management', 'icon' => 'fa-hand-holding-dollar',  'route' => 'loans.index',        'match' => 'loans.*'],
-        ['label' => 'Offboarding Management',    'icon' => 'fa-user-slash',           'route' => 'offboarding.index',  'match' => 'offboarding.*'],
-        ['label' => 'Report',    'icon' => 'fa-user-slash',           'route' => 'offboarding.index',  'match' => 'offboarding.*'],
+    $items = [
+        'dashboard'        => ['label' => 'Dashboard',                  'icon' => 'fa-table-cells',         'route' => 'dashboard',              'match' => 'dashboard'],
+        'employees'        => ['label' => 'Employee Management',        'icon' => 'fa-users',               'route' => 'employees.index',        'match' => 'employees.*'],
+        'attendance'       => ['label' => 'Attendance Monitoring',      'icon' => 'fa-calendar-check',      'route' => 'attendance.index',       'match' => 'attendance.*'],
+        'time-corrections' => ['label' => 'Time Correction Management', 'icon' => 'fa-clock-rotate-left',   'route' => 'time-corrections.index', 'match' => 'time-corrections.*'],
+        'leaves'           => ['label' => 'Leave Management',           'icon' => 'fa-calendar-days',       'route' => 'leaves.index',           'match' => 'leaves.*'],
+        'onboarding'       => ['label' => 'Onboarding Management',     'icon' => 'fa-user-plus',           'route' => 'onboarding.index',       'match' => 'onboarding.*'],
+        'payroll'          => ['label' => 'Payroll Management',         'icon' => 'fa-wallet',              'route' => 'payroll.index',          'match' => 'payroll.*'],
+        'loans'            => ['label' => 'Financial Loan Management',  'icon' => 'fa-hand-holding-dollar', 'route' => 'loans.index',            'match' => 'loans.*'],
+        'offboarding'      => ['label' => 'Offboarding Management',     'icon' => 'fa-user-slash',          'route' => 'offboarding.index',      'match' => 'offboarding.*'],
+        'reports'          => ['label' => 'Reports',                    'icon' => 'fa-file',                'route' => 'reports.index',          'match' => 'reports.*'],
+        'application'      => ['label' => 'My Application',             'icon' => 'fa-file-signature',      'route' => 'applications.index',     'match' => 'applications.*'],
     ];
+
+    /*
+     * Which items each role can see. Edit these lists to change a role's menu.
+     */
+    $roleMenus = [
+        'Admin' => [
+            'dashboard', 'employees', 'attendance', 'time-corrections', 'leaves',
+            'onboarding', 'payroll', 'loans', 'offboarding', 'reports',
+        ],
+        'HR' => [
+            'dashboard', 'employees', 'attendance', 'time-corrections', 'leaves',
+            'onboarding', 'offboarding', 'reports',
+        ],
+        'Accounting' => [
+            'dashboard', 'payroll', 'loans', 'reports',
+        ],
+        'Employee' => [
+            'dashboard', 'attendance', 'time-corrections', 'leaves', 'payroll', 'loans',
+        ],
+        'Applicant' => [
+            'dashboard', 'application',
+        ],
+    ];
+
+    // Unknown role or no role: Dashboard only
+    $menu = collect($roleMenus[$role] ?? ['dashboard'])
+        ->map(fn ($key) => $items[$key])
+        ->all();
 @endphp
 
 {{-- Dark overlay behind the sidebar on mobile --}}
@@ -32,7 +65,7 @@
 <aside
     :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
     @keydown.escape.window="sidebarOpen = false"
-    class="fixed inset-y-0 left-0 z-40 flex w-90 flex-col border-r border-red-100 bg-red-50 transition-transform duration-200 lg:translate-x-0"
+    class="fixed inset-y-0 left-0 z-40 flex w-90 flex-col overflow-y-auto border-r border-red-100 bg-red-50 transition-transform duration-200 lg:translate-x-0"
 >
     {{-- Close button (mobile only) --}}
     <button
@@ -67,6 +100,4 @@
             </x-sidebar-link>
         @endforeach
     </nav>
-
-  
 </aside>

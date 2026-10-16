@@ -41,27 +41,29 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('role:Admin|HR')->group(function () {
         Route::get('/employees', [EmployeeController::class, 'index'])
         ->name('employees.index');
-        // Route::resource('onboarding', OnboardingController::class);
-        // Route::resource('offboarding', OffboardingController::class);
+        Route::get('onboarding', [OnboardingController::class, 'index'])
+        ->name('onboarding.index');
+        Route::get('/offboarding', [OffboardingController::class, 'index'])
+        ->name('offboarding.index');
     });
 
-    // // Admin + HR + Employee
-    // Route::middleware('role:Admin|HR|Employee')->group(function () {
-    //     Route::resource('attendance', AttendanceController::class);
-    //     Route::resource('time-corrections', TimeCorrectionController::class);
-    //     Route::resource('leaves', LeaveController::class);
-    // });
+    // Admin + HR + Employee
+    Route::middleware('role:Admin|HR|Employee')->group(function () {
+        Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance.index');
+        Route::get('/time-corrections', [TimeCorrectionController::class, 'index'])->name('time-corrections.index');
+        Route::get('leaves', [LeaveController::class, 'index'])->name('leaves.index');
+    });
 
-    // // Admin + Accounting + Employee
-    // Route::middleware('role:Admin|Accounting|Employee')->group(function () {
-    //     Route::resource('payroll', PayrollController::class);
-    //     Route::resource('loans', LoanController::class);
-    // });
+    // Admin + Accounting + Employee
+    Route::middleware('role:Admin|Accounting|Employee')->group(function () {
+        Route::get('/payroll', [PayrollController::class, 'index'])->name('payroll.index');
+        Route::get('/loans', [LoanController::class, 'index'])->name('loans.index');
+    });
 
-    // // Admin + HR + Accounting
-    // Route::middleware('role:Admin|HR|Accounting')->group(function () {
-    //     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
-    // });
+    // Admin + HR + Accounting
+    Route::middleware('role:Admin|HR|Accounting')->group(function () {
+        Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+    });
 
     // // Applicant only
     // Route::middleware('role:Applicant')->group(function () {

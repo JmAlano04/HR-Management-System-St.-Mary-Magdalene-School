@@ -45,6 +45,7 @@
         'Applicant' => [
             'dashboard', 'application',
         ],
+        
     ];
 
     // Unknown role or no role: Dashboard only
@@ -65,7 +66,7 @@
 <aside
     :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
     @keydown.escape.window="sidebarOpen = false"
-    class="fixed inset-y-0 left-0 z-40 flex w-90 flex-col overflow-y-auto border-r border-red-100 bg-red-50 transition-transform duration-200 lg:translate-x-0"
+    class="fixed inset-y-0 left-0 z-40 flex w-90 flex-col overflow-y-auto border-r border-red-100 bg-red-50 transition-transform duration-200 lg:translate-x-0 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
 >
     {{-- Close button (mobile only) --}}
     <button

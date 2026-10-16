@@ -6,6 +6,7 @@
 
 @endphp
 
+@if (in_array($role, ['Admin', 'HR', 'Accounting','Employee']))
 <x-app-layout>
 
 
@@ -35,23 +36,20 @@
                                 </p>
                                 @break
 
+                            @case('Accounting')
+                            
+                                <p class="mt-2 text-purple-700">
+                                    @include('partial.accounting-dashboard')
+                                </p>
+                                @break
+
                             @case('Employee')
                                 <p class="mt-2 text-green-700">
                                     @include('partial.employee-dashboard')
                                 </p>
                                 @break
 
-                            @case('Accounting')
-                                <p class="mt-2 text-purple-700">
-                                    @include('partial.accounting-dashboard')
-                                </p>
-                                @break
-
-                            @case('Applicant')
-                                <p class="mt-2 text-yellow-700">
-                                    @include('partial.applicant-dashboard')
-                                </p>
-                                @break
+                     
 
                             @default
                                 <p class="mt-2 text-gray-600">
@@ -65,3 +63,31 @@
         </div>
     </div>
 </x-app-layout>
+@else
+
+<x-app-layout>
+
+
+
+                        {{-- Role-specific message --}}
+                        @switch($role)
+
+                            @case('Applicant')
+                                <p class="mt-2 text-yellow-700">
+                                    @include('partial.applicant-dashboard')
+
+                                 
+                                </p>
+                                @break
+
+                            @default
+                                <p class="mt-2 text-gray-600">
+                                    No role has been assigned to your account.
+                                </p>
+                        @endswitch
+                 
+
+
+</x-app-layout>
+
+@endif

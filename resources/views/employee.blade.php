@@ -25,7 +25,7 @@
                         @switch($role)
                             @case('Admin')
                           
-                                   @include('partial.admin-dashboard')
+                                   @include('partial.employee-dashboard')
                        
                                 @break
 
@@ -44,12 +44,6 @@
                             @case('Accounting')
                                 <p class="mt-2 text-purple-700">
                                     @include('partial.accounting-dashboard')
-                                </p>
-                                @break
-
-                            @case('Applicant')
-                                <p class="mt-2 text-yellow-700">
-                                    @include('partial.applicant-dashboard')
                                 </p>
                                 @break
 

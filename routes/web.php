@@ -11,6 +11,7 @@ use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\TimeCorrectionController;
+
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -65,10 +66,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     });
 
-    // // Applicant only
-    // Route::middleware('role:Applicant')->group(function () {
-    //     Route::resource('applications', ApplicationController::class);
-    // });
+    // Applicant only
+    Route::middleware('role:Applicant')->group(function () {
+        Route::get('/applications', [ApplicationController::class, 'index'])
+        ->name('applications.index');
+        Route::post('/applications', [ApplicationController::class, 'store'])->name('applications.store');
+
+        
+    });
 });
 
 require __DIR__.'/auth.php';

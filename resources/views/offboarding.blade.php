@@ -25,7 +25,7 @@
                         @switch($role)
                             @case('Admin')
                           
-                                   @include('partial.admin-dashboard')
+                                   @include('partial.offboarding-dashboard')
                        
                                 @break
 

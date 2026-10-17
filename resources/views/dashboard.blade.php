@@ -32,7 +32,7 @@
 
                             @case('HR')
                                 <p class="mt-2 text-blue-700">
-                                    @include('partial.hr-dashboard')
+                                    @include('partial.admin-dashboard')
                                 </p>
                                 @break
 

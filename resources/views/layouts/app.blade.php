@@ -73,7 +73,7 @@
                     <x-dropdown align="right" width="48"  content-classes=" p-2 bg-white">
                         <x-slot name="trigger">
                             <button type="button"
-                                    class="inline-flex items-center gap-3 mr-[110px] rounded-full border border-gray-200 bg-white py-2 pl-2 pr-4 text-lg shadow-sm transition hover:bg-gray-50 focus:outline-none">
+                                    class="inline-flex items-center gap-3 mr-[70px] rounded-full border border-gray-200 bg-white py-2 pl-2 pr-4 text-lg shadow-sm transition hover:bg-gray-50 focus:outline-none">
                                 <span class="flex h-9 w-9 items-center justify-center rounded-full bg-red-700 text-sm font-bold text-white">
                                     {{ $initials }}
                                 </span>

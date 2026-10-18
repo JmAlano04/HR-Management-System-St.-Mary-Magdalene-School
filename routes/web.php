@@ -69,8 +69,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Admin + HR + Employee
     Route::middleware('role:Admin|HR|Employee')->group(function () {
-        Route::get('/attendance', [AttendanceController::class, 'index'])
+        
+        Route::get('/attendance-monitoring', [AttendanceController::class, 'index'])
             ->name('attendance.index');
+ 
+        Route::get('/attendance-monitoring/export', [AttendanceController::class, 'export'])
+            ->name('attendance.export');
+ 
+        Route::patch('/attendance-monitoring/archive', [AttendanceController::class, 'archive'])
+            ->name('attendance.archive');
+ 
+        Route::delete('/attendance-monitoring/archive', [AttendanceController::class, 'destroy'])
+            ->name('attendance.destroy');
 
         Route::get('/time-corrections', [TimeCorrectionController::class, 'index'])
             ->name('time-corrections.index');
@@ -107,13 +117,20 @@ Route::middleware('role:Admin|HR')
     
     // Admin + Accounting + Employee
     Route::middleware('role:Admin|Accounting|Employee')->group(function () {
-        Route::get('/payroll', [PayrollController::class, 'index'])->name('payroll.index');
+      
+    
+    });
+
+    // Admin + HR + Accounting
+    Route::middleware('role:Admin|HR|Accounting')->group(function () {
+        Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+
+
+          Route::get('/payroll', [PayrollController::class, 'index'])->name('payroll.index');
         Route::patch('approve', [PayrollController::class, 'approve'])->name('payroll.approve');
         Route::patch('approve-all', [PayrollController::class, 'approveAll'])->name('payroll.approve-all');
         Route::patch('reject', [PayrollController::class, 'reject'])->name('payroll.reject');
-
         
-
         
         Route::get('/loans', [LoanController::class, 'index'])->name('loans.index');
 
@@ -122,11 +139,6 @@ Route::middleware('role:Admin|HR')
  
         Route::patch('/loans/{loanRequest}/decision', [LoanController::class, 'decide'])
             ->name('loans.decide');
-    });
-
-    // Admin + HR + Accounting
-    Route::middleware('role:Admin|HR|Accounting')->group(function () {
-        Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     });
 
     // Applicant only

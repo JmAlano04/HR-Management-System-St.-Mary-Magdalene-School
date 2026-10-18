@@ -1,8 +1,23 @@
 
     {{-- Browser tab title --}}
+
+   @auth
     <x-slot name="title">
-        Admin Dashboard
+        @if (auth()->user()->hasRole('Admin'))
+            Admin Dashboard
+        @elseif (auth()->user()->hasRole('HR'))
+            HR Dashboard
+        @elseif (auth()->user()->hasRole('Accounting'))
+            Accounting Dashboard
+        @elseif (auth()->user()->hasRole('Employee'))
+            Employee Dashboard
+        @elseif (auth()->user()->hasRole('Applicant'))
+            Applicant Dashboard
+        @else
+            Dashboard
+        @endif
     </x-slot>
+  @endauth
 
     {{-- Font Awesome (for the fa-edit / upload icons) --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />

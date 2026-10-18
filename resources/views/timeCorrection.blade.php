@@ -31,7 +31,7 @@
 
                             @case('HR')
                                 <p class="mt-2 text-blue-700">
-                                    @include('partial.hr-dashboard')
+                                    @include('partial.timeCorrection-dashboard')
                                 </p>
                                 @break
 

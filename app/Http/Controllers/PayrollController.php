@@ -3,36 +3,54 @@
 namespace App\Http\Controllers;
 
 use App\Models\Payslip;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class PayrollController extends Controller
 {
-    /** Admin's salary monitoring approval queue. */
+    /**
+     * Admin, HR, and Accounting can view payroll.
+     */
     public function index()
     {
-        $this->authorizeAdmin();
+        $this->authorizePayrollView();
 
         $sent = Payslip::sentToAdmin();
 
         $summary = [
-            'total'    => (clone $sent)->count(),
-            'pending'  => (clone $sent)->where('admin_status', Payslip::PENDING)->count(),
-            'approved' => (clone $sent)->where('admin_status', Payslip::APPROVED)->count(),
-            'rejected' => (clone $sent)->where('admin_status', Payslip::REJECTED)->count(),
+            'total' => (clone $sent)->count(),
+
+            'pending' => (clone $sent)
+                ->where('admin_status', Payslip::PENDING)
+                ->count(),
+
+            'approved' => (clone $sent)
+                ->where('admin_status', Payslip::APPROVED)
+                ->count(),
+
+            'rejected' => (clone $sent)
+                ->where('admin_status', Payslip::REJECTED)
+                ->count(),
         ];
 
         $allApproved = $summary['total'] > 0
-            && ! Payslip::sentToAdmin()
-                ->where(fn ($q) => $q->where('admin_status', '!=', Payslip::APPROVED)
+            && !Payslip::sentToAdmin()
+                ->where(fn ($q) => $q
+                    ->where('admin_status', '!=', Payslip::APPROVED)
                     ->orWhere('hr_status', '!=', Payslip::APPROVED))
                 ->exists();
 
         $statusText = match (true) {
-            $summary['total'] === 0 => 'Waiting for salary transfer',
-            $allApproved            => 'All payslips approved and ready for employee release',
-            default                 => "{$summary['approved']} of {$summary['total']} payslips approved by Admin",
+            $summary['total'] === 0 =>
+                'Waiting for salary transfer',
+
+            $allApproved =>
+                'All payslips approved and ready for employee release',
+
+            default =>
+                "{$summary['approved']} of {$summary['total']} payslips approved by Admin",
         };
 
         $payslips = Payslip::sentToAdmin()
@@ -43,27 +61,41 @@ class PayrollController extends Controller
             ->withQueryString();
 
         return view('payroll', [
-            'payslips'   => $payslips,
-            'cards'      => $payslips->getCollection()->map->toCard()->keyBy('id'),
-            'summary'    => $summary,
+            'payslips' => $payslips,
+            'cards' => $payslips->getCollection()
+                ->map->toCard()
+                ->keyBy('id'),
+            'summary' => $summary,
             'statusText' => $statusText,
         ]);
     }
 
+    /**
+     * Admin only: approve a payslip.
+     */
     public function approve(Request $request): RedirectResponse
     {
         $this->authorizeAdmin();
 
-        $data = $request->validate(['payslip_id' => ['required', 'integer', 'exists:payslips,id']]);
+        $data = $request->validate([
+            'payslip_id' => [
+                'required',
+                'integer',
+                'exists:payslips,id',
+            ],
+        ]);
 
-        $payslip = Payslip::sentToAdmin()->findOrFail($data['payslip_id']);
+        $payslip = Payslip::sentToAdmin()
+            ->findOrFail($data['payslip_id']);
 
         if ($payslip->admin_status !== Payslip::PENDING) {
-            return back()->withErrors(['payslip' => 'This payslip has already been reviewed.']);
+            return back()->withErrors([
+                'payslip' => 'This payslip has already been reviewed.',
+            ]);
         }
 
         $payslip->update([
-            'admin_status'      => Payslip::APPROVED,
+            'admin_status' => Payslip::APPROVED,
             'admin_reviewed_at' => now(),
             'admin_reviewed_by' => Auth::id(),
         ]);
@@ -71,31 +103,48 @@ class PayrollController extends Controller
         return back()->with('success', 'Payslip approved.');
     }
 
+    /**
+     * Admin only: reject a payslip.
+     */
     public function reject(Request $request): RedirectResponse
     {
         $this->authorizeAdmin();
 
         $data = $request->validate([
-            'payslip_id' => ['required', 'integer', 'exists:payslips,id'],
-            'reason'     => ['required', 'string', 'max:1000'],
+            'payslip_id' => [
+                'required',
+                'integer',
+                'exists:payslips,id',
+            ],
+            'reason' => [
+                'required',
+                'string',
+                'max:1000',
+            ],
         ]);
 
-        $payslip = Payslip::sentToAdmin()->findOrFail($data['payslip_id']);
+        $payslip = Payslip::sentToAdmin()
+            ->findOrFail($data['payslip_id']);
 
         if ($payslip->admin_status !== Payslip::PENDING) {
-            return back()->withErrors(['payslip' => 'This payslip has already been reviewed.']);
+            return back()->withErrors([
+                'payslip' => 'This payslip has already been reviewed.',
+            ]);
         }
 
         $payslip->update([
-            'admin_status'           => Payslip::REJECTED,
+            'admin_status' => Payslip::REJECTED,
             'admin_rejection_reason' => trim($data['reason']),
-            'admin_reviewed_at'      => now(),
-            'admin_reviewed_by'      => Auth::id(),
+            'admin_reviewed_at' => now(),
+            'admin_reviewed_by' => Auth::id(),
         ]);
 
         return back()->with('success', 'Payslip rejected.');
     }
 
+    /**
+     * Admin only: approve all pending payslips.
+     */
     public function approveAll(): RedirectResponse
     {
         $this->authorizeAdmin();
@@ -103,29 +152,51 @@ class PayrollController extends Controller
         $count = Payslip::sentToAdmin()
             ->where('admin_status', Payslip::PENDING)
             ->update([
-                'admin_status'      => Payslip::APPROVED,
+                'admin_status' => Payslip::APPROVED,
                 'admin_reviewed_at' => now(),
                 'admin_reviewed_by' => Auth::id(),
             ]);
 
         if ($count === 0) {
-            return back()->withErrors(['payslip' => 'There are no pending payslips to approve.']);
+            return back()->withErrors([
+                'payslip' => 'There are no pending payslips to approve.',
+            ]);
         }
 
-        return back()->with('success', $count . ' ' . ($count === 1 ? 'payslip' : 'payslips') . ' approved.');
+        return back()->with(
+            'success',
+            $count . ' ' .
+            ($count === 1 ? 'payslip' : 'payslips') .
+            ' approved.'
+        );
     }
 
     /**
-     * The sidebar sends Admin, Accounting and Employee to the same "Payroll" menu item,
-     * so make sure only Admin can use this page and its actions.
+     * Allow Admin, HR, and Accounting to view payroll.
+     */
+    private function authorizePayrollView(): void
+    {
+        $user = Auth::user();
+
+        abort_unless(
+            $user instanceof User
+                && $user->hasAnyRole(['Admin', 'HR', 'Accounting']),
+            403,
+            'Only Admin, HR, and Accounting can view payroll.'
+        );
+    }
+
+    /**
+     * Only Admin can perform payroll review actions.
      */
     private function authorizeAdmin(): void
     {
         $user = Auth::user();
-        $isAdmin = $user !== null
-            && is_callable([$user, 'hasRole'])
-            && call_user_func([$user, 'hasRole'], 'Admin');
 
-        abort_unless($isAdmin, 403, 'Only Admin can review payroll.');
+        abort_unless(
+            $user instanceof User && $user->hasRole('Admin'),
+            403,
+            'Only Admin can review payroll.'
+        );
     }
 }

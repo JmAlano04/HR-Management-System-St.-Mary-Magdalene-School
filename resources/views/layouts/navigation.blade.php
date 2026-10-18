@@ -34,7 +34,7 @@
         ],
         'HR' => [
             'dashboard', 'employees', 'attendance', 'time-corrections', 'leaves',
-            'onboarding', 'offboarding', 'reports',
+            'onboarding', 'payroll', 'loans', 'offboarding', 'reports',
         ],
         'Accounting' => [
             'dashboard', 'payroll', 'loans', 'reports',

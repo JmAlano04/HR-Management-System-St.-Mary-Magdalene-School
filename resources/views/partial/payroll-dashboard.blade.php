@@ -40,7 +40,15 @@
             {{-- Heading + actions --}}
             <div class="mb-[22px] flex flex-col items-start justify-between gap-[18px] lg:flex-row lg:items-center">
                 <div>
-                    <p class="mb-1.5 text-xs font-extrabold uppercase tracking-[0.08em] text-[#b22222]">Accounting to Admin approval</p>
+     @auth
+        @if (auth()->user()->hasRole('Admin'))
+            <p class="mb-1.5 text-xs font-extrabold uppercase tracking-[0.08em] text-[#b22222]">Accounting to Admin approval</p>
+        @elseif (auth()->user()->hasRole('HR'))
+           <p class="mb-1.5 text-xs font-extrabold uppercase tracking-[0.08em] text-[#b22222]">Accounting to HR approval</p>
+        @endif
+   
+    @endauth
+                
                     <h2 id="payrollManagementTitle" class="text-[clamp(1.5rem,1.8vw,2.2rem)] font-bold text-gray-900">Salary Monitoring Approval Queue</h2>
                 </div>
 
@@ -72,11 +80,25 @@
                 </div>
             @endif
 
+
+
+                @php
+                    $approvalLabel = '';
+
+                    if (auth()->check()) {
+                        if (auth()->user()->hasRole('Admin')) {
+                            $approvalLabel = 'Pending Admin Review';
+                        } elseif (auth()->user()->hasRole('HR')) {
+                            $approvalLabel = 'Pending HR Review';
+                        }
+                    }
+                @endphp
+
             {{-- Summary cards --}}
             <div class="mb-[22px] grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 @foreach ([
                     ['Total Payslips',        $summary['total'],    'border-[#eef1f4] bg-[#f9fafb]'],
-                    ['Pending Admin Review',  $summary['pending'],  'border-[#fed7aa] bg-[#fff7ed]'],
+                    [$approvalLabel,          $summary['pending'],  'border-[#fed7aa] bg-[#fff7ed]'],
                     ['Approved',              $summary['approved'], 'border-[#a7f3d0] bg-[#ecfdf5]'],
                     ['Rejected',              $summary['rejected'], 'border-[#fecaca] bg-[#fef2f2]'],
                 ] as [$label, $count, $look])

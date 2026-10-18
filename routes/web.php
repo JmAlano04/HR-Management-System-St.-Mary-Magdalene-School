@@ -56,9 +56,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('onboarding.document');
 
 
-            
-        Route::get('/offboarding', [OffboardingController::class, 'index'])
-        ->name('offboarding.index');
+          Route::get('/offboarding', [OffboardingController::class, 'index'])
+            ->name('offboarding.index');
+ 
+        Route::patch('/offboarding/{offboardingCase}/approve', [OffboardingController::class, 'approve'])
+            ->name('offboarding.approve');
+ 
+        Route::get('/offboarding/{offboardingCase}/documents/{document}', [OffboardingController::class, 'document'])
+            ->name('offboarding.document')
+            ->scopeBindings();
     });
 
     // Admin + HR + Employee
@@ -102,7 +108,20 @@ Route::middleware('role:Admin|HR')
     // Admin + Accounting + Employee
     Route::middleware('role:Admin|Accounting|Employee')->group(function () {
         Route::get('/payroll', [PayrollController::class, 'index'])->name('payroll.index');
+        Route::patch('approve', [PayrollController::class, 'approve'])->name('payroll.approve');
+        Route::patch('approve-all', [PayrollController::class, 'approveAll'])->name('payroll.approve-all');
+        Route::patch('reject', [PayrollController::class, 'reject'])->name('payroll.reject');
+
+        
+
+        
         Route::get('/loans', [LoanController::class, 'index'])->name('loans.index');
+
+        Route::get('/loans', [LoanController::class, 'index'])
+            ->name('loans.index');
+ 
+        Route::patch('/loans/{loanRequest}/decision', [LoanController::class, 'decide'])
+            ->name('loans.decide');
     });
 
     // Admin + HR + Accounting

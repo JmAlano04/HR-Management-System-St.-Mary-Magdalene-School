@@ -141,6 +141,7 @@ class OnboardingManagementController extends Controller
         abort_unless(array_key_exists($type, Application::DOCUMENTS), 404);
 
         $path = $application->documentPath($type);
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
         $disk = Storage::disk(Application::DOCUMENT_DISK);
 
         abort_unless($path && $disk->exists($path), 404);

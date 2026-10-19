@@ -1,11 +1,5 @@
 {{-- resources/views/admin/onboarding-management/index.blade.php --}}
-@php
-    $user = auth()->user();
-
-    $role = $user->getRoleNames()->first() ?? 'No Role';
-
-@endphp
-
+{{-- Expects: $applications (paginator), $cards (object keyed by id), $stats, $search, $status --}}
 
     {{-- Browser tab title --}}
     <x-slot name="title">
@@ -14,7 +8,7 @@
 
     {{-- Page heading (shown in the layout's top bar) --}}
     <x-slot name="header">
-        <h1 class="text-2xl font-extrabold leading-none  ml-20 tracking-tight text-[#b22222] sm:text-4xl">Onboarding Management</h1>
+        <h1 class="ml-20 text-2xl font-extrabold leading-none tracking-tight text-[#b22222] sm:text-4xl">Onboarding Management</h1>
     </x-slot>
 
     @php
@@ -44,9 +38,7 @@
 
     <div
         class="px-4 pb-12 sm:px-6 lg:px-10"
-        x-data="onboardingApplicants(@js([
-            'items' => $cards,
-        ]))"
+        x-data="onboardingApplicants(@js(['items' => $cards]))"
         @keydown.escape.window="rejecting ? rejecting = false : detailId = null"
     >
         {{-- ============ Stat cards ============ --}}
@@ -60,10 +52,10 @@
             @endforeach
         </section>
 
+        {{-- ============ Applications ============ --}}
         <section aria-labelledby="applicantQueueTitle"
             class="mt-6 max-w-[1100px] rounded-[22px] border border-[#f0dada] bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)] sm:p-7">
 
-            {{-- Heading --}}
             <div class="mb-6">
                 <p class="mb-1.5 text-xs font-extrabold uppercase tracking-[0.08em] text-[#b22222]">Applicants</p>
                 <h2 id="applicantQueueTitle" class="flex items-center gap-3 text-2xl font-bold text-gray-900">
@@ -101,7 +93,7 @@
                 </select>
             </form>
 
-            {{-- Applications table --}}
+            {{-- Table --}}
             @if ($applications->isNotEmpty())
                 <div class="overflow-x-auto rounded-[14px] border border-[#ecebea]">
                     <table class="w-full border-collapse bg-white">
@@ -261,6 +253,53 @@
                                     </div>
                                 </template>
                             </div>
+                        </div>
+
+                        {{-- Schedule interview --}}
+                        <div x-show="detail.can_schedule">
+                            <h3 class="mb-3 text-base font-bold text-slate-900"
+                                x-text="detail.status_key === 'scheduled' ? 'Reschedule interview' : 'Schedule interview'"></h3>
+
+                            <form method="POST" :action="detail.schedule_url" class="grid gap-3 sm:grid-cols-2">
+                                @csrf
+
+                                <label class="grid gap-1 text-sm font-semibold text-gray-800">
+                                    Scheduled date
+                                    <input type="date" name="interview_date" required
+                                        min="{{ now()->toDateString() }}"
+                                        :value="detail.interview_date_value"
+                                        class="rounded-md border border-gray-200 px-3 py-2.5 text-sm font-normal outline-none focus:border-[#dc2626] focus:ring-2 focus:ring-[#dc2626]/10">
+                                </label>
+
+                                <label class="grid gap-1 text-sm font-semibold text-gray-800">
+                                    Scheduled time <span class="text-xs font-normal text-gray-400">(8:00 AM – 2:00 PM)</span>
+                                    <input type="time" name="interview_time" required min="08:00" max="14:00"
+                                        :value="detail.interview_time_value"
+                                        class="rounded-md border border-gray-200 px-3 py-2.5 text-sm font-normal outline-none focus:border-[#dc2626] focus:ring-2 focus:ring-[#dc2626]/10">
+                                </label>
+
+                                <label class="grid gap-1 text-sm font-semibold text-gray-800 sm:col-span-2">
+                                    Location
+                                    <input type="text" name="interview_location" maxlength="255"
+                                        placeholder="e.g. HR Office, 2nd floor"
+                                        :value="detail.interview_location !== 'N/A' ? detail.interview_location : ''"
+                                        class="rounded-md border border-gray-200 px-3 py-2.5 text-sm font-normal outline-none focus:border-[#dc2626] focus:ring-2 focus:ring-[#dc2626]/10">
+                                </label>
+
+                                <label class="grid gap-1 text-sm font-semibold text-gray-800 sm:col-span-2">
+                                    Note
+                                    <textarea name="interview_note" rows="2" maxlength="1000"
+                                        placeholder="Optional message for applicant"
+                                        x-text="detail.interview_note"
+                                        class="resize-y rounded-md border border-gray-200 px-3 py-2.5 text-sm font-normal outline-none focus:border-[#dc2626] focus:ring-2 focus:ring-[#dc2626]/10"></textarea>
+                                </label>
+
+                                <div class="sm:col-span-2">
+                                    <button type="submit"
+                                        class="cursor-pointer rounded-lg bg-[#dc2626] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-[#b91c1c]"
+                                        x-text="detail.status_key === 'scheduled' ? 'Update schedule' : 'Schedule interview'"></button>
+                                </div>
+                            </form>
                         </div>
 
                         {{-- Approve / Reject (enabled once the interview date has arrived) --}}

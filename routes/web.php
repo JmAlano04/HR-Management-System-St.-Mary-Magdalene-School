@@ -152,15 +152,25 @@ Route::middleware('role:Admin|HR')
         Route::patch('reject', [PayrollController::class, 'reject'])->name('payroll.reject');
 
 
-             Route::get('/payroll-processing', [PayrollProcessingController::class, 'index'])
+    // Payroll Processing
+        Route::get('/payroll-processing', [PayrollProcessingController::class, 'index'])
             ->name('payroll-accounting.index');
-
-            Route::get('/salary-monitoring', [SalaryMonitoringController::class, 'index'])
+        Route::post('/payroll-processing/save', [PayrollProcessingController::class, 'save'])
+            ->name('payroll-accounting.save');
+        Route::post('/payroll-processing/steps', [PayrollProcessingController::class, 'saveSteps'])
+            ->name('payroll-accounting.steps');
+        Route::post('/payroll-processing/transfer', [PayrollProcessingController::class, 'transfer'])
+            ->name('payroll-accounting.transfer');
+    
+        // Salary Monitoring
+        Route::get('/salary-monitoring', [SalaryMonitoringController::class, 'index'])
             ->name('salary-monitoring.index');
-            
-            Route::get('/salary-records', [SalaryRecordController::class, 'index'])
+        Route::post('/salary-monitoring/send', [SalaryMonitoringController::class, 'send'])
+            ->name('salary-monitoring.send');
+    
+        // Salary Record Management
+        Route::get('/salary-records', [SalaryRecordController::class, 'index'])
             ->name('salary-records.index');
-        
         
         
         Route::get('/loans', [LoanController::class, 'index'])->name('loans.index');

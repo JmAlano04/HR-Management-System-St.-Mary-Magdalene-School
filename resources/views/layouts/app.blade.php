@@ -116,12 +116,14 @@
         'application'      => ['label' => 'My Application',             'icon' => 'fa-file-signature',      'route' => 'applications.index',     'match' => 'applications.*'],
         
         
-        // Accounting-only items
+         // Accounting-only items
         'payroll-processing' => ['label' => 'Payroll Processing',        'icon' => 'fa-peso-sign',         'route' => 'payroll-accounting.index',          'match' => 'payroll-accounting.*'],
         'salary-monitoring'  => ['label' => 'Salary Monitoring',         'icon' => 'fa-receipt',           'route' => 'salary-monitoring.index','match' => 'salary-monitoring.*'],
         'salary-records'     => ['label' => 'Salary Record Management',  'icon' => 'fa-file-invoice',      'route' => 'salary-records.index',   'match' => 'salary-records.*'],
+        'loans-accounting' => ['label' => 'Financial Loan Management',                   'icon' => 'fa-hand-holding-dollar',        'route' => 'loans-accounting.index',          'match' => 'loans-accounting.*'],
         'accounting-reports' => ['label' => 'Reports',                   'icon' => 'fa-chart-line',        'route' => 'reports.index',          'match' => 'reports.*'],
-    ];
+ 
+        ];
 
     /*
      * Which items each role can see. Edit these lists to change a role's menu.
@@ -136,7 +138,7 @@
             'onboarding', 'payroll', 'loans', 'Document Management','offboarding', 'reports',
         ],
         'Accounting' => [
-            'dashboard', 'payroll-processing', 'salary-monitoring', 'salary-records', 'loans', 'accounting-reports',
+            'dashboard', 'payroll-processing', 'salary-monitoring', 'salary-records', 'loans-accounting', 'accounting-reports',
         ],
         'Employee' => [
             'dashboard', 'attendance', 'time-corrections', 'leaves', 'payroll', 'loans',

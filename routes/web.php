@@ -15,7 +15,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SalaryRecordController;
 use App\Http\Controllers\SalaryMonitoringController;
 use App\Http\Controllers\TimeCorrectionController;
-
+use App\Http\Controllers\AccountingLoanController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -167,6 +167,11 @@ Route::middleware('role:Admin|HR')
             ->name('salary-monitoring.index');
         Route::post('/salary-monitoring/send', [SalaryMonitoringController::class, 'send'])
             ->name('salary-monitoring.send');
+        // Loan Accounting
+         Route::get('/financial-loans', [AccountingLoanController::class, 'index'])
+        ->name('loans-accounting.index');
+        Route::patch('/financial-loans/{loanRequest}/decision', [AccountingLoanController::class, 'decide'])
+                ->name('accounting-loans.decide');
     
         // Salary Record Management
         Route::get('/salary-records', [SalaryRecordController::class, 'index'])

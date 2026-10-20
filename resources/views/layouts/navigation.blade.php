@@ -29,6 +29,7 @@
         'payroll-processing' => ['label' => 'Payroll Processing',        'icon' => 'fa-peso-sign',         'route' => 'payroll-accounting.index',          'match' => 'payroll-accounting.*'],
         'salary-monitoring'  => ['label' => 'Salary Monitoring',         'icon' => 'fa-receipt',           'route' => 'salary-monitoring.index','match' => 'salary-monitoring.*'],
         'salary-records'     => ['label' => 'Salary Record Management',  'icon' => 'fa-file-invoice',      'route' => 'salary-records.index',   'match' => 'salary-records.*'],
+        'loans-accounting' => ['label' => 'Financial Loan Management',                   'icon' => 'fa-hand-holding-dollar',        'route' => 'loans-accounting.index',          'match' => 'loans-accounting.*'],
         'accounting-reports' => ['label' => 'Reports',                   'icon' => 'fa-chart-line',        'route' => 'reports.index',          'match' => 'reports.*'],
     ];
 
@@ -45,7 +46,7 @@
             'onboarding', 'payroll', 'loans', 'Document Management','offboarding', 'reports',
         ],
         'Accounting' => [
-            'dashboard', 'payroll-processing', 'salary-monitoring', 'salary-records', 'loans', 'accounting-reports',
+            'dashboard', 'payroll-processing', 'salary-monitoring', 'salary-records', 'loans-accounting', 'accounting-reports',
         ],
         'Employee' => [
             'dashboard', 'attendance', 'time-corrections', 'leaves', 'payroll', 'loans',

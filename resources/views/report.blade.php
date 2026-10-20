@@ -43,7 +43,7 @@
 
                             @case('Accounting')
                                 <p class="mt-2 text-purple-700">
-                                    @include('partial.accounting-dashboard')
+                                    @include('partial.report-dashboard')
                                 </p>
                                 @break
 

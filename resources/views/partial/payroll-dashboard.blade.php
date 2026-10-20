@@ -1,5 +1,5 @@
 {{-- resources/views/payroll/index.blade.php --}}
-
+{{-- NOTE: if your layout component is not <x-app-layout>, change the opening/closing tag below. --}}
 
     {{-- Browser tab title --}}
     <x-slot name="title">
@@ -22,6 +22,11 @@
         $peso = fn ($n) => '₱' . number_format((float) $n, 2);
 
         $allReviewed = $summary['total'] > 0 && $summary['pending'] === 0;
+
+        // Role-aware labels: HR sees "Accounting to HR Approval", everyone else the Admin version
+        $isHR          = auth()->check() && auth()->user()->hasRole('HR');
+        $stageLabel    = $isHR ? 'Accounting to HR Approval' : 'Accounting to Admin Approval';
+        $approvalLabel = $isHR ? 'Pending HR Review' : 'Pending Admin Review';
     @endphp
 
     <div
@@ -40,15 +45,7 @@
             {{-- Heading + actions --}}
             <div class="mb-[22px] flex flex-col items-start justify-between gap-[18px] lg:flex-row lg:items-center">
                 <div>
-     @auth
-        @if (auth()->user()->hasRole('Admin'))
-            <p class="mb-1.5 text-xs font-extrabold uppercase tracking-[0.08em] text-[#b22222]">Accounting to Admin approval</p>
-        @elseif (auth()->user()->hasRole('HR'))
-           <p class="mb-1.5 text-xs font-extrabold uppercase tracking-[0.08em] text-[#b22222]">Accounting to HR approval</p>
-        @endif
-   
-    @endauth
-                
+                    <p class="mb-1.5 text-xs font-extrabold uppercase tracking-[0.08em] text-[#b22222]">{{ $stageLabel }}</p>
                     <h2 id="payrollManagementTitle" class="text-[clamp(1.5rem,1.8vw,2.2rem)] font-bold text-gray-900">Salary Monitoring Approval Queue</h2>
                 </div>
 
@@ -80,27 +77,13 @@
                 </div>
             @endif
 
-
-
-                @php
-                    $approvalLabel = '';
-
-                    if (auth()->check()) {
-                        if (auth()->user()->hasRole('Admin')) {
-                            $approvalLabel = 'Pending Admin Review';
-                        } elseif (auth()->user()->hasRole('HR')) {
-                            $approvalLabel = 'Pending HR Review';
-                        }
-                    }
-                @endphp
-
             {{-- Summary cards --}}
             <div class="mb-[22px] grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 @foreach ([
-                    ['Total Payslips',        $summary['total'],    'border-[#eef1f4] bg-[#f9fafb]'],
-                    [$approvalLabel,          $summary['pending'],  'border-[#fed7aa] bg-[#fff7ed]'],
-                    ['Approved',              $summary['approved'], 'border-[#a7f3d0] bg-[#ecfdf5]'],
-                    ['Rejected',              $summary['rejected'], 'border-[#fecaca] bg-[#fef2f2]'],
+                    ['Total Payslips', $summary['total'],    'border-[#eef1f4] bg-[#f9fafb]'],
+                    [$approvalLabel,   $summary['pending'],  'border-[#fed7aa] bg-[#fff7ed]'],
+                    ['Approved',       $summary['approved'], 'border-[#a7f3d0] bg-[#ecfdf5]'],
+                    ['Rejected',       $summary['rejected'], 'border-[#fecaca] bg-[#fef2f2]'],
                 ] as [$label, $count, $look])
                     <article class="flex flex-col gap-2 rounded-[18px] border px-5 py-[18px] {{ $look }}">
                         <span class="text-[0.8rem] font-bold uppercase tracking-[0.06em] text-gray-500">{{ $label }}</span>
@@ -112,6 +95,11 @@
             {{-- Payslip rows --}}
             <div class="grid gap-4" aria-live="polite">
                 @forelse ($payslips as $slip)
+                    @php
+                        // The status that belongs to the logged-in reviewer (HR or Admin)
+                        $myStatus = $isHR ? $slip->hr_status : $slip->admin_status;
+                    @endphp
+
                     <article class="rounded-[18px] border border-black/30 bg-white px-[18px] pb-3.5 pt-[18px]">
                         <div class="grid items-center gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(110px,0.7fr)_minmax(90px,0.45fr)]">
                             <div>
@@ -149,10 +137,10 @@
 
                             {{-- Row actions --}}
                             <div class="flex w-full flex-wrap items-center gap-2.5 lg:w-auto">
-                                @if ($slip->admin_status === 'Approved')
+                                @if ($myStatus === 'Approved')
                                     <button type="button" disabled
                                         class="cursor-not-allowed rounded-[10px] border border-[#15803d] bg-[#15803d] px-3 py-[9px] text-[0.8rem] font-bold text-white opacity-70">Approved</button>
-                                @elseif ($slip->admin_status === 'Rejected')
+                                @elseif ($myStatus === 'Rejected')
                                     <button type="button" disabled
                                         class="cursor-not-allowed rounded-[10px] border border-[#b91c1c] bg-[#b91c1c] px-3 py-[9px] text-[0.8rem] font-bold text-white opacity-70">Rejected</button>
                                 @else

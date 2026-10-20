@@ -101,7 +101,7 @@
      * 'route' = route name, 'match' = pattern used to highlight the active link.
      * If a route does not exist yet the link falls back to "#" so nothing crashes.
      */
-    $items = [
+   $items = [
         'dashboard'        => ['label' => 'Dashboard',                  'icon' => 'fa-table-cells',         'route' => 'dashboard',              'match' => 'dashboard'],
         'employees'        => ['label' => 'Employee Management',        'icon' => 'fa-users',               'route' => 'employees.index',        'match' => 'employees.*'],
         'attendance'       => ['label' => 'Attendance Monitoring',      'icon' => 'fa-calendar-check',      'route' => 'attendance.index',       'match' => 'attendance.*'],
@@ -111,8 +111,16 @@
         'payroll'          => ['label' => 'Payroll Management',         'icon' => 'fa-wallet',              'route' => 'payroll.index',          'match' => 'payroll.*'],
         'loans'            => ['label' => 'Financial Loan Management',  'icon' => 'fa-hand-holding-dollar', 'route' => 'loans.index',            'match' => 'loans.*'],
         'offboarding'      => ['label' => 'Offboarding Management',     'icon' => 'fa-user-slash',          'route' => 'offboarding.index',      'match' => 'offboarding.*'],
+        'Document Management' => ['label' => 'Document Management',     'icon'  => 'fa-folder-open',          'route' => 'documents.index',      'match' => 'documents.*'],
         'reports'          => ['label' => 'Reports',                    'icon' => 'fa-file',                'route' => 'reports.index',          'match' => 'reports.*'],
         'application'      => ['label' => 'My Application',             'icon' => 'fa-file-signature',      'route' => 'applications.index',     'match' => 'applications.*'],
+        
+        
+        // Accounting-only items
+        'payroll-processing' => ['label' => 'Payroll Processing',        'icon' => 'fa-peso-sign',         'route' => 'payroll-accounting.index',          'match' => 'payroll-accounting.*'],
+        'salary-monitoring'  => ['label' => 'Salary Monitoring',         'icon' => 'fa-receipt',           'route' => 'salary-monitoring.index','match' => 'salary-monitoring.*'],
+        'salary-records'     => ['label' => 'Salary Record Management',  'icon' => 'fa-file-invoice',      'route' => 'salary-records.index',   'match' => 'salary-records.*'],
+        'accounting-reports' => ['label' => 'Reports',                   'icon' => 'fa-chart-line',        'route' => 'reports.index',          'match' => 'reports.*'],
     ];
 
     /*
@@ -125,10 +133,10 @@
         ],
         'HR' => [
             'dashboard', 'employees', 'attendance', 'time-corrections', 'leaves',
-            'onboarding', 'offboarding', 'reports',
+            'onboarding', 'payroll', 'loans', 'Document Management','offboarding', 'reports',
         ],
         'Accounting' => [
-            'dashboard', 'payroll', 'loans', 'reports',
+            'dashboard', 'payroll-processing', 'salary-monitoring', 'salary-records', 'loans', 'accounting-reports',
         ],
         'Employee' => [
             'dashboard', 'attendance', 'time-corrections', 'leaves', 'payroll', 'loans',

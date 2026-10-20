@@ -12,29 +12,26 @@ class PayrollController extends Controller
 {
     /**
      * Admin, HR, and Accounting can view payroll.
+     * HR sees the HR approval stage; everyone else sees the Admin stage.
      */
     public function index()
     {
         $this->authorizePayrollView();
 
+        $prefix = $this->stagePrefix();          // 'hr' or 'admin'
+        $column = "{$prefix}_status";
+        $stage  = $prefix === 'hr' ? 'HR' : 'Admin';
+
         $sent = Payslip::sentToAdmin();
 
         $summary = [
-            'total' => (clone $sent)->count(),
-
-            'pending' => (clone $sent)
-                ->where('admin_status', Payslip::PENDING)
-                ->count(),
-
-            'approved' => (clone $sent)
-                ->where('admin_status', Payslip::APPROVED)
-                ->count(),
-
-            'rejected' => (clone $sent)
-                ->where('admin_status', Payslip::REJECTED)
-                ->count(),
+            'total'    => (clone $sent)->count(),
+            'pending'  => (clone $sent)->where($column, Payslip::PENDING)->count(),
+            'approved' => (clone $sent)->where($column, Payslip::APPROVED)->count(),
+            'rejected' => (clone $sent)->where($column, Payslip::REJECTED)->count(),
         ];
 
+        // Ready for employee release only when BOTH Admin and HR approved everything
         $allApproved = $summary['total'] > 0
             && !Payslip::sentToAdmin()
                 ->where(fn ($q) => $q
@@ -50,7 +47,7 @@ class PayrollController extends Controller
                 'All payslips approved and ready for employee release',
 
             default =>
-                "{$summary['approved']} of {$summary['total']} payslips approved by Admin",
+                "{$summary['approved']} of {$summary['total']} payslips approved by {$stage}",
         };
 
         $payslips = Payslip::sentToAdmin()
@@ -60,101 +57,88 @@ class PayrollController extends Controller
             ->paginate(10)
             ->withQueryString();
 
+        // NOTE: change to view('payroll') if your file is resources/views/payroll.blade.php
         return view('payroll', [
-            'payslips' => $payslips,
-            'cards' => $payslips->getCollection()
+            'payslips'   => $payslips,
+            'cards'      => $payslips->getCollection()
                 ->map->toCard()
                 ->keyBy('id'),
-            'summary' => $summary,
+            'summary'    => $summary,
             'statusText' => $statusText,
         ]);
     }
 
     /**
-     * Admin only: approve a payslip.
+     * Admin or HR: approve a payslip (updates only their own stage).
      */
     public function approve(Request $request): RedirectResponse
     {
-        $this->authorizeAdmin();
+        $prefix = $this->authorizeReviewer();
 
         $data = $request->validate([
-            'payslip_id' => [
-                'required',
-                'integer',
-                'exists:payslips,id',
-            ],
+            'payslip_id' => ['required', 'integer', 'exists:payslips,id'],
         ]);
 
-        $payslip = Payslip::sentToAdmin()
-            ->findOrFail($data['payslip_id']);
+        $payslip = Payslip::sentToAdmin()->findOrFail($data['payslip_id']);
 
-        if ($payslip->admin_status !== Payslip::PENDING) {
+        if ($payslip->{"{$prefix}_status"} !== Payslip::PENDING) {
             return back()->withErrors([
                 'payslip' => 'This payslip has already been reviewed.',
             ]);
         }
 
         $payslip->update([
-            'admin_status' => Payslip::APPROVED,
-            'admin_reviewed_at' => now(),
-            'admin_reviewed_by' => Auth::id(),
+            "{$prefix}_status"      => Payslip::APPROVED,
+            "{$prefix}_reviewed_at" => now(),
+            "{$prefix}_reviewed_by" => Auth::id(),
         ]);
 
         return back()->with('success', 'Payslip approved.');
     }
 
     /**
-     * Admin only: reject a payslip.
+     * Admin or HR: reject a payslip with a reason.
      */
     public function reject(Request $request): RedirectResponse
     {
-        $this->authorizeAdmin();
+        $prefix = $this->authorizeReviewer();
 
         $data = $request->validate([
-            'payslip_id' => [
-                'required',
-                'integer',
-                'exists:payslips,id',
-            ],
-            'reason' => [
-                'required',
-                'string',
-                'max:1000',
-            ],
+            'payslip_id' => ['required', 'integer', 'exists:payslips,id'],
+            'reason'     => ['required', 'string', 'max:1000'],
         ]);
 
-        $payslip = Payslip::sentToAdmin()
-            ->findOrFail($data['payslip_id']);
+        $payslip = Payslip::sentToAdmin()->findOrFail($data['payslip_id']);
 
-        if ($payslip->admin_status !== Payslip::PENDING) {
+        if ($payslip->{"{$prefix}_status"} !== Payslip::PENDING) {
             return back()->withErrors([
                 'payslip' => 'This payslip has already been reviewed.',
             ]);
         }
 
         $payslip->update([
-            'admin_status' => Payslip::REJECTED,
-            'admin_rejection_reason' => trim($data['reason']),
-            'admin_reviewed_at' => now(),
-            'admin_reviewed_by' => Auth::id(),
+            "{$prefix}_status"           => Payslip::REJECTED,
+            "{$prefix}_rejection_reason" => trim($data['reason']),
+            "{$prefix}_reviewed_at"      => now(),
+            "{$prefix}_reviewed_by"      => Auth::id(),
         ]);
 
         return back()->with('success', 'Payslip rejected.');
     }
 
     /**
-     * Admin only: approve all pending payslips.
+     * Admin or HR: approve all of their pending payslips.
      */
     public function approveAll(): RedirectResponse
     {
-        $this->authorizeAdmin();
+        $prefix = $this->authorizeReviewer();
 
         $count = Payslip::sentToAdmin()
-            ->where('admin_status', Payslip::PENDING)
+            ->where("{$prefix}_status", Payslip::PENDING)
             ->update([
-                'admin_status' => Payslip::APPROVED,
-                'admin_reviewed_at' => now(),
-                'admin_reviewed_by' => Auth::id(),
+                "{$prefix}_status"      => Payslip::APPROVED,
+                "{$prefix}_reviewed_at" => now(),
+                "{$prefix}_reviewed_by" => Auth::id(),
             ]);
 
         if ($count === 0) {
@@ -165,9 +149,7 @@ class PayrollController extends Controller
 
         return back()->with(
             'success',
-            $count . ' ' .
-            ($count === 1 ? 'payslip' : 'payslips') .
-            ' approved.'
+            $count . ' ' . ($count === 1 ? 'payslip' : 'payslips') . ' approved.'
         );
     }
 
@@ -187,16 +169,30 @@ class PayrollController extends Controller
     }
 
     /**
-     * Only Admin can perform payroll review actions.
+     * Only Admin and HR can review. Returns the column prefix for the
+     * current reviewer: 'hr' for HR, 'admin' for Admin.
      */
-    private function authorizeAdmin(): void
+    private function authorizeReviewer(): string
     {
         $user = Auth::user();
 
         abort_unless(
-            $user instanceof User && $user->hasRole('Admin'),
+            $user instanceof User && $user->hasAnyRole(['Admin', 'HR']),
             403,
-            'Only Admin can review payroll.'
+            'Only Admin and HR can review payroll.'
         );
+
+        return $this->stagePrefix();
+    }
+
+    /**
+     * 'hr' when the logged-in user is HR, otherwise 'admin'.
+     * Matches the $isHR check in the payroll view.
+     */
+    private function stagePrefix(): string
+    {
+        $user = Auth::user();
+
+        return $user instanceof User && $user->hasRole('HR') ? 'hr' : 'admin';
     }
 }

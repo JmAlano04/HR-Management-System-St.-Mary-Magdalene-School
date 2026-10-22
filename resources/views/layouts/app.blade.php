@@ -40,12 +40,12 @@
             @auth
 
                 {{-- Applicant at Employee: top navigation --}}
-                @hasanyrole('Applicant|Employee')
+                @hasanyrole('Applicant')
                     @include('layouts.applicant-nav')
                 @endhasanyrole
 
                 {{-- Admin, HR, Accounting: left sidebar navigation --}}
-                @hasanyrole('Admin|HR|Accounting')
+                @hasanyrole('Admin|HR|Accounting|Employee')
                     @include('layouts.navigation')
           
          
@@ -101,52 +101,273 @@
      * 'route' = route name, 'match' = pattern used to highlight the active link.
      * If a route does not exist yet the link falls back to "#" so nothing crashes.
      */
-   $items = [
-        'dashboard'        => ['label' => 'Dashboard',                  'icon' => 'fa-table-cells',         'route' => 'dashboard',              'match' => 'dashboard'],
-        'employees'        => ['label' => 'Employee Management',        'icon' => 'fa-users',               'route' => 'employees.index',        'match' => 'employees.*'],
-        'attendance'       => ['label' => 'Attendance Monitoring',      'icon' => 'fa-calendar-check',      'route' => 'attendance.index',       'match' => 'attendance.*'],
-        'time-corrections' => ['label' => 'Time Correction Management', 'icon' => 'fa-clock-rotate-left',   'route' => 'time-corrections.index', 'match' => 'time-corrections.*'],
-        'leaves'           => ['label' => 'Leave Management',           'icon' => 'fa-calendar-days',       'route' => 'leaves.index',           'match' => 'leaves.*'],
-        'onboarding'       => ['label' => 'Onboarding Management',     'icon' => 'fa-user-plus',           'route' => 'onboarding.index',       'match' => 'onboarding.*'],
-        'payroll'          => ['label' => 'Payroll Management',         'icon' => 'fa-wallet',              'route' => 'payroll.index',          'match' => 'payroll.*'],
-        'loans'            => ['label' => 'Financial Loan Management',  'icon' => 'fa-hand-holding-dollar', 'route' => 'loans.index',            'match' => 'loans.*'],
-        'offboarding'      => ['label' => 'Offboarding Management',     'icon' => 'fa-user-slash',          'route' => 'offboarding.index',      'match' => 'offboarding.*'],
-        'Document Management' => ['label' => 'Document Management',     'icon'  => 'fa-folder-open',          'route' => 'documents.index',      'match' => 'documents.*'],
-        'reports'          => ['label' => 'Reports',                    'icon' => 'fa-file',                'route' => 'reports.index',          'match' => 'reports.*'],
-        'application'      => ['label' => 'My Application',             'icon' => 'fa-file-signature',      'route' => 'applications.index',     'match' => 'applications.*'],
-        
-        
-         // Accounting-only items
-        'payroll-processing' => ['label' => 'Payroll Processing',        'icon' => 'fa-peso-sign',         'route' => 'payroll-accounting.index',          'match' => 'payroll-accounting.*'],
-        'salary-monitoring'  => ['label' => 'Salary Monitoring',         'icon' => 'fa-receipt',           'route' => 'salary-monitoring.index','match' => 'salary-monitoring.*'],
-        'salary-records'     => ['label' => 'Salary Record Management',  'icon' => 'fa-file-invoice',      'route' => 'salary-records.index',   'match' => 'salary-records.*'],
-        'loans-accounting' => ['label' => 'Financial Loan Management',                   'icon' => 'fa-hand-holding-dollar',        'route' => 'loans-accounting.index',          'match' => 'loans-accounting.*'],
-        'accounting-reports' => ['label' => 'Reports',                   'icon' => 'fa-chart-line',        'route' => 'reports.index',          'match' => 'reports.*'],
- 
-        ];
+  
+    $items = [
+        // General
+        'dashboard' => [
+            'label' => 'Dashboard',
+            'icon'  => 'fa-table-cells',
+            'route' => 'dashboard',
+            'match' => 'dashboard',
+        ],
+
+        // General
+        'employee-dashboard' => [
+            'label' => 'Dashboard',
+            'icon'  => 'fa-table-cells',
+            'route' => 'employee-dashboard',
+            'match' => 'dashboard',
+        ],
+
+        // Employee Management
+        'employees' => [
+            'label' => 'Employee Management',
+            'icon'  => 'fa-users',
+            'route' => 'employees.index',
+            'match' => 'employees.*',
+        ],
+
+        // Attendance
+        'attendance' => [
+            'label' => 'Attendance Monitoring',
+            'icon'  => 'fa-calendar-check',
+            'route' => 'attendance.index',
+            'match' => 'attendance.*',
+        ],
+
+        // Time Corrections
+        'time-corrections' => [
+            'label' => 'Time Correction Management',
+            'icon'  => 'fa-clock-rotate-left',
+            'route' => 'time-corrections.index',
+            'match' => 'time-corrections.*',
+        ],
+
+        // Leaves
+        'leaves' => [
+            'label' => 'Leave Management',
+            'icon'  => 'fa-calendar-days',
+            'route' => 'leaves.index',
+            'match' => 'leaves.*',
+        ],
+
+        // Onboarding
+        'onboarding' => [
+            'label' => 'Onboarding Management',
+            'icon'  => 'fa-user-plus',
+            'route' => 'onboarding.index',
+            'match' => 'onboarding.*',
+        ],
+
+        // Payroll
+        'payroll' => [
+            'label' => 'Payroll Management',
+            'icon'  => 'fa-wallet',
+            'route' => 'payroll.index',
+            'match' => 'payroll.*',
+        ],
+
+        // Loans
+        'loans' => [
+            'label' => 'Financial Loan Management',
+            'icon'  => 'fa-hand-holding-dollar',
+            'route' => 'loans.index',
+            'match' => 'loans.*',
+        ],
+
+        // Offboarding
+        'offboarding' => [
+            'label' => 'Offboarding Management',
+            'icon'  => 'fa-user-slash',
+            'route' => 'offboarding.index',
+            'match' => 'offboarding.*',
+        ],
+
+        // Documents
+        'documents' => [
+            'label' => 'Document Management',
+            'icon'  => 'fa-folder-open',
+            'route' => 'documents.index',
+            'match' => 'documents.*',
+        ],
+
+        // Reports
+        'reports' => [
+            'label' => 'Reports',
+            'icon'  => 'fa-file',
+            'route' => 'reports.index',
+            'match' => 'reports.*',
+        ],
+
+        // Applicant
+        'application' => [
+            'label' => 'My Application',
+            'icon'  => 'fa-file-signature',
+            'route' => 'applications.index',
+            'match' => 'applications.*',
+        ],
+
+        // Accounting
+        'payroll-processing' => [
+            'label' => 'Payroll Processing',
+            'icon'  => 'fa-peso-sign',
+            'route' => 'payroll-accounting.index',
+            'match' => 'payroll-accounting.*',
+        ],
+
+        'salary-monitoring' => [
+            'label' => 'Salary Monitoring',
+            'icon'  => 'fa-receipt',
+            'route' => 'salary-monitoring.index',
+            'match' => 'salary-monitoring.*',
+        ],
+
+        'salary-records' => [
+            'label' => 'Salary Record Management',
+            'icon'  => 'fa-file-invoice',
+            'route' => 'salary-records.index',
+            'match' => 'salary-records.*',
+        ],
+
+        'loans-accounting' => [
+            'label' => 'Financial Loan Management',
+            'icon'  => 'fa-hand-holding-dollar',
+            'route' => 'loans-accounting.index',
+            'match' => 'loans-accounting.*',
+        ],
+
+        'accounting-reports' => [
+            'label' => 'Reports',
+            'icon'  => 'fa-chart-line',
+            'route' => 'reports.index',
+            'match' => 'reports.*',
+        ],
+
+        /*
+        |--------------------------------------------------------------------------
+        | Employee-Only Menu Items
+        |--------------------------------------------------------------------------
+        | These use existing application routes where possible.
+        | Verify that each route exists and is authorized for employees.
+        */
+        'school-employees' => [
+            'label' => 'School Employees',
+            'icon'  => 'fa-users',
+            'route' => 'employees.index',
+            'match' => 'employees.*',
+        ],
+                            
+
+        'my-attendance' => [
+            'label' => 'Attendance',
+            'icon'  => 'fa-calendar-check',
+            'route' => 'attendance.index',
+            'match' => 'attendance.*',
+        ],
+
+        'my-time-corrections' => [
+            'label' => 'Time Corrections',
+            'icon'  => 'fa-clock-rotate-left',
+            'route' => 'time-corrections.index',
+            'match' => 'time-corrections.*',
+        ],
+
+        'my-leaves' => [
+            'label' => 'Leaves Request',
+            'icon'  => 'fa-calendar-days',
+            'route' => 'leaves.index',
+            'match' => 'leaves.*',
+        ],
+
+        'my-loans' => [
+            'label' => 'Financial Loans Request',
+            'icon'  => 'fa-hand-holding-dollar',
+            'route' => 'loans.index',
+            'match' => 'loans.*',
+        ],
+
+        'my-offboarding' => [
+            'label' => 'Offboarding Request',
+            'icon'  => 'fa-user-slash',
+            'route' => 'offboarding.index',
+            'match' => 'offboarding.*',
+        ],
+
+        'my-payslips' => [
+            'label' => 'Payslip',
+            'icon'  => 'fa-file-invoice-dollar',
+            'route' => 'salary-records.index',
+            'match' => 'salary-records.*',
+        ],
+
+        'my-documents' => [
+            'label' => 'Documents',
+            'icon'  => 'fa-folder-open',
+            'route' => 'documents.index',
+            'match' => 'documents.*',
+        ],
+    ];
 
     /*
-     * Which items each role can see. Edit these lists to change a role's menu.
-     */
+    |--------------------------------------------------------------------------
+    | Role-Based Menus
+    |--------------------------------------------------------------------------
+    */
+
     $roleMenus = [
         'Admin' => [
-            'dashboard', 'employees', 'attendance', 'time-corrections', 'leaves',
-            'onboarding', 'payroll', 'loans', 'offboarding', 'reports',
+            'dashboard',
+            'employees',
+            'attendance',
+            'time-corrections',
+            'leaves',
+            'onboarding',
+            'payroll',
+            'loans',
+            'offboarding',
+            'documents',
+            'reports',
         ],
+
         'HR' => [
-            'dashboard', 'employees', 'attendance', 'time-corrections', 'leaves',
-            'onboarding', 'payroll', 'loans', 'Document Management','offboarding', 'reports',
+            'dashboard',
+            'employees',
+            'attendance',
+            'time-corrections',
+            'leaves',
+            'onboarding',
+            'payroll',
+            'loans',
+            'documents',
+            'offboarding',
+            'reports',
         ],
+
         'Accounting' => [
-            'dashboard', 'payroll-processing', 'salary-monitoring', 'salary-records', 'loans-accounting', 'accounting-reports',
+            'dashboard',
+            'payroll-processing',
+            'salary-monitoring',
+            'salary-records',
+            'loans-accounting',
+            'accounting-reports',
         ],
+
         'Employee' => [
-            'dashboard', 'attendance', 'time-corrections', 'leaves', 'payroll', 'loans',
+            'employee-dashboard',
+            'school-employees',
+            'my-attendance',
+            'my-time-corrections',
+            'my-leaves',
+            'my-loans',
+            'my-offboarding',
+            'my-payslips',
+            'my-documents',
         ],
+
         'Applicant' => [
-            'dashboard', 'application',
+            'dashboard',
+            'application',
         ],
-        
     ];
 
     // Unknown role or no role: Dashboard only

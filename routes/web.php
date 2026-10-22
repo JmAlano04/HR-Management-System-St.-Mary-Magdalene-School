@@ -3,7 +3,10 @@
 use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\SchoolEmployeeController;
+
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\EmployeeDashboardController;
 use App\Http\Controllers\LeaveManagementController;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\OffboardingController;
@@ -82,14 +85,35 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 
     });
 
+
+
+
+
+
+    // Employee: personal na tasks sa dashboard calendar
+    Route::middleware(['auth', 'role:Employee'])->group(function () {
+
+    // School Employee
+    Route::get('/school-employees', [SchoolEmployeeController::class, 'index'])
+        ->name('employee.school-employees');
+        
+        Route::get ('employee-dashboard', [EmployeeDashboardController::class, 'index'])
+        ->name('employee-dashboard');
+    
+        
+        Route::get('tasks', [EmployeeDashboardController::class, 'tasks'])->name('tasks.index');
+        Route::post('tasks', [EmployeeDashboardController::class, 'storeTask'])->name('tasks.store');
+        Route::delete('tasks/{task}', [EmployeeDashboardController::class, 'destroyTask'])->name('tasks.destroy');
+    });
+
     // Admin + HR + Employee
     Route::middleware('role:Admin|HR|Employee')->group(function () {
 
-       // Employee
+       // Employee module
        Route::resource('employees', EmployeeController::class)
         ->only(['index', 'store', 'update', 'destroy']);
-    
-        
+
+
         Route::get('/attendance-monitoring', [AttendanceController::class, 'index'])
             ->name('attendance.index');
  

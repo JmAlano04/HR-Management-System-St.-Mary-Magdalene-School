@@ -19,7 +19,7 @@ class AdminDashboardController extends Controller
     /** Dashboard page (called from DashboardController for the Admin role). */
     public function index()
     {
-        return view('dashboard.admin', [
+        return view('dashboard', [
             'slides' => $this->slides(),
             'today'  => now()->toDateString(),
         ]);
@@ -60,7 +60,7 @@ class AdminDashboardController extends Controller
                 'path'        => $file->store('banners', 'public'),
                 'alt'         => Str::limit(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME), 100, ''),
                 'sort_order'  => ++$order,
-                'uploaded_by' => auth()->id(),
+                'uploaded_by' => Auth::id(),
             ]);
         }
 

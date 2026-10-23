@@ -133,6 +133,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('loan-employee', [EmployeeLoanController::class, 'index'])
         ->name('loans.employee.index');
         
+        Route::post('/loan-employee', [EmployeeLoanController::class, 'store'])
+                ->name('loan.loan-employee.store');
+
+            // Archive selected loan requests
+        Route::post('/loan-employee/archive', [EmployeeLoanController::class, 'archive'])
+                ->name('loan.loan-employee.archive');
+
+            // Restore an archived loan request
+        Route::post('/loan-employee/{loanRequest}/restore', [EmployeeLoanController::class, 'restore'])
+                ->name('loan.loan-employee.restore');
+
+                
         Route::get('offboarding-employee', [EmployeeOffboardingController::class, 'index'])
         ->name('offboarding.employee.index');
         

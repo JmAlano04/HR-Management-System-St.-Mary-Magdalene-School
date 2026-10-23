@@ -140,7 +140,7 @@
                     {{-- Tabs --}}
                     <div class="mt-4 flex gap-2 border-b border-gray-100" role="tablist" aria-label="Loan request records">
                         @foreach ([false => 'Active requests', true => 'Archive'] as $isArchive => $label)
-                            <a href="{{ route('loan.loan-employee.index', $isArchive ? ['tab' => 'archived'] : []) }}"
+                            <a href="{{ route('loans.employee.index', $isArchive ? ['tab' => 'archived'] : []) }}"
                                 role="tab" aria-selected="{{ $archived === $isArchive ? 'true' : 'false' }}"
                                 class="-mb-px border-b-2 px-4 py-2.5 text-sm font-bold transition
                                     {{ $archived === $isArchive ? 'border-[#b22222] text-[#b22222]' : 'border-transparent text-gray-500 hover:text-gray-800' }}">

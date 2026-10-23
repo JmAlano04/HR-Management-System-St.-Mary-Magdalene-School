@@ -68,7 +68,7 @@ class LeaveRequestController extends Controller
         ]);
 
         return redirect()
-            ->route('leave-requests.index')
+            ->route('leaves.employee.index')
             ->with('success', 'Leave request submitted for review.');
     }
 
@@ -78,6 +78,6 @@ class LeaveRequestController extends Controller
 
         $leaveRequest->update(['employee_archived' => true]);
 
-        return redirect()->route('leave-requests.index')->with('success', 'Leave request archived.');
+        return redirect()->route('leaves.employee.index')->with('success', 'Leave request archived.');
     }
 }

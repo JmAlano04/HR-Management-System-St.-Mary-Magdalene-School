@@ -16,6 +16,7 @@ class OffboardingDocument extends Model
         'file_name',
         'file_path',
         'review_status',
+        'rejection_reason',
         'reviewed_at',
         'reviewed_by',
     ];

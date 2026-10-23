@@ -37,7 +37,7 @@
                             @break
 
                         @case('Employee')
-                            @include('partial.employee-dashboard')
+                            @include('partial.Employee.offboarding-employee')
                             @break
 
                         @case('Applicant')

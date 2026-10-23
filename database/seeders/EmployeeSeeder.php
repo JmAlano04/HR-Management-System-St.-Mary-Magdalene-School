@@ -3,21 +3,95 @@
 namespace Database\Seeders;
 
 use App\Models\Employee;
+use App\Models\User;
 use Illuminate\Database\Seeder;
+
 
 class EmployeeSeeder extends Seeder
 {
     public function run(): void
     {
         $employees = [
-            ['employee_id' => 'HR-321942',    'name' => 'Maria Santos',       'position' => 'HR Manager',          'department' => 'seniorhigh', 'role_type' => 'teaching',    'email' => 'maria.santos@smms.edu.ph',       'birthday' => '1979-05-12', 'address' => '123 Saint Ave, City', 'emergency_name' => 'Ana Santos',       'emergency_contact' => '+639171234567'],
-            ['employee_id' => 'EMP-234482',   'name' => 'Joshua Aguilera',    'position' => 'Mathematics Teacher', 'department' => 'elementary', 'role_type' => 'teaching',    'email' => 'joshua.aguilera@smms.edu.ph',    'birthday' => '1994-02-28', 'address' => '45 School Rd, City',  'emergency_name' => 'Liza Aguilera',    'emergency_contact' => '+639181234567'],
-            ['employee_id' => 'ACC-054535',   'name' => 'Joselito Marasigan', 'position' => 'Accounting Clerk',    'department' => 'highschool', 'role_type' => 'teaching',    'email' => 'joselito.marasigan@smms.edu.ph', 'birthday' => '1987-09-14', 'address' => '78 Maple St, City',   'emergency_name' => 'Ramon Marasigan',  'emergency_contact' => '+639191234567'],
-            ['employee_id' => 'ADMIN-094773', 'name' => 'Daniel Reyes',       'position' => 'Administrator',       'department' => 'seniorhigh', 'role_type' => 'nonteaching', 'email' => 'daniel.reyes@smms.edu.ph',       'birthday' => '1976-11-02', 'address' => '9 Health Blvd, City', 'emergency_name' => 'Marta Reyes',      'emergency_contact' => '+639121234567'],
+            [
+                'email' => 'admin@stmary.edu',
+                'employee_id' => 'EMP-000001',
+                'position' => 'School Administrator',
+                'department' => 'highschool',
+                'role_type' => 'nonteaching',
+                'employment_status' => 'regular',
+                'birthday' => '1980-03-12',
+                'address' => 'General Trias, Cavite',
+                'emergency_name' => 'Maria Stmary',
+                'emergency_contact' => '09170000001',
+            ],
+            [
+                'email' => 'hr@stmary.edu',
+                'employee_id' => 'EMP-000002',
+                'position' => 'HR Officer',
+                'department' => 'highschool',
+                'role_type' => 'nonteaching',
+                'employment_status' => 'regular',
+                'birthday' => '1988-07-21',
+                'address' => 'General Trias, Cavite',
+                'emergency_name' => 'Pedro Stmary',
+                'emergency_contact' => '09170000002',
+            ],
+            [
+                'email' => 'accounting@stmary.edu',
+                'employee_id' => 'EMP-000003',
+                'position' => 'Accounting Staff',
+                'department' => 'highschool',
+                'role_type' => 'nonteaching',
+                'employment_status' => 'regular',
+                'birthday' => '1990-11-05',
+                'address' => 'General Trias, Cavite',
+                'emergency_name' => 'Ana Stmary',
+                'emergency_contact' => '09170000003',
+            ],
+            [
+                'email' => 'john.doe@stmary.edu',
+                'employee_id' => 'EMP-000005',
+                'position' => 'Science Teacher',
+                'department' => 'highschool',
+                'role_type' => 'teaching',
+                'employment_status' => 'regular',
+                'birthday' => '1992-02-18',
+                'address' => 'General Trias, Cavite',
+                'emergency_name' => 'Jane Doe',
+                'emergency_contact' => '09170000005',
+            ],
         ];
 
-        foreach ($employees as $employee) {
-            Employee::updateOrCreate(['employee_id' => $employee['employee_id']], $employee);
+        foreach ($employees as $data) {
+            $user = User::where('email', $data['email'])->first();
+
+            if (!$user) {
+                $this->command?->warn(
+                    "Skipped {$data['email']}: user not found."
+                );
+                continue;
+            }
+
+            Employee::updateOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'employee_id' => $data['employee_id'],
+                    'name' => $user->name,
+                    'position' => $data['position'],
+                    'department' => $data['department'],
+                    'role_type' => $data['role_type'],
+                    'employment_status' => $data['employment_status'],
+                    'email' => $user->email,
+                    'birthday' => $data['birthday'],
+                    'address' => $data['address'],
+                    'emergency_name' => $data['emergency_name'],
+                    'emergency_contact' => $data['emergency_contact'],
+                ]
+            );
+
+            $this->command?->info(
+                "Employee linked: {$user->email}"
+            );
         }
     }
 }

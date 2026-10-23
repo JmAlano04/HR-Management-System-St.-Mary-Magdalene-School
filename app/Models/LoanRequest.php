@@ -6,10 +6,14 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class LoanRequest extends Model
 {
     use HasFactory;
+
+    public const TYPES = ['SSS', 'HMDF', 'PhilHealth', 'PERAA/CEAP', 'Cash Advance'];
+    public const CASH_ADVANCE_LIMIT = 2000;
 
     protected $fillable = [
         'employee_id',
@@ -29,6 +33,7 @@ class LoanRequest extends Model
         'admin_rejection_reason',
         'admin_reviewed_at',
         'admin_reviewed_by',
+        'archived_at',          // employee Archive tab
     ];
 
     protected $casts = [
@@ -37,7 +42,10 @@ class LoanRequest extends Model
         'hr_reviewed_at'         => 'datetime',
         'accounting_reviewed_at' => 'datetime',
         'admin_reviewed_at'      => 'datetime',
+        'archived_at'            => 'datetime',
     ];
+
+    /* ---------- Relationships ---------- */
 
     public function employee(): BelongsTo
     {
@@ -47,6 +55,21 @@ class LoanRequest extends Model
     public function adminReviewer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'admin_reviewed_by');
+    }
+
+    public function hrReviewer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'hr_reviewed_by');
+    }
+
+    public function accountingReviewer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'accounting_reviewed_by');
+    }
+
+    public function repayments(): HasMany
+    {
+        return $this->hasMany(LoanRepayment::class);
     }
 
     /* ---------- Scopes ---------- */
@@ -59,7 +82,27 @@ class LoanRequest extends Model
             ->where('admin_status', 'pending');
     }
 
-    /* ---------- Accessors ---------- */
+    // Employee side: only this employee's requests
+    public function scopeForEmployee(Builder $query, int $employeeId): Builder
+    {
+        return $query->where('employee_id', $employeeId);
+    }
+
+    // Employee side: Active tab (false) vs Archive tab (true)
+    public function scopeArchived(Builder $query, bool $archived): Builder
+    {
+        return $archived ? $query->whereNotNull('archived_at') : $query->whereNull('archived_at');
+    }
+
+    // Approved by HR, Accounting and Admin (counts toward loan balances)
+    public function scopeFullyApproved(Builder $query): Builder
+    {
+        return $query->where('hr_status', 'approved')
+            ->where('accounting_status', 'approved')
+            ->where('admin_status', 'approved');
+    }
+
+    /* ---------- Accessors (admin side) ---------- */
 
     // Admin can decide only after HR + Accounting approve, and only once
     public function getCanReviewAttribute(): bool
@@ -110,5 +153,41 @@ class LoanRequest extends Model
     public function getFormattedAmountAttribute(): string
     {
         return '₱' . number_format((float) $this->amount, 2);
+    }
+
+    /* ---------- Employee side helpers ---------- */
+
+    /**
+     * Stage status as the employee sees it: a stage that hasn't opened yet is
+     * "locked", and stages behind a rejection are "blocked".
+     * $stage = 'hr' | 'accounting' | 'admin'
+     */
+    public function effectiveStatus(string $stage): string
+    {
+        $hr  = $this->hr_status;
+        $acc = $this->accounting_status;
+
+        return match ($stage) {
+            'hr'         => $hr,
+            'accounting' => match ($hr) {
+                'approved' => $acc,
+                'rejected' => 'blocked',
+                default    => 'locked',
+            },
+            'admin'      => match (true) {
+                $hr === 'rejected',
+                $hr === 'approved' && $acc === 'rejected' => 'blocked',
+                $hr === 'approved' && $acc === 'approved' => $this->admin_status,
+                default                                   => 'locked',
+            },
+        };
+    }
+
+    // Loan amount minus payslip repayments (use ->withSum('repayments','amount') to avoid N+1)
+    public function outstandingBalance(): float
+    {
+        $repaid = $this->repayments_sum_amount ?? $this->repayments()->sum('amount');
+
+        return max(0, round((float) $this->amount - (float) $repaid, 2));
     }
 }

@@ -1,9 +1,15 @@
 {{-- resources/views/admin/attendance-monitoring/index.blade.php --}}
-
-    {{-- Browser tab title --}}
-    <x-slot name="title">
-        Attendance Dashboard
-    </x-slot>
+ @auth
+    @if (auth()->user()->hasRole('Admin'))
+        <x-slot name="title">
+            Admin Attendance Management
+        </x-slot>
+    @elseif (auth()->user()->hasRole('HR'))
+        <x-slot name="title">
+             Attendance Monitoring 
+        </x-slot>
+   @endif
+@endauth
 
     {{-- Page heading (shown in the layout's top bar) --}}
     <x-slot name="header">

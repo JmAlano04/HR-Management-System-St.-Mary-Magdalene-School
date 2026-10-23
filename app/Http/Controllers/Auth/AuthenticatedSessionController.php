@@ -22,14 +22,35 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request): RedirectResponse
-    {
-        $request->authenticate();
+  public function store(LoginRequest $request): RedirectResponse
+{
+    $request->authenticate();
 
-        $request->session()->regenerate();
+    $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+    $user = $request->user();
+
+    if ($user->hasRole('Admin')) {
+        $home = route('dashboard', absolute: false);
+    } elseif ($user->hasRole('HR')) {
+        $home = route('dashboard', absolute: false);
+    } elseif ($user->hasRole('Accounting')) {
+        $home = route('dashboard', absolute: false);
+    } elseif ($user->hasRole('Employee')) {
+        $home = route('employee-dashboard', absolute: false);
+    } else {
+        // Walang role: huwag papasukin
+        Auth::guard('web')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('login')->withErrors([
+            'email' => 'Your account has no role assigned. Please contact HR.',
+        ]);
     }
+
+    return redirect()->intended($home);
+}
 
     /**
      * Destroy an authenticated session.

@@ -2,7 +2,7 @@
 
     {{-- Browser tab title --}}
     <x-slot name="title">
-        Leave Dashboard
+        Leave Management
     </x-slot>
 
     {{-- Page heading (shown in the layout's top bar) --}}

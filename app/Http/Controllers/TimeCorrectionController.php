@@ -2,88 +2,62 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreTimeCorrectionRequest;
 use App\Models\TimeCorrection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule;
+use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
+/** Employee side: submit a correction request and see its review status. */
 class TimeCorrectionController extends Controller
 {
-    /** Admin reviews the "admin" column, HR reviews the "hr" column. */
-    private function reviewerField(): string
+    public function index(Request $request): View
     {
-        $user = request()->user();
+        $employee = $request->user()->employee;
 
-        if ($user->hasRole('Admin')) {
-            return 'admin';
-        }
-
-        // Employees share the /time-corrections URL in the route group,
-        // but they must never see or decide on the review queue.
-        abort_unless($user->hasRole('HR'), 403, 'Only Admin and HR can review time corrections.');
-
-        return 'hr';
-    }
-
-    public function index(Request $request)
-    {
-        $field = $this->reviewerField();
-        $view  = $request->query('view') === 'archive' ? 'archive' : 'current';
-        $col   = $field . '_status';
-
-        $requests = TimeCorrection::with('employee')
-            ->when($view === 'archive',
-                fn ($q) => $q->where($col, '!=', TimeCorrection::PENDING),
-                fn ($q) => $q->where($col, TimeCorrection::PENDING))
-            ->orderByDesc('correction_date')
-            ->orderByDesc('id')
-            ->paginate(10)
-            ->withQueryString();
+        $latest = $employee
+            ? TimeCorrection::where('employee_id', $employee->id)->latest('id')->first()
+            : null;
 
         return view('timeCorrection', [
-            'requests'     => $requests,
-            'cards'        => $requests->getCollection()->map(fn ($r) => $r->toCard($field))->keyBy('id'),
-            'view'         => $view,
-            'reviewer'     => $field === 'admin' ? 'Admin' : 'HR',
-            'pendingCount' => TimeCorrection::where($col, TimeCorrection::PENDING)->count(),
+            'employee' => $employee,
+            'latest'   => $latest,
+            'today'    => now()->toDateString(),
         ]);
     }
 
-    /** Approve or reject (only the reviewer's own status is changed). */
-    public function decide(Request $request): RedirectResponse
+    public function store(StoreTimeCorrectionRequest $request): RedirectResponse
     {
-        $data = $request->validate([
-            'time_correction_id' => ['required', 'integer', 'exists:time_corrections,id'],
-            'decision'           => ['required', Rule::in([TimeCorrection::APPROVED, TimeCorrection::REJECTED])],
-        ]);
+        $data = $request->validated();
 
-        $timeCorrection = TimeCorrection::findOrFail($data['time_correction_id']);
-
-        $field = $this->reviewerField();
-
-        if ($timeCorrection->{$field . '_status'} !== TimeCorrection::PENDING) {
-            return back()->withErrors(['decision' => 'This request has already been reviewed.']);
-        }
-
-        $timeCorrection->update([
-            $field . '_status'      => $request->decision,
-            $field . '_reviewed_at' => now(),
-            $field . '_reviewed_by' => $request->user()->getAuthIdentifier(),
+        TimeCorrection::create([
+            'employee_id'     => $request->user()->employee->id,
+            'correction_date' => $data['correction_date'],
+            'correction_type' => $data['correction_type'],
+            'incorrect_time'  => $data['incorrect_time'],
+            'correct_time'    => $data['correct_time'],
+            'note'            => $data['note'] ?? 'No note provided.', // column is NOT NULL
+            'proof_path'      => $request->file('proof')->store('time-corrections', 'local'), // private disk
+            'hr_status'       => TimeCorrection::PENDING,
+            'admin_status'    => TimeCorrection::PENDING,
         ]);
 
         return redirect()
-            ->route('time-corrections.index', ['view' => 'current'])
-            ->with('success', 'Request ' . strtolower($request->decision) . '.');
+            ->route('time-corrections.index')
+            ->with('success', 'Correction request submitted for HR and Admin review.');
     }
 
-    /** Serves the private image proof (only Admin and HR can open it). */
-    public function proof(TimeCorrection $timeCorrection)
+    /** Serve the private proof image to its owner, HR, or Admin only. */
+    public function proof(Request $request, TimeCorrection $timeCorrection): BinaryFileResponse
     {
-        abort_unless(
-            $timeCorrection->proof_path && Storage::disk('local')->exists($timeCorrection->proof_path),
-            404
-        );
+        $user    = $request->user();
+        $isOwner = $user->employee?->id === $timeCorrection->employee_id;
+        $isStaff = in_array($user->role ?? null, ['hr', 'admin'], true);
+
+        abort_unless($isOwner || $isStaff, 403);
+        abort_unless($timeCorrection->proof_path && Storage::disk('local')->exists($timeCorrection->proof_path), 404);
 
         return response()->file(Storage::disk('local')->path($timeCorrection->proof_path));
     }

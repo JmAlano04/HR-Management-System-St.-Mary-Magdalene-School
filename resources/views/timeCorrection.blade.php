@@ -11,8 +11,8 @@
 
     {{-- Page heading --}}
     <x-slot name="header">
-        <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-2xl font-extrabold leading-tight ml-[130px] text-red-700">
-            {{ __('Time Correction Management') }}
+        <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold leading-tight ml-[90px] text-red-700">
+           {{ __('Time Correction Management') }}
         </h2>
     </x-slot>
 
@@ -37,7 +37,7 @@
 
                             @case('Employee')
                                 <p class="mt-2 text-green-700">
-                                    @include('partial.employee-dashboard')
+                                    @include('partial.Employee.time-corrections')
                                 </p>
                                 @break
 

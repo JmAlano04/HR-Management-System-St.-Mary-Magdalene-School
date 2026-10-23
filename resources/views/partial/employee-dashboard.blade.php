@@ -1,22 +1,29 @@
 {{-- resources/views/employees/index.blade.php --}}
 
-
     {{-- Browser tab title --}}
-    <x-slot name="title">
-        Employee Dashboard
-    </x-slot>
+     @auth
+    @if (auth()->user()->hasRole('Admin'))
+        <x-slot name="title">
+            Employee Management
+        </x-slot>
+    @elseif (auth()->user()->hasRole('HR'))
+        <x-slot name="title">
+             Employee Monitoring 
+        </x-slot>
+    @endif
+@endauth
 
     @php
         $inputClass = 'w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-3 text-[15px] text-gray-900 transition focus:border-[#b22222] focus:outline-none focus:ring-4 focus:ring-red-700/10';
         $labelClass = 'mb-1.5 block text-sm font-bold text-gray-600';
         $errClass   = 'mt-1 text-xs font-semibold text-red-600';
 
-        // Keep what the admin typed if validation failed, so the form can reopen
         // Only HR can add / edit / delete (Admin can view only)
         $canManage = auth()->user()->hasRole('HR');
 
+        // Keep what the user typed if validation failed, so the form can reopen
         $old = collect(old())->only([
-            'employee_id', 'name', 'position', 'department', 'role_type', 'email',
+            'user_id', 'employee_id', 'name', 'position', 'department', 'role_type', 'email',
             'birthday', 'address', 'emergency_name', 'emergency_contact',
         ])->all();
     @endphp
@@ -25,6 +32,7 @@
         class="px-4 pb-12 pt-2 sm:px-6 lg:px-10"
         x-data="employeeDirectory(@js([
             'employees'  => $cards,
+            'applicants' => $applicants,
             'old'        => $old,
             'reopen'     => $errors->any(),
             'editingId'  => old('_editing_id'),
@@ -185,10 +193,30 @@
                     <input type="hidden" name="_method" value="PUT" :disabled="!editingId">
                     <input type="hidden" name="_editing_id" :value="editingId ?? ''">
 
+                    {{-- NEW: pick an applicant (Add mode only). Name and email come from the account. --}}
+                    <div x-show="!editingId">
+                        <label for="f_user_id" class="{{ $labelClass }}">Applicant <span class="text-red-600">*</span></label>
+
+                        <select id="f_user_id" name="user_id" x-model="form.user_id" @change="pickApplicant()"
+                            :disabled="!!editingId" :required="!editingId" class="{{ $inputClass }} cursor-pointer">
+                            <option value="" disabled hidden>Select an applicant</option>
+                            <template x-for="a in Object.values(applicants)" :key="a.id">
+                                <option :value="a.id" :selected="String(a.id) === String(form.user_id)" x-text="a.name + ' (' + a.email + ')'"></option>
+                            </template>
+                        </select>
+
+                        <p x-show="!hasApplicants" class="mt-1 text-xs font-semibold text-amber-700">
+                            No applicants available. Only accounts with the Applicant role and no employee record yet are listed.
+                        </p>
+                        <p class="{{ $errClass }}">{{ $errors->first('user_id') }}</p>
+                    </div>
+
                     <div class="grid gap-4 sm:grid-cols-2">
                         <div>
                             <label for="f_name" class="{{ $labelClass }}">Full Name <span class="text-red-600">*</span></label>
-                            <input id="f_name" name="name" x-model="form.name" placeholder="e.g. Maria Santos" required class="{{ $inputClass }}">
+                            <input id="f_name" name="name" x-model="form.name" placeholder="e.g. Maria Santos" required
+                                :readonly="!editingId" :class="!editingId ? 'cursor-not-allowed !bg-gray-100 text-gray-500' : ''"
+                                class="{{ $inputClass }}">
                             <p class="{{ $errClass }}">{{ $errors->first('name') }}</p>
                         </div>
                         <div>
@@ -206,7 +234,9 @@
                         </div>
                         <div>
                             <label for="f_email" class="{{ $labelClass }}">Email <span class="text-red-600">*</span></label>
-                            <input id="f_email" type="email" name="email" x-model="form.email" placeholder="name@smms.edu.ph" required class="{{ $inputClass }}">
+                            <input id="f_email" type="email" name="email" x-model="form.email" placeholder="name@smms.edu.ph" required
+                                :readonly="!editingId" :class="!editingId ? 'cursor-not-allowed !bg-gray-100 text-gray-500' : ''"
+                                class="{{ $inputClass }}">
                             <p class="{{ $errClass }}">{{ $errors->first('email') }}</p>
                         </div>
                     </div>
@@ -269,8 +299,8 @@
                             class="cursor-pointer rounded-lg bg-gray-100 px-6 py-3 font-bold text-gray-800 transition hover:bg-gray-300">
                             Cancel
                         </button>
-                        <button type="submit"
-                            class="cursor-pointer rounded-lg bg-[#b22222] px-6 py-3 font-bold text-white transition hover:bg-[#8b1a1a] hover:shadow-[0_6px_20px_rgba(178,34,34,0.4)]">
+                        <button type="submit" :disabled="!editingId && !hasApplicants"
+                            class="cursor-pointer rounded-lg bg-[#b22222] px-6 py-3 font-bold text-white transition hover:bg-[#8b1a1a] hover:shadow-[0_6px_20px_rgba(178,34,34,0.4)] disabled:cursor-not-allowed disabled:opacity-60">
                             <span x-text="editingId ? 'Save Changes' : 'Add Employee'"></span>
                         </button>
                     </div>
@@ -282,12 +312,14 @@
     <script>
         function employeeDirectory(cfg) {
             const blank = () => ({
+                user_id: '',
                 employee_id: '', name: '', position: '', department: '', role_type: '',
                 email: '', birthday: '', address: '', emergency_name: '', emergency_contact: '',
             });
 
             return {
                 employees: cfg.employees,
+                applicants: cfg.applicants || {},   // { userId: { id, name, email } }
                 detailId: null,
                 formOpen: false,
                 editingId: null,
@@ -297,6 +329,10 @@
                     return this.detailId ? this.employees[this.detailId] : null;
                 },
 
+                get hasApplicants() {
+                    return Object.keys(this.applicants).length > 0;
+                },
+
                 init() {
                     // Validation failed on the server: reopen the form with the typed values
                     if (cfg.reopen) {
@@ -304,6 +340,13 @@
                         this.form = Object.assign(blank(), cfg.old);
                         this.formOpen = true;
                     }
+                },
+
+                // NEW: fill name and email from the chosen applicant's account
+                pickApplicant() {
+                    const a = this.applicants[this.form.user_id];
+                    this.form.name  = a ? a.name : '';
+                    this.form.email = a ? a.email : '';
                 },
 
                 openDetail(id) { this.detailId = id; },
@@ -324,6 +367,7 @@
                     const e = this.detail;
                     if (!e) return;
                     this.form = {
+                        user_id: '',
                         employee_id: e.employee_id, name: e.name, position: e.position,
                         department: e.department, role_type: e.role_type, email: e.email,
                         birthday: e.birthday, address: e.address,

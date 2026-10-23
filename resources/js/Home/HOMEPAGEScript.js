@@ -369,10 +369,10 @@ function closeApplyLoginModal() {
 
 // Demo credentials for each role
 const demoCredentials = {
-    admin: { email: 'admin@stmary.edu', password: 'admin123' },
-    hr: { email: 'hr@stmary.edu', password: 'human123' },
-    accounting: { email: 'accounting@stmary.edu', password: 'accounting123' },
-    employee: { email: 'john.doe@stmary.edu', password: 'employee123' }
+    admin: { email: 'admin@stmary.edu', password: 'password123' },
+    hr: { email: 'hr@stmary.edu', password: 'password123' },
+    accounting: { email: 'accounting@stmary.edu', password: 'password123' },
+    employee: { email: 'john.doe@stmary.edu', password: 'password123' }
 };
 
 // Login tab switching

@@ -18,7 +18,9 @@ class AdminDashboardController extends Controller
 
     /** Dashboard page (called from DashboardController for the Admin role). */
     public function index()
-    {
+    {   
+
+    
         return view('dashboard', [
             'slides' => $this->slides(),
             'today'  => now()->toDateString(),

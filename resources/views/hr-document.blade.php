@@ -45,7 +45,7 @@
 
                             @case('Employee')
                                 <p class="mt-2 text-green-700">
-                                    @include('partial.employee-dashboard')
+                                    @include('partial.Employee.document-employee')
                                 </p>
                                 @break
 

@@ -18,7 +18,16 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SalaryRecordController;
 use App\Http\Controllers\SalaryMonitoringController;
 use App\Http\Controllers\TimeCorrectionController;
+use App\Http\Controllers\EmployeeAttendanceController;
 use App\Http\Controllers\AccountingLoanController;
+use App\Http\Controllers\EmployeeTimeCorrectionsController;
+use App\Http\Controllers\EmployeeLeaveRequestController;
+use App\Http\Controllers\EmployeeLoanController;
+use App\Http\Controllers\EmployeeOffboardingController;
+use App\Http\Controllers\EmployeePayslipController;
+use App\Http\Controllers\EmployeeDocumentController;
+use App\Http\Controllers\LeaveRequestController;
+
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -93,18 +102,52 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Employee: personal na tasks sa dashboard calendar
     Route::middleware(['auth', 'role:Employee'])->group(function () {
 
-    // School Employee
-    Route::get('/school-employees', [SchoolEmployeeController::class, 'index'])
+
+        Route::get('/attendance-employee-monitoring', [EmployeeAttendanceController::class, 'index'])
+        ->name('attendance.attendance-employee.index');
+
+        // School Employee
+        Route::get('/school-employees', [SchoolEmployeeController::class, 'index'])
         ->name('employee.school-employees');
         
         Route::get ('employee-dashboard', [EmployeeDashboardController::class, 'index'])
         ->name('employee-dashboard');
-    
+
+
+         // Employee
+
+         
+        Route::get('time-corrections-employee', [TimeCorrectionController::class, 'index'])
+        ->name('time-corrections.employee.index');
+
+       Route::post('/time-corrections', [TimeCorrectionController::class, 'store'])->name('time-corrections.store');
+            
+
+        Route::get('leave-request-employee', [LeaveRequestController::class, 'index'])
+        ->name('leaves.employee.index');
+
+            Route::post('/leave-requests', [LeaveRequestController::class, 'store'])->name('leave-requests.store');
+            Route::patch('/leave-requests/{leaveRequest}/archive', [LeaveRequestController::class, 'archive'])->name('leave-requests.archive');
+
+        
+        Route::get('loan-employee', [EmployeeLoanController::class, 'index'])
+        ->name('loans.employee.index');
+        
+        Route::get('offboarding-employee', [EmployeeOffboardingController::class, 'index'])
+        ->name('offboarding.employee.index');
+        
+        Route::get('payslip-employee', [EmployeePayslipController::class, 'index'])
+        ->name('salary-records.employee.index');
+        
+        Route::get('document-employee', [EmployeeDocumentController::class, 'index'])
+        ->name('documents.employee.index');
         
         Route::get('tasks', [EmployeeDashboardController::class, 'tasks'])->name('tasks.index');
         Route::post('tasks', [EmployeeDashboardController::class, 'storeTask'])->name('tasks.store');
         Route::delete('tasks/{task}', [EmployeeDashboardController::class, 'destroyTask'])->name('tasks.destroy');
     });
+
+
 
     // Admin + HR + Employee
     Route::middleware('role:Admin|HR|Employee')->group(function () {

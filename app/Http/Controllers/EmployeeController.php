@@ -3,12 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\Employee;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Spatie\Permission\Models\Role;
 
 class EmployeeController extends Controller
 {
+    /** Spatie role of the accounts HR can pick when adding an employee. */
+    private const APPLICANT_ROLE = 'Applicant';
+
+    /** Role the account gets once it becomes an employee. */
+    private const EMPLOYEE_ROLE = 'Employee';
+
     /** Directory with search + department + role filters (all done in the database). */
     public function index(Request $request)
     {
@@ -28,22 +37,56 @@ class EmployeeController extends Controller
             ->paginate(12)
             ->withQueryString();
 
+        // NEW: applicants who can still be turned into an employee
+        // (Applicant role + no employee record yet), keyed by id for the form dropdown
+        $applicants = User::role(self::APPLICANT_ROLE)
+            ->whereDoesntHave('employee')
+            ->orderBy('name')
+            ->get(['id', 'name', 'email'])
+            ->keyBy('id');
+
         return view('employees', [
-            'employees' => $employees,
+            'employees'  => $employees,
             // keyed by id so the modal can look an employee up instantly
-            'cards'     => $employees->getCollection()->map->toCard()->keyBy('id'),
+            'cards'      => $employees->getCollection()->map->toCard()->keyBy('id'),
+            'applicants' => $applicants,
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
-        $data = $request->validate($this->rules());
+        $data = $request->validate($this->rules() + [
+            // NEW: the account must be an applicant and not yet linked to an employee
+            'user_id' => [
+                'required', 'integer',
+                Rule::exists('users', 'id'),
+                Rule::unique('employees', 'user_id'),
+                function (string $attribute, mixed $value, \Closure $fail) {
+                    if (! User::role(self::APPLICANT_ROLE)->whereKey($value)->exists()) {
+                        $fail('The selected account is not an applicant.');
+                    }
+                },
+            ],
+        ]);
+
+        // NEW: name and email always come from the account, never from the browser
+        $user = User::findOrFail($data['user_id']);
+        $data['name']  = $user->name;
+        $data['email'] = $user->email;
 
         if (blank($data['employee_id'] ?? null)) {
             $data['employee_id'] = $this->generateEmployeeId();
         }
 
-        Employee::create($data);
+        // Create the employee and switch the role together: both succeed or neither does
+        DB::transaction(function () use ($data, $user) {
+            Employee::create($data);
+
+            // Applicant -> Employee (other roles of the account are kept)
+            Role::findOrCreate(self::EMPLOYEE_ROLE, 'web');
+            $user->removeRole(self::APPLICANT_ROLE);
+            $user->assignRole(self::EMPLOYEE_ROLE);
+        });
 
         return redirect()->route('employees.index')->with('success', 'Employee added.');
     }

@@ -89,13 +89,15 @@
                             <small x-show="b.deadline" class="text-[0.78rem] font-bold text-amber-700" x-text="'Deadline: ' + b.deadline"></small>
                         </span>
 
-                        <span class="flex items-center gap-3">
+                      <span class="flex items-center gap-3">
                             <span x-show="b.documents.length"
                                 class="rounded-full px-2.5 py-1 text-[0.7rem] font-extrabold"
                                 :class="badge(b.documents[0].status)"
                                 x-text="b.documents[0]?.status"></span>
 
-                            <button type="button" x-show="b.can_upload" @click.stop="openUpload(b.id)"
+                            <button type="button"
+                                x-show="b.can_upload && !['pending', 'approved'].includes((b.documents[0]?.status || '').toLowerCase())"
+                                @click.stop="openUpload(b.id)"
                                 class="min-h-[40px] cursor-pointer rounded-[10px] bg-[#b22222] px-3.5 font-bold text-white transition hover:bg-[#d93c3c]">
                                 <i class="fa-solid fa-upload" aria-hidden="true"></i>
                                 <span x-text="b.has_submitted ? 'Submit another' : 'Upload document'"></span>

@@ -6,15 +6,14 @@
         </x-slot>
     @elseif (auth()->user()->hasRole('HR'))
         <x-slot name="title">
-             Attendance Monitoring 
+             Attendance Management 
+        </x-slot>
+
+        <x-slot name="header">
+            <h1 class="text-2xl font-extrabold leading-none  ml-20 tracking-tight text-[#b22222] sm:text-4xl">Attendance Management</h1>
         </x-slot>
    @endif
 @endauth
-
-    {{-- Page heading (shown in the layout's top bar) --}}
-    <x-slot name="header">
-        <h1 class="text-2xl font-extrabold leading-none  ml-20 tracking-tight text-[#b22222] sm:text-4xl">Attendance Monitoring</h1>
-    </x-slot>
 
     @php
 

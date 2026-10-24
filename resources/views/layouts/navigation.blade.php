@@ -45,7 +45,7 @@
             'route' => 'employees.index',
             'match' => 'employees.*',
         ],
-
+        
         // Attendance
         'attendance' => [
             'label' => 'Attendance Monitoring',
@@ -229,6 +229,16 @@
             'match' => 'documents.employee.index',
         ],
     ];
+
+    if ($user && $user->hasRole('HR')) {
+            $items['attendance']['label'] = 'Attendance Management';
+             $items['employees']['label'] = 'Employee Management';
+        } elseif ($user && $user->hasRole('Admin')) {
+            $items['attendance']['label'] = 'Attendance Monitoring';
+            $items['employees']['label'] = 'Employee Monitoring';
+        } else {
+            $items['attendance']['label'] = 'My Attendance';
+        }
 
     /*
     |--------------------------------------------------------------------------

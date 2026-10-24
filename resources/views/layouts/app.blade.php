@@ -21,6 +21,16 @@
 
         <title>{{ $title ?? config('app.name', 'HR Management System') }}</title>
 
+    
+        {{-- Favicons --}}
+     
+
+        <link rel="shortcut icon"
+            href="{{ asset('favicon.ico') }}">
+
+      
+
+
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
@@ -92,7 +102,7 @@
                         <x-slot name="content">{{-- resources/views/layouts/navigation.blade.php (left sidebar, menu depends on the user's role) --}}
 
                             <x-dropdown-link :href="route('profile.edit')">
-                                {{ __('Profile') }}
+                                {{ __('My Account') }}
                             </x-dropdown-link>
 
                             <x-dropdown-link href="#">

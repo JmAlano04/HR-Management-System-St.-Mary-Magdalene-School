@@ -19,20 +19,67 @@ class Employee extends Model
         'nonteaching' => 'Non-Teaching',
     ];
 
+    /**
+     * Education levels used by the My Account form, its validation and the view.
+     * [field key => [label, placeholder, max length]]
+     */
+    public const EDUCATION_LEVELS = [
+        'tertiary' => [
+            'label'  => 'Tertiary',
+            'fields' => [
+                'course' => ['Course', 'e.g., Bachelor of Science in Information Technology', 160],
+                'school' => ['School Name', 'University / College Name', 160],
+                'years'  => ['Years Attended', 'e.g., 2020 - 2024', 24],
+            ],
+        ],
+        'senior_high' => [
+            'label'  => 'Senior High School',
+            'fields' => [
+                'strand' => ['Strand / Track', 'e.g., STEM / TVL / General Academic', 120],
+                'school' => ['School Name', 'Senior High School Name', 160],
+                'years'  => ['Years Attended', 'e.g., 2018 - 2020', 24],
+            ],
+        ],
+        'junior_high' => [
+            'label'  => 'Junior High School',
+            'fields' => [
+                'school' => ['School Name', 'Junior High School Name', 160],
+                'years'  => ['Years Attended', 'e.g., 2014 - 2018', 24],
+            ],
+        ],
+        'primary' => [
+            'label'  => 'Primary',
+            'fields' => [
+                'school' => ['School Name', 'Elementary School Name', 160],
+                'years'  => ['Years Attended', 'e.g., 2008 - 2014', 24],
+            ],
+        ],
+    ];
+
     protected $fillable = [
         'user_id', 'employee_id', 'name', 'position', 'department', 'role_type',
         'email', 'birthday', 'address', 'emergency_name', 'emergency_contact',
+
+        // My Account
+        'gender', 'civil_status', 'phone', 'education',
+        'sss_number', 'philhealth_number', 'pagibig_number', 'tin',
     ];
 
     protected function casts(): array
     {
         return [
             'birthday'          => 'date',
+            'education'         => 'array',
 
             // AES-256 (encrypted automatically on save, decrypted on read)
             'address'           => 'encrypted',
             'emergency_name'    => 'encrypted',
             'emergency_contact' => 'encrypted',
+            'phone'             => 'encrypted',
+            'sss_number'        => 'encrypted',
+            'philhealth_number' => 'encrypted',
+            'pagibig_number'    => 'encrypted',
+            'tin'               => 'encrypted',
         ];
     }
 

@@ -57,7 +57,7 @@ class EmployeeDocument extends Model
             'status'          => $this->status,
             'employee_name'   => $this->employee?->name ?? 'Employee',
             'employee_number' => $this->employee?->employee_id ?? 'Employee ID unavailable',
-            'file_url'        => $this->file_path ? route('documents.file', $this) : null,
+            'file_url'        => $this->file_path ? route('employee.documents.file', $this) : null,
         ];
     }
 }

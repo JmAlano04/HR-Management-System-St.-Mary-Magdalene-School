@@ -60,6 +60,11 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])
         ->name('profile.update');
 
+        
+
+    Route::patch('/profile', [ProfileController::class, 'updateAccount'])
+        ->name('profile.updateAccount');
+
     Route::delete('/profile', [ProfileController::class, 'destroy'])
         ->name('profile.destroy');
 });
@@ -126,6 +131,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::delete('/documents', [DocumentController::class, 'destroy'])
             ->name('destroy');
+
+        Route::get('document-employee/{document}/file', [EmployeeDocumentController::class, 'file'])->name('employee.documents.file');
+        
     });
 
     /*
@@ -134,7 +142,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::middleware('role:Employee')->group(function () {
+    Route::middleware('role:Employee|HR')->group(function () {
 
         // Employee Attendance
         Route::get('/attendance-employee-monitoring', [
@@ -232,7 +240,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
         Route::get('document-employee/boxes/{box}', [EmployeeDocumentController::class, 'boxDocuments'])->name('documents.box');
         Route::post('document-employee', [EmployeeDocumentController::class, 'store'])->name('employee.documents.store');
-        Route::get('document-employee/{document}/file', [EmployeeDocumentController::class, 'file'])->name('documents.file');
+        Route::get('document-employee/{document}/file', [EmployeeDocumentController::class, 'file'])->name('employee.documents.file');
         
         // Employee Tasks
         Route::get('/tasks', [
@@ -316,7 +324,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
             LeaveManagementController::class,
             'clearArchive',
         ])->name('leave.archive.clear');
+
+
+
     });
+
+
 
     /*
     |--------------------------------------------------------------------------
@@ -325,11 +338,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     |
     | Add routes here only if they should be accessible to all three roles.
     |
-    */
-
-    Route::middleware('role:Admin|Accounting|Employee')->group(function () {
-        // Add shared Admin, Accounting, and Employee routes here.
-    });
+    *
 
     /*
     |--------------------------------------------------------------------------

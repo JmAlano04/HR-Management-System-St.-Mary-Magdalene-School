@@ -4,11 +4,17 @@
      @auth
     @if (auth()->user()->hasRole('Admin'))
         <x-slot name="title">
-            Employee Management
+            Employee Monitoring
+        </x-slot>
+        <x-slot name="header">
+            <h1 class="text-2xl font-extrabold leading-none  ml-20 tracking-tight text-[#b22222] sm:text-4xl">Employee Monitoring</h1>
         </x-slot>
     @elseif (auth()->user()->hasRole('HR'))
         <x-slot name="title">
-             Employee Monitoring 
+             Employee Management 
+        </x-slot>
+        <x-slot name="header">
+            <h1 class="text-2xl font-extrabold leading-none  ml-20 tracking-tight text-[#b22222] sm:text-4xl">Employee Management</h1>
         </x-slot>
     @endif
 @endauth

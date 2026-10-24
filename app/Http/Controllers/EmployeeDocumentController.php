@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class EmployeeDocumentController extends Controller
@@ -131,7 +132,7 @@ class EmployeeDocumentController extends Controller
         }
 
         return redirect()
-            ->route('employee.documents.index')
+            ->route('documents.employee.index')
             ->with('success', 'Document uploaded. It is now waiting for HR review.');
     }
 
@@ -139,23 +140,62 @@ class EmployeeDocumentController extends Controller
      * GET /employee/documents/{document}/file
      * Streams the file inline (replaces the data: URL preview). Owner only.
      */
-    public function file(Request $request, EmployeeDocument $document): StreamedResponse
-    {
-        abort_unless($document->employee_id === $request->user()->employee->id, 403);
-        abort_unless($document->file_path && Storage::disk('local')->exists($document->file_path), 404);
+ 
+        public function file(
+            Request $request,
+            EmployeeDocument $document
+        ): StreamedResponse {
+            $user = $request->user();
 
-        $stream = Storage::disk('local')->readStream($document->file_path);
-        abort_unless(is_resource($stream), 404);
+            // Admin at HR can view any employee document.
+            $isAdminOrHr = $user->hasAnyRole(['Admin', 'HR']);
 
-        return new StreamedResponse(function () use ($stream): void {
-            try {
-                fpassthru($stream);
-            } finally {
-                fclose($stream);
+            if (!$isAdminOrHr) {
+                // Only employees can access their own documents.
+                abort_unless($user->hasRole('Employee'), 403);
+
+                $employee = $user->employee;
+
+                abort_unless(
+                    $employee &&
+                    (int) $document->employee_id === (int) $employee->id,
+                    403
+                );
             }
-        }, 200, [
-            'Content-Type' => $document->mime_type ?? 'application/octet-stream',
-            'Content-Disposition' => 'inline; filename="'.addslashes($document->name).'"',
-        ]);
-    }
+
+            // Check that the file exists in private local storage.
+            abort_unless(
+                $document->file_path &&
+                Storage::disk('local')->exists($document->file_path),
+                404
+            );
+
+            $stream = Storage::disk('local')->readStream($document->file_path);
+
+            abort_unless(is_resource($stream), 404);
+
+            $filename = $document->name ?: 'document';
+
+            return new StreamedResponse(
+                function () use ($stream): void {
+                    try {
+                        fpassthru($stream);
+                    } finally {
+                        fclose($stream);
+                    }
+                },
+                200,
+                [
+                    'Content-Type' => $document->mime_type
+                        ?? 'application/octet-stream',
+
+                    'Content-Disposition' => HeaderUtils::makeDisposition(
+                        HeaderUtils::DISPOSITION_INLINE,
+                        $filename
+                    ),
+
+                    'X-Content-Type-Options' => 'nosniff',
+                ]
+            );
+        }
 }

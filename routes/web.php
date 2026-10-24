@@ -52,6 +52,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])
         ->name('profile.edit');
 
+    
+
     Route::patch('/profile', [ProfileController::class, 'update'])
         ->name('profile.update');
 
@@ -200,9 +202,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             EmployeeOffboardingController::class,
             'index',
         ])->name('offboarding.employee.index');
+
         Route::post('/offboarding-employee', [
             EmployeeOffboardingController::class,
-            'storeDocuments',
+            'store',
         ])->name('employee.offboarding.store');
 
 
@@ -211,6 +214,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
             EmployeePayslipController::class,
             'index',
         ])->name('salary-records.employee.index');
+
+         Route::get('/payslip-employee', [
+            EmployeePayslipController::class,
+            'decide',
+        ])->name('payslips.decide');
+
 
         // Employee Documents
         Route::get('/document-employee', [

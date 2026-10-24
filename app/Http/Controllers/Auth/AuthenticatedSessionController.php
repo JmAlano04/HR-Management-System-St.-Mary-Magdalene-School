@@ -30,14 +30,14 @@ class AuthenticatedSessionController extends Controller
 
     $user = $request->user();
 
-    if ($user->hasRole('Admin')) {
-        $home = route('dashboard', absolute: false);
+    if ($user->hasRole('Employee')) {
+         $home = route('employee-dashboard', absolute: false);
     } elseif ($user->hasRole('HR')) {
         $home = route('dashboard', absolute: false);
     } elseif ($user->hasRole('Accounting')) {
         $home = route('dashboard', absolute: false);
-    } elseif ($user->hasRole('Employee')) {
-        $home = route('employee-dashboard', absolute: false);
+    } elseif ($user->hasRole('')) {
+               $home = route('dashboard', absolute: false);
     } else {
         // Walang role: huwag papasukin
         Auth::guard('web')->logout();

@@ -352,7 +352,7 @@
         ? 'translate-x-0'
         : '-translate-x-full'"
     @keydown.escape.window="sidebarOpen = false"
-    class="fixed inset-y-0 left-0 z-40 flex w-72
+    class="fixed inset-y-0 left-0 z-40 flex w-84
            flex-col overflow-y-auto border-r border-red-100
            bg-red-50 transition-transform duration-200
            ease-in-out lg:translate-x-0
@@ -392,11 +392,6 @@
             St. Mary Magdalene School
         </h2>
 
-        @if ($role)
-            <span class="mt-1 text-xs font-medium text-gray-500">
-                {{ $role }}
-            </span>
-        @endif
     </div>
 
     {{-- Navigation Links --}}

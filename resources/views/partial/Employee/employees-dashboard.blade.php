@@ -96,7 +96,8 @@
                         <p class="text-[0.85rem]">No upcoming employee birthdays.</p>
                     </div>
                 @else
-                    <div class="grid max-h-[520px] gap-2.5 overflow-y-auto">
+                    <div class="grid max-h-[520px] gap-2.5 overflow-y-auto [-ms-overflow-style:none] [scrollbar-width:none]
+           [&::-webkit-scrollbar]:hidden">
                         @foreach ($birthdays as $i => $b)
                             <article @class([
                                 'grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3',

@@ -12,7 +12,7 @@
 
     {{-- Page heading --}}
     <x-slot name="header">
-        <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold leading-tight ml-[130px] text-red-700">
+        <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold leading-tight ml-[80px] text-red-700">
             {{ __('Dashboard') }}
         </h2>
     </x-slot>

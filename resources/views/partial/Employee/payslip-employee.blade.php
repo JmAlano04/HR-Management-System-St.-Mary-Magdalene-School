@@ -1,10 +1,7 @@
 {{-- resources/views/payslips/employee.blade.php --}}
-
-    {{-- Browser tab title --}}
-    <x-slot name="title">
-        Payslip
+  <x-slot name="header">
+        <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold leading-tight ml-[80px] text-red-700">Payslip</h1>
     </x-slot>
-
     <div
         class="mx-auto max-w-[1920px] px-4 pb-12 pt-6 sm:px-8 lg:px-12"
         x-data="employeePayslips(@js([
@@ -13,9 +10,6 @@
         ]))"
         @keydown.escape.window="rejecting ? rejecting = false : slipId = null"
     >
-
-        {{-- Page heading --}}
-        <h1 class="mb-5 text-[clamp(2rem,3vw,3.2rem)] font-extrabold leading-[0.98] tracking-[-0.04em] text-[#b22222]">Payslip</h1>
 
         <section aria-labelledby="employeePayslipTitle"
             class="w-full rounded-[22px] border border-[#ecebea] bg-white p-[26px] shadow-[0_10px_30px_rgba(15,23,42,0.05)]">

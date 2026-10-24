@@ -1,8 +1,7 @@
 {{-- resources/views/employee/loan-request.blade.php --}}
 
-    {{-- Browser tab title + page heading --}}
-    <x-slot name="title">
-        Financial Loan Request
+       <x-slot name="header">
+        <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold leading-tight ml-[80px] text-red-700">Financial Loan Request</h1>
     </x-slot>
 
     @php
@@ -47,20 +46,35 @@
                     <h2 class="text-lg font-extrabold text-gray-900">My loan balances</h2>
                     <p class="mb-4 mt-1 text-sm text-gray-500">Outstanding approved loan balances after repayments on your payslips.</p>
 
-                    <div class="grid grid-cols-2 gap-[14px] md:grid-cols-3 xl:grid-cols-6">
-                        <div class="flex items-center gap-3.5 rounded-2xl bg-[#fff7f7] p-[18px] col-span-2 md:col-span-1">
+                  <div class="grid grid-cols-1 gap-[14px] sm:grid-cols-2 xl:grid-cols-3">
+
+                        {{-- Total Outstanding --}}
+                        <div class="flex items-center gap-3.5 rounded-2xl bg-[#fff7f7] p-[18px]">
                             <i class="fa-solid fa-wallet text-2xl text-[#b22222]"></i>
-                            <div>
-                                <p class="text-xl font-extrabold leading-none text-gray-900">{{ $peso($balances['total']) }}</p>
-                                <p class="mt-1 text-sm font-semibold text-gray-500">Total outstanding</p>
+                            <div class="min-w-0">
+                                <p class="mb-1 text-sm font-semibold text-gray-500">
+                                    Total outstanding
+                                </p>
+                                <p class="text-xl font-extrabold leading-none text-gray-900">
+                                    {{ $peso($balances['total']) }}
+                                </p>
+                                
                             </div>
                         </div>
+
+                        {{-- Balance by Loan Type --}}
                         @foreach ($balances['byType'] as $type => $amount)
                             <div class="rounded-2xl border border-gray-100 p-[18px]">
-                                <p class="text-xl font-extrabold leading-none text-gray-900">{{ $peso($amount) }}</p>
-                                <p class="mt-1 text-sm font-semibold text-gray-500">{{ $type }}</p>
+                                <p class="mb-1 text-sm font-semibold text-gray-500">
+                                    {{ $type }}
+                                </p>
+                                <p class="text-xl font-extrabold leading-none text-gray-900">
+                                    {{ $peso($amount) }}
+                                </p>
+                              
                             </div>
                         @endforeach
+
                     </div>
                 </div>
 

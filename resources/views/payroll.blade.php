@@ -9,12 +9,46 @@
 <x-app-layout>
 
 
-    {{-- Page heading --}}
-    <x-slot name="header">
-        <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold leading-tight ml-[130px]  text-red-700">
-            {{ __('Payroll Management') }}
-        </h2>
+    
+
+    
+   @auth
+    <x-slot name="title">
+        @if (auth()->user()->hasRole('Admin'))
+            {{-- Page heading --}}
+            <x-slot name="header">
+                <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold leading-tight ml-[130px]  text-red-700">
+                    {{ __('Payroll Management') }}
+                </h2>
+            </x-slot>
+
+        @elseif (auth()->user()->hasRole('HR'))
+                 {{-- Page heading --}}
+            <x-slot name="header">
+                <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold leading-tight ml-[130px]  text-red-700">
+                    {{ __('Payroll Management') }}
+                </h2>
+            </x-slot>
+        @elseif (auth()->user()->hasRole('Accounting'))
+                 {{-- Page heading --}}
+            <x-slot name="header">
+                <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold leading-tight ml-[130px]  text-red-700">
+                    {{ __('Payroll Management') }}
+                </h2>
+            </x-slot>
+        @elseif (auth()->user()->hasRole('Employee'))
+                 {{-- Page heading --}}
+            <x-slot name="header">
+                <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold leading-tight ml-[90px]  text-red-700">
+                    {{ __('Payslip') }}
+                </h2>
+            </x-slot>
+        @else
+            Dashboard
+        @endif
     </x-slot>
+  @endauth
+
 
     <div class="pb-12  ml-4">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">

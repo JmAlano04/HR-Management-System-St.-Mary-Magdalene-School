@@ -12,6 +12,7 @@ use App\Http\Controllers\LoanController;
 use App\Http\Controllers\OffboardingController;
 use App\Http\Controllers\OnboardingManagementController;
 use App\Http\Controllers\PayrollController;
+use App\Http\Controllers\EmployeeDocumentController;
 use App\Http\Controllers\PayrollProcessingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
@@ -24,8 +25,10 @@ use App\Http\Controllers\EmployeeLeaveRequestController;
 use App\Http\Controllers\EmployeeLoanController;
 use App\Http\Controllers\EmployeeOffboardingController;
 use App\Http\Controllers\EmployeePayslipController;
-use App\Http\Controllers\EmployeeDocumentController;
+
 use App\Http\Controllers\LeaveRequestController;
+
+
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -180,7 +183,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/loan-employee', [
             EmployeeLoanController::class,
             'index',
-        ])->name('loan.loan-employee.index');
+        ])->name('loans.employee.index');
 
         Route::post('/loan-employee', [
             EmployeeLoanController::class,
@@ -215,7 +218,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'index',
         ])->name('salary-records.employee.index');
 
-         Route::get('/payslip-employee', [
+         Route::put('/payslip-employee', [
             EmployeePayslipController::class,
             'decide',
         ])->name('payslips.decide');
@@ -226,7 +229,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
             EmployeeDocumentController::class,
             'index',
         ])->name('documents.employee.index');
-
+    
+        Route::get('document-employee/boxes/{box}', [EmployeeDocumentController::class, 'boxDocuments'])->name('documents.box');
+        Route::post('document-employee', [EmployeeDocumentController::class, 'store'])->name('employee.documents.store');
+        Route::get('document-employee/{document}/file', [EmployeeDocumentController::class, 'file'])->name('documents.file');
+        
         // Employee Tasks
         Route::get('/tasks', [
             EmployeeDashboardController::class,

@@ -5,6 +5,7 @@
     <x-slot name="title">
         Payroll Dashboard
     </x-slot>
+    
 
     {{-- Page heading (shown in the layout's top bar) --}}
     <x-slot name="header">

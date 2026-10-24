@@ -181,14 +181,14 @@
         ],
 
         'attendance-employee' => [
-            'label' => 'Attendance Monitoring',
+            'label' => 'Attendance',
             'icon'  => 'fa-calendar-check',
             'route' => 'attendance.attendance-employee.index',
             'match' => 'attendance.attendance-employee.index',
         ],
 
         'my-time-corrections' => [
-            'label' => 'Time Corrections',
+            'label' => 'Time Corrections Request',
             'icon'  => 'fa-clock-rotate-left',
             'route' => 'time-corrections.employee.index',
             'match' => 'time-corrections.employee.index',

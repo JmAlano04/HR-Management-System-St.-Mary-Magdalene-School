@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -26,6 +27,18 @@ class SubmissionBox extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /** Boxes employees can currently see (employee side). */
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('is_active', true);
+    }
+
+    /** True when a deadline is set and that day has ended (employee side: blocks new uploads). */
+    public function isPastDeadline(): bool
+    {
+        return $this->deadline !== null && $this->deadline->copy()->endOfDay()->isPast();
     }
 
     /** Box data + the employees who uploaded to it (grouped), used by the modals. */

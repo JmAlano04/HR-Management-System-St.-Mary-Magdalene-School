@@ -26,6 +26,7 @@ use App\Http\Controllers\EmployeeLoanController;
 use App\Http\Controllers\NonWorkingDayController;
 use App\Http\Controllers\EmployeeOffboardingController;
 use App\Http\Controllers\EmployeePayslipController;
+use App\Http\Controllers\PayslipController;
 
 use App\Http\Controllers\LeaveRequestController;
 
@@ -228,11 +229,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'index',
         ])->name('salary-records.employee.index');
 
-         Route::put('/payslip-employee', [
-            EmployeePayslipController::class,
-            'decide',
-        ])->name('payslips.decide');
+        Route::post('/payslips/{payslip}/respond', [EmployeePayslipController::class, 'respond'])->name('employee.payslips.respond');
 
+
+        Route::get('/payslips', [PayslipController::class, 'index'])->name('payslips.index');
+        Route::get('/payslips/{payslip}/download', [PayslipController::class, 'download'])->name('payslips.download');
 
         // Employee Documents
         Route::get('/document-employee', [

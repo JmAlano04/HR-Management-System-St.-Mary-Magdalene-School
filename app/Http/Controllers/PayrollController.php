@@ -35,8 +35,8 @@ class PayrollController extends Controller
         $allApproved = $summary['total'] > 0
             && !Payslip::sentToAdmin()
                 ->where(fn ($q) => $q
-                    ->where('admin_status', '!=', Payslip::APPROVED)
-                    ->orWhere('hr_status', '!=', Payslip::APPROVED))
+                    ->where('admin_status', '!=', 'approved')
+                    ->orWhere('hr_status', '!=', 'approved'))
                 ->exists();
 
         $statusText = match (true) {

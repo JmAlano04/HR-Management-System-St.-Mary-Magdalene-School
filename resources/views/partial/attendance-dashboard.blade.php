@@ -22,12 +22,14 @@
             'present'  => 'bg-[#ecfdf5] text-[#065f46]',
             'absent'   => 'bg-[#fee2e2] text-[#b22222]',
             'late'     => 'bg-[#fff7ed] text-[#92400e]',
-            'half day' => 'bg-[#eff6ff] text-[#1e40af]',
+            'half day' => 'bg-[#eff6ff] text-[#1e40bulkFormaf]',
             default    => 'bg-gray-100 text-gray-600',
         };
 
         $isArchive  = $view === 'archive';
         $panelTitle = $isArchive ? 'Attendance Archive' : 'Current Month Attendance';
+        $folder = $folder ?? $folderDate ?? request()->query('folder');
+        $showFolders = $showFolders ?? ($isArchive && empty($folder));
         $showActions = ! $showFolders;                       // hidden on the folder list
         $pageIds = $records ? $records->pluck('id')->map(fn ($id) => (string) $id)->all() : [];
 
@@ -191,19 +193,19 @@
                             @forelse ($records as $record)
                                 <tr class="transition-colors hover:bg-gray-50">
                                     <td x-show="selectMode" x-cloak class="border-b border-[#f3f4f6] px-3 py-5 text-center">
-                                        <input type="checkbox" name="ids[]" form="bulkForm" value="{{ $record->id }}" x-model="selected"
-                                            aria-label="Select row {{ $record->employee?->employee_id }}"
+                                        <input type="checkbox" name="ids[]" form="bulkForm" value="{{ $record['id'] }}" x-model="selected"
+                                            aria-label="Select row {{ $record['employee_code'] ?? 'N/A' }}"
                                             class="h-[18px] w-[18px] cursor-pointer accent-[#b22222]">
                                     </td>
-                                    <td class="whitespace-nowrap border-b border-[#f3f4f6] px-2 py-5 font-semibold">{{ $record->employee?->employee_id ?? 'N/A' }}</td>
-                                    <td class="border-b border-[#f3f4f6] px-2 py-5 font-semibold">{{ $record->employee?->name ?? 'Unknown employee' }}</td>
-                                    <td class="border-b border-[#f3f4f6] px-2 py-5 font-semibold">{{ \App\Models\AttendanceRecord::departmentLabel($record->employee?->department) }}</td>
-                                    <td class="whitespace-nowrap border-b border-[#f3f4f6] px-2 py-5 font-semibold">{{ $record->date->format('M d, Y') }}</td>
-                                    <td class="whitespace-nowrap border-b border-[#f3f4f6] px-2 py-5 font-semibold">{{ $record->time_in_label }}</td>
-                                    <td class="whitespace-nowrap border-b border-[#f3f4f6] px-2 py-5 font-semibold">{{ $record->time_out_label }}</td>
-                                    <td class="border-b border-[#f3f4f6] px-2 py-5 font-semibold">{{ $record->hours_label }}</td>
+                                    <td class="whitespace-nowrap border-b border-[#f3f4f6] px-2 py-5 font-semibold">{{ $record['employee_code'] ?? 'N/A' }}</td>
+                                    <td class="border-b border-[#f3f4f6] px-2 py-5 font-semibold">{{ $record['name'] ?? 'Unknown employee' }}</td>
+                                    <td class="border-b border-[#f3f4f6] px-2 py-5 font-semibold">{{ $record['department_label'] }}</td>
+                                    <td class="whitespace-nowrap border-b border-[#f3f4f6] px-2 py-5 font-semibold">{{ \Illuminate\Support\Carbon::parse($record['date'])->format('M d, Y') }}</td>
+                                    <td class="whitespace-nowrap border-b border-[#f3f4f6] px-2 py-5 font-semibold">{{ $record['time_in'] }}</td>
+                                    <td class="whitespace-nowrap border-b border-[#f3f4f6] px-2 py-5 font-semibold">{{ $record['time_out'] }}</td>
+                                    <td class="border-b border-[#f3f4f6] px-2 py-5 font-semibold">{{ $record['hours'] }}</td>
                                     <td class="border-b border-[#f3f4f6] px-2 py-5">
-                                        <span class="inline-block whitespace-nowrap rounded-full px-2.5 py-1.5 text-[0.9rem] font-bold {{ $badge($record->status) }}">{{ $record->status }}</span>
+                                        <span class="inline-block whitespace-nowrap rounded-full px-2.5 py-1.5 text-[0.9rem] font-bold {{ $badge($record['status']) }}">{{ $record['status'] }}</span>
                                     </td>
                                 </tr>
                             @empty
@@ -240,4 +242,3 @@
             };
         }
     </script>
-

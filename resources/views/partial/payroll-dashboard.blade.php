@@ -5,7 +5,6 @@
     <x-slot name="title">
         Payroll Dashboard
     </x-slot>
-    
 
     {{-- Page heading (shown in the layout's top bar) --}}
     <x-slot name="header">
@@ -15,9 +14,10 @@
     @php
         // Approval badge look (Admin / HR / Employee)
         $badge = fn (string $state) => match ($state) {
-            'Approved' => 'bg-[#ecfdf5] text-[#166534]',
-            'Rejected' => 'bg-[#fef2f2] text-[#b91c1c]',
-            default    => 'bg-[#fff7ed] text-[#9a5b00]',
+            'Approved'     => 'bg-[#ecfdf5] text-[#166534]',
+            'Rejected'     => 'bg-[#fef2f2] text-[#b91c1c]',
+            'Not released' => 'bg-gray-100 text-gray-600',
+            default        => 'bg-[#fff7ed] text-[#9a5b00]',
         };
 
         $peso = fn ($n) => '₱' . number_format((float) $n, 2);
@@ -26,6 +26,7 @@
 
         // Role-aware labels: HR sees "Accounting to HR Approval", everyone else the Admin version
         $isHR          = auth()->check() && auth()->user()->hasRole('HR');
+        $stage         = $isHR ? \App\Models\Payslip::STAGE_HR : \App\Models\Payslip::STAGE_ADMIN;
         $stageLabel    = $isHR ? 'Accounting to HR Approval' : 'Accounting to Admin Approval';
         $approvalLabel = $isHR ? 'Pending HR Review' : 'Pending Admin Review';
     @endphp
@@ -37,6 +38,7 @@
             'reopen'   => $errors->has('reason'),
             'rejectId' => old('payslip_id'),
             'reason'   => old('reason', ''),
+            'downloadUrl' => route('payslips.download', ['payslip' => '__ID__']),
         ]))"
         @keydown.escape.window="viewId = null; rejectId = null"
     >
@@ -97,8 +99,13 @@
             <div class="grid gap-4" aria-live="polite">
                 @forelse ($payslips as $slip)
                     @php
-                        // The status that belongs to the logged-in reviewer (HR or Admin)
-                        $myStatus = $isHR ? $slip->hr_status : $slip->admin_status;
+                        // Normalized (case-insensitive) states from the model
+                        $myStatus   = $slip->stageStatus($stage);                              // pending|approved|rejected
+                        $adminState = ucfirst($slip->stageStatus(\App\Models\Payslip::STAGE_ADMIN));
+                        $hrState    = ucfirst($slip->stageStatus(\App\Models\Payslip::STAGE_HR));
+                        $empState   = ! $slip->isReleased()
+                            ? 'Not released'
+                            : ($slip->response?->status ?? 'Pending');
                     @endphp
 
                     <article class="rounded-[18px] border border-black/30 bg-white px-[18px] pb-3.5 pt-[18px]">
@@ -123,25 +130,27 @@
                         <div class="mt-4 flex flex-col items-start justify-between gap-4 border-t border-black/50 pt-4 lg:flex-row lg:items-center">
                             {{-- Approval badges --}}
                             <div class="flex flex-wrap gap-2">
-                                <span class="inline-flex items-center rounded-full px-2.5 py-[7px] text-xs font-bold {{ $badge($slip->admin_status) }}"
-                                    @if ($slip->admin_status === 'Rejected' && $slip->admin_rejection_reason) title="{{ $slip->admin_rejection_reason }}" @endif>
-                                    Admin: {{ $slip->admin_status }}
+                                <span class="inline-flex items-center rounded-full px-2.5 py-[7px] text-xs font-bold {{ $badge($adminState) }}"
+                                    @if ($adminState === 'Rejected' && $slip->admin_rejection_reason) title="{{ $slip->admin_rejection_reason }}" @endif>
+                                    Admin: {{ $adminState }}
                                 </span>
-                                <span class="inline-flex items-center rounded-full px-2.5 py-[7px] text-xs font-bold {{ $badge($slip->hr_status) }}"
-                                    @if ($slip->hr_status === 'Rejected' && $slip->hr_rejection_reason) title="{{ $slip->hr_rejection_reason }}" @endif>
-                                    HR: {{ $slip->hr_status }}
+                                <span class="inline-flex items-center rounded-full px-2.5 py-[7px] text-xs font-bold {{ $badge($hrState) }}"
+                                    @if ($hrState === 'Rejected' && $slip->hr_rejection_reason) title="{{ $slip->hr_rejection_reason }}" @endif>
+                                    HR: {{ $hrState }}
                                 </span>
-                                <span class="inline-flex items-center rounded-full px-2.5 py-[7px] text-xs font-bold {{ $badge($slip->released_at ? 'Approved' : 'Pending') }}">
-                                    Employee: {{ $slip->released_at ? 'Approved' : 'Pending' }}
+                                {{-- Employee badge reflects the employee's actual answer --}}
+                                <span class="inline-flex items-center rounded-full px-2.5 py-[7px] text-xs font-bold {{ $badge($empState) }}"
+                                    @if ($empState === 'Rejected' && $slip->response?->reason) title="{{ $slip->response->reason }}" @endif>
+                                    Employee: {{ $empState }}
                                 </span>
                             </div>
 
                             {{-- Row actions --}}
                             <div class="flex w-full flex-wrap items-center gap-2.5 lg:w-auto">
-                                @if ($myStatus === 'Approved')
+                                @if ($myStatus === 'approved')
                                     <button type="button" disabled
                                         class="cursor-not-allowed rounded-[10px] border border-[#15803d] bg-[#15803d] px-3 py-[9px] text-[0.8rem] font-bold text-white opacity-70">Approved</button>
-                                @elseif ($myStatus === 'Rejected')
+                                @elseif ($myStatus === 'rejected')
                                     <button type="button" disabled
                                         class="cursor-not-allowed rounded-[10px] border border-[#b91c1c] bg-[#b91c1c] px-3 py-[9px] text-[0.8rem] font-bold text-white opacity-70">Rejected</button>
                                 @else
@@ -247,6 +256,20 @@
                             <span>NET PAY</span>
                             <strong class="text-[1.55rem]" x-text="money(slip.net_pay)"></strong>
                         </div>
+
+                        {{-- Download --}}
+                        @if ($empState === 'Pending' || 'Rejected')
+                        <div class="flex justify-end">
+                            
+                        </div>
+                        @elseif ($empState === 'Approved')
+                         <div class="flex justify-end">
+                            <a :href="downloadUrl.replace('__ID__', slip.id)"
+                                class="inline-flex cursor-pointer items-center gap-2 rounded-[10px] border border-[#b22222] bg-[#b22222] px-4 py-[10px] text-[0.85rem] font-bold text-white transition hover:-translate-y-px">
+                                <i class="fa-solid fa-download" aria-hidden="true"></i> Download payslip (PDF)
+                            </a>
+                        </div>
+                        @endif
                     </div>
                 </template>
             </section>
@@ -288,6 +311,7 @@
                 viewId: null,
                 rejectId: cfg.reopen ? cfg.rejectId : null,
                 reason: cfg.reopen ? cfg.reason : '',
+                downloadUrl: cfg.downloadUrl,
 
                 // [label, key in slip.deductions]
                 deductionRows: [

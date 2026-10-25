@@ -8,6 +8,7 @@ use App\Models\SchoolEmployee;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AttendanceController extends Controller
 {
@@ -22,26 +23,19 @@ class AttendanceController extends Controller
         $view       = $request->query('view') === 'archive' ? 'archive' : 'current';
         $folderDate = $view === 'archive' ? $request->query('folder') : null;
 
-        // Shared filters (all run in the database).
-        $filtered = fn () => Attendance::query()
-            ->when($view === 'archive', fn ($q) => $q->archived(), fn ($q) => $q->current())
-            ->search($request->query('search'))
-            ->inDepartment($request->query('department'))
-            ->withStatus($request->query('status'));
-
-        $folders = collect();
-        $records = null;
+        $folders    = collect();
+        $records    = null;
         $exportRows = [];
 
         if ($view === 'archive' && ! $folderDate) {
             // Archive home: one folder per date.
-            $folders = $filtered()
+            $folders = $this->filtered($request, $view)
                 ->selectRaw('date, COUNT(*) as total')
                 ->groupBy('date')
                 ->orderByDesc('date')
                 ->get();
         } else {
-            $records = $filtered()
+            $records = $this->filtered($request, $view)
                 ->with('employee')
                 ->onDate($view === 'archive' ? $folderDate : $request->query('date'))
                 ->orderByDesc('date')
@@ -58,19 +52,7 @@ class AttendanceController extends Controller
                 fn (Attendance $a) => $this->present($a, $nonWorkingDays->get($a->date->format('Y-m-d')))
             );
 
-            $exportRows = $records->getCollection()->map(fn ($r) => [
-                'Employee ID'   => $r['employee_code'],
-                'Name'          => $r['name'],
-                'Employee Type' => $r['role_label'],
-                'Department'    => $r['department_label'],
-                'Date'          => $r['date'],
-                'Time In'       => $r['time_in'],
-                'Time Out'      => $r['time_out'],
-                'Days Worked'   => $r['days_worked'],
-                'Hours Worked'  => $r['hours'],
-                'Late Minutes'  => $r['late_minutes'],
-                'Status'        => $r['status'],
-            ])->values();
+            $exportRows = $records->getCollection()->map(fn ($r) => $this->exportRow($r))->values();
         }
 
         // Employee list for the "Add Attendance" modal, keyed by id.
@@ -93,7 +75,53 @@ class AttendanceController extends Controller
             'exportRows'     => $exportRows,
             'statuses'       => Attendance::FORM_STATUSES,
             'nonWorkingDays' => NonWorkingDay::orderBy('date')->get(),
+
+            // Needed by the filter bar of the view
+            'departments'    => SchoolEmployee::DEPARTMENTS,
+            'filters'        => [
+                'search'     => $request->query('search'),
+                'date'       => $request->query('date'),
+                'department' => $request->query('department'),
+                'status'     => $request->query('status'),
+            ],
         ]);
+    }
+
+    /** "Export to Excel": every record that matches the current filters (not only this page), as a CSV Excel opens. */
+    public function export(Request $request): StreamedResponse
+    {
+        $view       = $request->query('view') === 'archive' ? 'archive' : 'current';
+        $folderDate = $view === 'archive' ? $request->query('folder') : null;
+
+        $rows = $this->filtered($request, $view)
+            ->with('employee')
+            ->onDate($view === 'archive' ? $folderDate : $request->query('date'))
+            ->orderByDesc('date')
+            ->orderByDesc('id')
+            ->get();
+
+        $nonWorkingDays = NonWorkingDay::whereIn(
+            'date',
+            $rows->map(fn ($a) => $a->date->format('Y-m-d'))->unique()
+        )->get()->keyBy(fn ($d) => $d->date->format('Y-m-d'));
+
+        $data = $rows->map(fn (Attendance $a) => $this->exportRow(
+            $this->present($a, $nonWorkingDays->get($a->date->format('Y-m-d')))
+        ));
+
+        return response()->streamDownload(function () use ($data) {
+            $out = fopen('php://output', 'w');
+            fwrite($out, "\xEF\xBB\xBF");   // UTF-8 BOM so Excel reads the characters correctly
+
+            fputcsv($out, ['Employee ID', 'Name', 'Employee Type', 'Department', 'Date', 'Time In', 'Time Out',
+                'Days Worked', 'Hours Worked', 'Late Minutes', 'Status']);
+
+            foreach ($data as $row) {
+                fputcsv($out, array_values($row));
+            }
+
+            fclose($out);
+        }, 'attendance-' . now()->format('Ymd-His') . '.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
     /** Add attendance (one employee, one date). */
@@ -179,6 +207,34 @@ class AttendanceController extends Controller
     }
 
     /* ---------------- Helpers ---------------- */
+
+    /** Shared filters (all run in the database). */
+    private function filtered(Request $request, string $view)
+    {
+        return Attendance::query()
+            ->when($view === 'archive', fn ($q) => $q->archived(), fn ($q) => $q->current())
+            ->search($request->query('search'))
+            ->inDepartment($request->query('department'))
+            ->withStatus($request->query('status'));
+    }
+
+    /** One row of the Excel / CSV export. */
+    private function exportRow(array $r): array
+    {
+        return [
+            'Employee ID'   => $r['employee_code'],
+            'Name'          => $r['name'],
+            'Employee Type' => $r['role_label'],
+            'Department'    => $r['department_label'],
+            'Date'          => $r['date'],
+            'Time In'       => $r['time_in'],
+            'Time Out'      => $r['time_out'],
+            'Days Worked'   => $r['days_worked'],
+            'Hours Worked'  => $r['hours'],
+            'Late Minutes'  => $r['late_minutes'],
+            'Status'        => $r['status'],
+        ];
+    }
 
     /** Shape one record for the Blade table. */
     private function present(Attendance $a, ?NonWorkingDay $nwd): array

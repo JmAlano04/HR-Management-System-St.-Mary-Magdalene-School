@@ -52,11 +52,22 @@ class DocumentController extends Controller
             'decision'    => ['required', Rule::in([EmployeeDocument::APPROVED, EmployeeDocument::REJECTED])],
         ]);
 
-        EmployeeDocument::findOrFail($data['document_id'])->update([
-            'status'      => $data['decision'],
-            'reviewed_at' => now(),
-            'reviewed_by' => Auth::id(),
-        ]);
+        $document = EmployeeDocument::findOrFail($data['document_id']);
+
+        if ($data['decision'] === EmployeeDocument::REJECTED) {
+            // Burahin muna ang file sa storage, tapos ang record
+            if ($document->file_path) {
+                Storage::disk('public')->delete($document->file_path);
+            }
+
+            $document->delete();
+        } else {
+            $document->update([
+                'status'      => $data['decision'],
+                'reviewed_at' => now(),
+                'reviewed_by' => Auth::id(),
+            ]);
+        }
 
         return redirect()->route('documents.index')
             ->with('success', 'Document ' . strtolower($data['decision']) . '.');

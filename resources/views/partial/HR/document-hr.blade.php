@@ -227,7 +227,7 @@
 
                         {{-- Approve / Reject / Delete --}}
                         <footer class="flex flex-wrap justify-end gap-2.5">
-                            <form method="POST" action="{{ route('decide') }}" class="flex flex-wrap gap-2.5">
+                            <form method="POST" action="{{ route('hr.documents.decide') }}" class="flex flex-wrap gap-2.5">
                                 @csrf
                                 @method('PATCH')
                                 <input type="hidden" name="document_id" :value="docId">

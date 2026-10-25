@@ -31,7 +31,7 @@
 
                             @case('HR')
                                 <p class="mt-2 text-blue-700">
-                                    @include('partial.attendance-dashboard')
+                                    @include('partial.HR.attendance-hr')
                                 </p>
                                 @break
 

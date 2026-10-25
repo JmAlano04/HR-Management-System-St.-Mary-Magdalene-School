@@ -23,6 +23,7 @@ use App\Http\Controllers\EmployeeAttendanceController;
 use App\Http\Controllers\AccountingLoanController;
 use App\Http\Controllers\EmployeeLeaveRequestController;
 use App\Http\Controllers\EmployeeLoanController;
+use App\Http\Controllers\NonWorkingDayController;
 use App\Http\Controllers\EmployeeOffboardingController;
 use App\Http\Controllers\EmployeePayslipController;
 
@@ -127,7 +128,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('boxes.store');
 
         Route::patch('/documents/decision', [DocumentController::class, 'decide'])
-            ->name('documents.decide');
+            ->name('hr.documents.decide');
 
         Route::delete('/documents', [DocumentController::class, 'destroy'])
             ->name('destroy');
@@ -150,6 +151,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'index',
         ])->name('attendance.attendance-employee.index');
 
+        
         // School Employees
         Route::get('/school-employees', [SchoolEmployeeController::class, 'index'])
             ->name('employee.school-employees');
@@ -274,6 +276,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Attendance Monitoring
         Route::get('/attendance-monitoring', [AttendanceController::class, 'index'])
             ->name('attendance.index');
+
+
+        Route::post('/attendance-monitoring', [AttendanceController::class, 'store'])->name('attendance.store');
+        Route::post('/attendance-monitoring/archive', [AttendanceController::class, 'archive'])->name('attendance.archive');
+        Route::delete('/attendance-monitoring', [AttendanceController::class, 'destroyMany'])->name('attendance.destroyMany');
+    
+        // Non-working days management
+        Route::get('/non-working-days', [NonWorkingDayController::class, 'index'])->name('non-working-days.index');
+        Route::post('/non-working-days', [NonWorkingDayController::class, 'store'])->name('hr.non-working-days.store');
+        Route::delete('/non-working-days/{nonWorkingDay}', [NonWorkingDayController::class, 'destroy'])->name('non-working-days.destroy');
+
 
         Route::get('/attendance-monitoring/export', [
             AttendanceController::class,

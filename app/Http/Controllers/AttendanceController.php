@@ -2,157 +2,226 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Models\AttendanceRecord;
-use App\Models\Employee;
+use App\Models\Attendance;
+use App\Models\NonWorkingDay;
+use App\Models\SchoolEmployee;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Carbon;
-use Symfony\Component\HttpFoundation\StreamedResponse;
-use Illuminate\View\View;
+use Illuminate\Validation\Rule;
 
 class AttendanceController extends Controller
 {
+    private const PER_PAGE = 25;
+
     /**
-     * Attendance Dashboard — Current Month / Archive (folders by date) + filters.
+     * Attendance page.
+     * ?view=current|archive  &folder=YYYY-MM-DD (archive)  &search= &date= &department= &status=
      */
-    public function index(Request $request): View
+    public function index(Request $request)
     {
-        [$view, $folder] = $this->resolveView($request);
-        $filters = $request->only(['q', 'date', 'department', 'status']);
+        $view       = $request->query('view') === 'archive' ? 'archive' : 'current';
+        $folderDate = $view === 'archive' ? $request->query('folder') : null;
 
-        $showFolders = $view === 'archive' && ! $folder;
+        // Shared filters (all run in the database).
+        $filtered = fn () => Attendance::query()
+            ->when($view === 'archive', fn ($q) => $q->archived(), fn ($q) => $q->current())
+            ->search($request->query('search'))
+            ->inDepartment($request->query('department'))
+            ->withStatus($request->query('status'));
 
-        // Archive: folders grouped by date
-        $folders = $showFolders
-            ? AttendanceRecord::archived()
-                ->select('date', DB::raw('COUNT(*) as total'))
+        $folders = collect();
+        $records = null;
+        $exportRows = [];
+
+        if ($view === 'archive' && ! $folderDate) {
+            // Archive home: one folder per date.
+            $folders = $filtered()
+                ->selectRaw('date, COUNT(*) as total')
                 ->groupBy('date')
                 ->orderByDesc('date')
-                ->get()
-            : collect();
-
-        $records = $showFolders
-            ? null
-            : $this->query($view, $folder, $filters)
-                ->paginate(15)
+                ->get();
+        } else {
+            $records = $filtered()
+                ->with('employee')
+                ->onDate($view === 'archive' ? $folderDate : $request->query('date'))
+                ->orderByDesc('date')
+                ->orderByDesc('id')
+                ->paginate(self::PER_PAGE)
                 ->withQueryString();
 
-        // Department dropdown — kinukuha sa employees table
-        $departments = Employee::query()
-            ->whereNotNull('department')
-            ->distinct()
-            ->orderBy('department')
-            ->pluck('department')
-            ->mapWithKeys(fn ($d) => [$d => AttendanceRecord::departmentLabel($d)]);
+            $nonWorkingDays = NonWorkingDay::whereIn(
+                'date',
+                $records->getCollection()->map(fn ($a) => $a->date->format('Y-m-d'))->unique()
+            )->get()->keyBy(fn ($d) => $d->date->format('Y-m-d'));
+
+            $records->through(
+                fn (Attendance $a) => $this->present($a, $nonWorkingDays->get($a->date->format('Y-m-d')))
+            );
+
+            $exportRows = $records->getCollection()->map(fn ($r) => [
+                'Employee ID'   => $r['employee_code'],
+                'Name'          => $r['name'],
+                'Employee Type' => $r['role_label'],
+                'Department'    => $r['department_label'],
+                'Date'          => $r['date'],
+                'Time In'       => $r['time_in'],
+                'Time Out'      => $r['time_out'],
+                'Days Worked'   => $r['days_worked'],
+                'Hours Worked'  => $r['hours'],
+                'Late Minutes'  => $r['late_minutes'],
+                'Status'        => $r['status'],
+            ])->values();
+        }
+
+        // Employee list for the "Add Attendance" modal, keyed by id.
+        $employees = SchoolEmployee::orderBy('name')->get()->mapWithKeys(fn ($e) => [
+            $e->id => [
+                'id'         => $e->id,
+                'code'       => $e->employee_id,
+                'name'       => $e->name,
+                'role'       => SchoolEmployee::ROLE_TYPES[$e->role_type] ?? ucfirst((string) $e->role_type),
+                'department' => SchoolEmployee::DEPARTMENTS[$e->department] ?? ucfirst((string) $e->department),
+            ],
+        ]);
 
         return view('attendance', [
-            'view'        => $view,
-            'folder'      => $folder,
-            'showFolders' => $showFolders,
-            'folders'     => $folders,
-            'records'     => $records,
-            'departments' => $departments,
-            'filters'     => $filters,
-            'statuses'    => AttendanceRecord::STATUSES,
+            'view'           => $view,
+            'folderDate'     => $folderDate,
+            'folders'        => $folders,
+            'records'        => $records,
+            'employees'      => $employees,
+            'exportRows'     => $exportRows,
+            'statuses'       => Attendance::FORM_STATUSES,
+            'nonWorkingDays' => NonWorkingDay::orderBy('date')->get(),
         ]);
     }
 
-    /**
-     * "Select to Archive" — move the selected current records to the Archive.
-     */
+    /** Add attendance (one employee, one date). */
+    public function store(Request $request): RedirectResponse
+    {
+        $data = $request->validateWithBag('attendance', [
+            'employee_id' => ['required', 'integer', 'exists:employees,id'],
+            'date'        => ['required', 'date'],
+            'status'      => ['required', Rule::in(Attendance::FORM_STATUSES)],
+            'time_in'     => ['nullable', 'date_format:H:i'],
+            'time_out'    => ['nullable', 'date_format:H:i', 'after:time_in'],
+        ], [
+            'employee_id.required' => 'Select an employee and attendance date.',
+            'time_out.after'       => 'Time out must be later than time in.',
+        ]);
+
+        $timeIn  = $data['time_in'] ?? null;
+        $timeOut = $data['time_out'] ?? null;
+        $hasBothTimes  = $timeIn && $timeOut;
+        $requiresTimes = ! in_array($data['status'], Attendance::NO_TIME_STATUSES, true);
+
+        if ((bool) $timeIn !== (bool) $timeOut) {
+            return $this->formError('Enter both time in and time out, or leave both blank.');
+        }
+
+        if ($requiresTimes && ! $hasBothTimes) {
+            return $this->formError('Time in and time out are required for Present, Late, and Half Day attendance.');
+        }
+
+        // Checks current AND archived records.
+        if (Attendance::where('employee_id', $data['employee_id'])->whereDate('date', $data['date'])->exists()) {
+            return $this->formError('This employee already has an attendance record for that date.');
+        }
+
+        $nonWorkingDay = NonWorkingDay::whereDate('date', $data['date'])->first();
+
+        Attendance::create([
+            'employee_id'  => $data['employee_id'],
+            'date'         => $data['date'],
+            'time_in'      => $timeIn,
+            'time_out'     => $timeOut,
+            'hours_worked' => $hasBothTimes ? Attendance::computeHours($timeIn, $timeOut) : null,
+            'status'       => ($nonWorkingDay && $hasBothTimes) ? Attendance::NWD_REVIEW : $data['status'],
+            'archived'     => false,
+        ]);
+
+        return redirect()
+            ->route('attendance.index', ['date' => $data['date']])
+            ->with('success', 'Attendance saved.');
+    }
+
+    /** Archive selected records. Body: ids[] */
     public function archive(Request $request): RedirectResponse
     {
         $data = $request->validate([
             'ids'   => ['required', 'array', 'min:1'],
             'ids.*' => ['integer', 'exists:attendance_records,id'],
-        ], ['ids.required' => 'Select at least one record to archive.']);
+        ]);
 
-        $count = AttendanceRecord::current()->whereIn('id', $data['ids'])->update(['archived' => true]);
+        $count = Attendance::current()->whereIn('id', $data['ids'])->update(['archived' => true]);
 
-        return back()->with('success', $count . ' record(s) archived.');
+        return back()->with('success', "{$count} record(s) archived.");
     }
 
-    /**
-     * Inside an archive folder — permanently delete the selected archived records.
-     */
-    public function destroy(Request $request): RedirectResponse
+    /** Permanently delete selected records (archive only). Body: ids[] */
+    public function destroyMany(Request $request): RedirectResponse
     {
         $data = $request->validate([
             'ids'   => ['required', 'array', 'min:1'],
-            'ids.*' => ['integer'],
-        ], ['ids.required' => 'Select at least one record to delete.']);
+            'ids.*' => ['integer', 'exists:attendance_records,id'],
+        ]);
 
-        $count = AttendanceRecord::archived()->whereIn('id', $data['ids'])->delete();
+        $count = Attendance::archived()->whereIn('id', $data['ids'])->delete();
 
-        return back()->with('success', $count . ' archived record(s) deleted.');
-    }
-
-    /**
-     * Export the filtered records (all pages) — CSV, opens directly in Excel.
-     */
-    public function export(Request $request): StreamedResponse
-    {
-        [$view, $folder] = $this->resolveView($request);
-        $filters = $request->only(['q', 'date', 'department', 'status']);
-
-        $query = $this->query($view, $folder, $filters);
-
-        $fileName = 'attendance-' . ($folder ?: now()->format('Y-m-d')) . '.csv';
-
-        return response()->streamDownload(function () use ($query) {
-            $out = fopen('php://output', 'w');
-            fwrite($out, "\xEF\xBB\xBF"); // UTF-8 BOM para tama ang pagbukas sa Excel
-
-            fputcsv($out, ['Employee ID', 'Name', 'Department', 'Date', 'Time In', 'Time Out', 'Hours Worked', 'Status']);
-
-            $query->chunk(500, function ($rows) use ($out) {
-                foreach ($rows as $r) {
-                    fputcsv($out, [
-                        $r->employee?->employee_id,
-                        $r->employee?->name,
-                        AttendanceRecord::departmentLabel($r->employee?->department),
-                        $r->date->format('Y-m-d'),
-                        $r->time_in_label,
-                        $r->time_out_label,
-                        $r->hours_label,
-                        $r->status,
-                    ]);
-                }
-            });
-
-            fclose($out);
-        }, $fileName, ['Content-Type' => 'text/csv; charset=UTF-8']);
-    }
-
-    /* ---------- Helpers ---------- */
-
-    // [view, folder date | null]
-    private function resolveView(Request $request): array
-    {
-        $view = $request->query('view') === 'archive' ? 'archive' : 'current';
-
-        $folder = null;
-        if ($view === 'archive' && $request->filled('folder')) {
-            try {
-                $folder = Carbon::createFromFormat('Y-m-d', $request->query('folder'))->format('Y-m-d');
-            } catch (\Throwable) {
-                $folder = null;
-            }
+        // If the opened folder is now empty, go back to the folder list.
+        $folder = $request->input('folder');
+        if ($folder && ! Attendance::archived()->whereDate('date', $folder)->exists()) {
+            return redirect()->route('attendance.index', ['view' => 'archive'])
+                ->with('success', "{$count} record(s) deleted.");
         }
 
-        return [$view, $folder];
+        return back()->with('success', "{$count} record(s) deleted.");
     }
 
-    private function query(string $view, ?string $folder, array $filters)
+    /* ---------------- Helpers ---------------- */
+
+    /** Shape one record for the Blade table. */
+    private function present(Attendance $a, ?NonWorkingDay $nwd): array
     {
-        return AttendanceRecord::query()
-            ->with('employee')
-            ->where('archived', $view === 'archive')
-            ->when($folder, fn ($q) => $q->whereDate('date', $folder))
-            ->filter($filters, ignoreDate: (bool) $folder)
-            ->orderByDesc('date')
-            ->orderBy('id');
+        $employee = $a->employee;
+        $status   = $a->status;
+        $hasLogs  = $a->time_in || $a->time_out;
+
+        $daysWorked  = 0.0;
+        $lateMinutes = 0;
+
+        if (! $nwd) {
+            $daysWorked  = Attendance::computeDaysWorked($status);
+            $lateMinutes = $status === Attendance::LATE ? Attendance::computeLateMinutes($a->time_in) : 0;
+        }
+
+        // No logs on a non-working day => show the holiday instead of Absent.
+        if ($nwd && ! $hasLogs && $status === Attendance::ABSENT) {
+            $status = $nwd->isPaid() ? 'Paid Holiday' : 'Non-Working Day';
+        }
+
+        return [
+            'id'               => $a->id,
+            'employee_code'    => $employee?->employee_id,
+            'name'             => $employee?->name,
+            'initials'         => $employee?->initials,
+            'role_label'       => SchoolEmployee::ROLE_TYPES[$employee?->role_type] ?? ucfirst((string) $employee?->role_type),
+            'department_label' => SchoolEmployee::DEPARTMENTS[$employee?->department] ?? ucfirst((string) $employee?->department),
+            'date'             => $a->date?->format('Y-m-d'),
+            'time_in'          => $a->time_in ? substr($a->time_in, 0, 5) : '',
+            'time_out'         => $a->time_out ? substr($a->time_out, 0, 5) : '',
+            'hours'            => number_format((float) $a->hours_worked, 2),
+            'days_worked'      => $daysWorked,
+            'late_minutes'     => $lateMinutes,
+            'status'           => $status,
+            'review_note'      => ($nwd && $a->status === Attendance::NWD_REVIEW)
+                ? "{$nwd->category}: {$nwd->name} - raw logs excluded from payroll"
+                : null,
+        ];
+    }
+
+    private function formError(string $message): RedirectResponse
+    {
+        return back()->withErrors(['form' => $message], 'attendance')->withInput();
     }
 }

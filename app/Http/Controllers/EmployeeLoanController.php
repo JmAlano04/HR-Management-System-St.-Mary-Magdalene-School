@@ -84,7 +84,7 @@ class EmployeeLoanController extends Controller
             ->whereIn('id', $data['ids'])
             ->update(['archived_at' => now()]);
 
-        return redirect()->route('loan.loan-employee.index')
+        return redirect()->route('loans.employee.index')
             ->with('status', "{$count} loan request" . ($count === 1 ? '' : 's') . ' archived.');
     }
 
@@ -95,7 +95,7 @@ class EmployeeLoanController extends Controller
             ->findOrFail($loanRequest)
             ->update(['archived_at' => null]);
 
-        return redirect()->route('loan.loan-employee.index', ['tab' => 'archived'])
+        return redirect()->route('loans.employee.index', ['tab' => 'archived'])
             ->with('status', 'Loan request restored to active requests.');
     }
 

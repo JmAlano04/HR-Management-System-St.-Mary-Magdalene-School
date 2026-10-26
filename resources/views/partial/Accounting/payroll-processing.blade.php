@@ -11,6 +11,7 @@
     @php
         $btn   = 'inline-flex min-h-[42px] cursor-pointer items-center justify-center gap-2 rounded-xl border border-[#f1caca] bg-[#b22222] px-4 font-bold text-white transition hover:-translate-y-px hover:bg-[#d93c3c] hover:shadow-[0_10px_18px_rgba(178,34,34,0.18)]';
         $input = 'w-full rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-center text-sm font-bold text-gray-900 focus:border-[#e7b0b0] focus:outline-none focus:ring-[3px] focus:ring-red-700/10';
+        $row   = 'flex min-h-[30px] items-center justify-between gap-3 border-b border-[#ecebea] text-[0.85rem] text-gray-500';
     @endphp
 
     <div
@@ -68,25 +69,41 @@
             </div>
 
             <div class="w-full overflow-x-auto">
-                <table class="w-full min-w-[960px] table-fixed border-collapse">
+                <table class="w-full min-w-[1100px] table-fixed border-collapse">
                     <thead>
                         <tr class="bg-[#f9fafb] text-[0.72rem] uppercase tracking-[0.06em] text-gray-500">
-                            <th class="w-[22%] px-4 py-5 text-center">Employee</th>
-                            <th class="w-[11%] px-4 py-5 text-center">Days worked</th>
-                            <th class="w-[11%] px-4 py-5 text-center">Hours worked</th>
-                            <th class="w-[11%] px-4 py-5 text-center">Late (mins)</th>
-                            <th class="w-[15%] px-4 py-5 text-center">Basic pay</th>
-                            <th class="w-[15%] px-4 py-5 text-center">Deductions</th>
-                            <th class="w-[15%] px-4 py-5 text-center">Net pay</th>
+                            <th class="w-[4%] px-2 py-5 text-center">
+                                <input type="checkbox" aria-label="Select all employees"
+                                    class="h-4 w-4 cursor-pointer rounded border-gray-300 accent-[#b22222]"
+                                    :checked="allSelected" @change="toggleAll($event.target.checked)">
+                            </th>
+                            <th class="w-[16%] px-4 py-5 text-center">Employee</th>
+                            <th class="w-[15%] px-4 py-5 text-center">Employee Type</th>
+                            <th class="w-[8%] px-4 py-5 text-center">Days worked</th>
+                            <th class="w-[8%] px-4 py-5 text-center">Hours worked</th>
+                            <th class="w-[8%] px-4 py-5 text-center">Late (mins)</th>
+                            <th class="w-[13%] px-4 py-5 text-center">Basic pay</th>
+                            <th class="w-[14%] px-4 py-5 text-center">Deductions</th>
+                            <th class="w-[14%] px-4 py-5 text-center">Net pay</th>
                         </tr>
                     </thead>
                     <tbody>
                         <template x-for="(e, i) in employees" :key="e.id">
-                            <tr class="border-t border-[#ecebea] text-center text-[0.82rem]">
-                                <td class="px-4 py-4">
-                                    <button type="button" @click="openDetails(i)"
-                                        class="cursor-pointer rounded-lg px-2 py-1.5 font-extrabold text-[#b22222] hover:bg-[#fef2f2] hover:underline" x-text="e.name"></button>
+                            <tr class="border-t border-[#ecebea] text-center text-[0.82rem]"
+                                :class="selected.includes(e.id) ? 'bg-[#fef2f2]' : ''">
+                                <td class="px-2 py-4">
+                                    <input type="checkbox" :aria-label="'Select ' + e.name"
+                                        class="h-4 w-4 cursor-pointer rounded border-gray-300 accent-[#b22222]"
+                                        :checked="selected.includes(e.id)" @change="toggleOne(e.id, $event.target.checked)">
                                 </td>
+                                <td class="px-4 py-4">
+                                    <div class="flex flex-col items-center gap-0.5">
+                                        <button type="button" @click="openDetails(i)"
+                                            class="cursor-pointer rounded-lg px-2 py-1 font-extrabold text-[#b22222] hover:bg-[#fef2f2] hover:underline" x-text="e.name"></button>
+                                        <span class="text-[0.72rem] font-semibold text-gray-500" x-text="e.employeeNumber"></span>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-4 text-gray-600" x-text="e.position || e.department || '-'"></td>
                                 <td class="px-4 py-4"><input type="number" min="0" max="31" step="1" class="{{ $input }}" :value="e.daysWorked" @input="setDays(e, $event.target.value, $event.target)"></td>
                                 <td class="px-4 py-4"><input type="number" min="0" max="248" step="1" class="{{ $input }}" :value="e.hoursWorked" @input="setHours(e, $event.target.value, $event.target)"></td>
                                 <td class="px-4 py-4"><input type="number" min="0" step="1" class="{{ $input }}" :value="e.lateMinutes" @input="setLate(e, $event.target.value, $event.target)"></td>
@@ -96,7 +113,7 @@
                             </tr>
                         </template>
                         <tr x-show="employees.length === 0">
-                            <td colspan="7" class="border-t border-[#ecebea] px-4 py-8 text-center font-semibold text-gray-500">No employees found.</td>
+                            <td colspan="9" class="border-t border-[#ecebea] px-4 py-8 text-center font-semibold text-gray-500">No employees found.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -110,9 +127,13 @@
             @csrf
             <input type="hidden" name="cutoff" :value="cutoff">
             <input type="hidden" name="period" :value="period">
-            <button type="submit" :disabled="employees.length === 0"
-                class="inline-flex min-h-[44px] cursor-pointer items-center justify-center gap-2.5 rounded-xl border border-[#f1caca] bg-[#b22222] px-[18px] font-extrabold text-white transition hover:-translate-y-px hover:bg-[#d93c3c] disabled:cursor-not-allowed disabled:opacity-60">
-                <i class="fa-solid fa-arrow-right-arrow-left" aria-hidden="true"></i> Transfer all to Salary Monitoring
+            <template x-for="id in selected" :key="id">
+                <input type="hidden" name="employee_ids[]" :value="id">
+            </template>
+            <button type="submit" :disabled="selected.length === 0"
+                class="inline-flex min-h-[44px] cursor-pointer items-center justify-center gap-2.5 rounded-xl border border-[#f1caca] bg-[#b22222] px-[18px] font-extrabold text-white transition hover:-translate-y-px hover:bg-[#d93c3c] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:bg-[#b22222]">
+                <i class="fa-solid fa-arrow-right-arrow-left" aria-hidden="true"></i>
+                <span x-text="selected.length ? 'Transfer ' + selected.length + ' selected to Salary Monitoring' : 'Select employees to transfer'"></span>
             </button>
         </form>
 
@@ -195,11 +216,10 @@
                             {{-- Earnings --}}
                             <section class="min-w-0 border-t border-[#ecebea] p-3">
                                 <h3 class="mb-2.5 text-[0.78rem] uppercase tracking-[0.08em] text-[#b22222]">Earnings</h3>
-                                <div class="flex min-h-[30px] items-center justify-between gap-3 border-b border-[#ecebea] text-[0.85rem] text-gray-500"><span>Basic salary</span><strong class="min-w-[120px] text-center text-gray-900" x-text="money(preview.basicPay)"></strong></div>
-                                <div class="flex min-h-[30px] items-center justify-between gap-3 border-b border-[#ecebea] text-[0.85rem] text-gray-500"><span>Daily rate</span><strong class="min-w-[120px] text-center text-gray-900" x-text="money(preview.step.dailyWage)"></strong></div>
-                                <label class="flex min-h-[30px] items-center justify-between gap-3 border-b border-[#ecebea] text-[0.85rem] text-gray-500"><span>Honorarium</span>
-                                    <input type="number" min="0" step="0.01" x-model.number="draft.honorarium"
-                                        class="min-h-[34px] w-[120px] rounded-lg border border-[#ecebea] px-2 text-center font-bold text-gray-900"></label>
+                                <div class="{{ $row }}"><span>Basic salary</span><strong class="min-w-[120px] text-center text-gray-900" x-text="money(preview.basicPay)"></strong></div>
+                                <div class="{{ $row }}"><span>Daily rate</span><strong class="min-w-[120px] text-center text-gray-900" x-text="money(preview.step.dailyWage)"></strong></div>
+                                {{-- Honorarium is fixed (administrative role only), not editable --}}
+                                <div class="{{ $row }}"><span>Honorarium</span><strong class="min-w-[120px] text-center text-gray-900" x-text="draft.isAdmin ? money(preview.honorarium) : '-'"></strong></div>
                                 <div class="mt-2 flex min-h-[30px] items-center justify-between gap-3 text-[0.85rem] font-extrabold text-gray-900"><span>Gross earnings</span><strong class="min-w-[120px] text-center text-[#b22222]" x-text="money(preview.grossPay)"></strong></div>
                             </section>
 
@@ -207,27 +227,32 @@
                             <section class="min-w-0 border-t border-[#ecebea] p-3 sm:border-l">
                                 <h3 class="mb-2.5 text-[0.78rem] uppercase tracking-[0.08em] text-[#b22222]">Deductions</h3>
 
-                                {{-- Read-only (computed) --}}
-                                <template x-for="r in [['MALASAKITAN', 'fixed50'], ['Late', 'late'], ['Absences', 'absences']]" :key="r[1]">
-                                    <div class="flex min-h-[30px] items-center justify-between gap-3 border-b border-[#ecebea] text-[0.85rem] text-gray-500">
+                                {{-- Read-only (computed automatically) --}}
+                                <template x-for="r in computedFields" :key="r[1]">
+                                    <div class="{{ $row }}">
                                         <span x-text="r[0]"></span>
-                                        <span class="min-w-[120px] text-center font-bold text-gray-900" x-text="money(preview.deductions[r[1]])"></span>
+                                        <span class="min-w-[120px] text-center font-bold text-gray-900"
+                                            x-text="(r[2] && cutoff !== '30th') ? '-' : money(preview.deductions[r[1]])"></span>
                                     </div>
                                 </template>
 
-                                {{-- Editable --}}
+                                {{-- Editable: loans and cash advance --}}
                                 <template x-for="r in dedFields" :key="r[1]">
-                                    <div class="flex min-h-[30px] items-center justify-between gap-3 border-b border-[#ecebea] text-[0.85rem] text-gray-500">
+                                    <div class="{{ $row }}">
                                         <span x-text="r[0]"></span>
 
-                                        <span x-show="!isActive(r[1])" class="font-bold text-gray-400">-</span>
+                                        <span x-show="!isActive(r[1])" class="min-w-[120px] text-center font-bold text-gray-400">-</span>
 
                                         <input x-show="isActive(r[1])" type="number" min="0" step="0.01"
-                                            :value="r[1] === 'cashAdvance' ? (draft.deductions.cashAdvance / 2).toFixed(2) : Number(draft.deductions[r[1]] || 0).toFixed(2)"
-                                            @input="draft.deductions[r[1]] = Math.max(0, Number($event.target.value) || 0) * (r[1] === 'cashAdvance' ? 2 : 1)"
+                                            :value="Number(draft.deductions[r[1]] || 0).toFixed(2)"
+                                            @input="draft.deductions[r[1]] = Math.max(0, Number($event.target.value) || 0)"
                                             class="min-h-[34px] w-[120px] rounded-lg border border-[#ecebea] px-2 text-center font-bold text-gray-900">
                                     </div>
                                 </template>
+
+                                <p x-show="Number(draft.deductions.cashAdvance) > CASH_ADVANCE_CAP"
+                                    class="mt-1 text-[0.72rem] font-semibold text-gray-500"
+                                    x-text="'Only ' + money(CASH_ADVANCE_CAP) + ' of the cash advance is deducted this cutoff.'"></p>
 
                                 <div class="mt-2 flex min-h-[30px] items-center justify-between gap-3 text-[0.85rem] font-extrabold text-gray-900"><span>Total deductions</span><strong class="min-w-[120px] text-center text-[#b22222]" x-text="'- ' + money(preview.totalDeductions)"></strong></div>
                             </section>
@@ -240,9 +265,15 @@
                     </div>
                 </template>
 
-                <div class="mt-3 flex justify-end gap-2.5">
-                    <button type="button" class="{{ $btn }}" @click="closeAll()">Cancel</button>
-                    <button type="button" class="{{ $btn }}" @click="saveDetails()">Save changes</button>
+                <div class="mt-3 flex justify-between gap-2.5">
+                    <span>
+                        Received by:
+                        <span class="inline-block min-w-[180px] border-b border-gray-500 ml-2"></span>
+                    </span>
+                    <div>
+                        <button type="button" class="{{ $btn }}" @click="closeAll()">Cancel</button>
+                        <button type="button" class="{{ $btn }}" @click="saveDetails()">Save changes</button>
+                    </div>
                 </div>
             </section>
         </div>
@@ -252,8 +283,14 @@
         function payrollProcessing(cfg) {
             const SCHEDULED_WORKDAYS = 22;
             const LATE_PER_MINUTE = 1.80;
+            const MALASAKITAN = 50;
+            const HONORARIUM = 1924.31;          // administrative role only
+            const CASH_ADVANCE_CAP = 2000;       // max deduction per cutoff
+            // 30th cutoff only. Base = daily wage x scheduled workdays
+            const RATES = { sss: 0.05, hdmf: 0.02, philhealth: 0.025, peraaCeap: 0.04 };
 
             return {
+                CASH_ADVANCE_CAP,
                 employees: cfg.employees,
                 steps: cfg.steps,
                 cutoff: cfg.cutoff,
@@ -271,12 +308,32 @@
                 activeIndex: null,
                 draft: null,
 
+                // ---- row selection (controls the Transfer button) ----
+                selected: [],
+
+                get allSelected() {
+                    return this.employees.length > 0 && this.selected.length === this.employees.length;
+                },
+                toggleAll(checked) {
+                    this.selected = checked ? this.employees.map((e) => e.id) : [];
+                },
+                toggleOne(id, checked) {
+                    this.selected = checked
+                        ? [...new Set([...this.selected, id])]
+                        : this.selected.filter((x) => x !== id);
+                },
+
+                // [label, key, only30] computed automatically, read-only
+                computedFields: [
+                    ['MALASAKITAN', 'fixed50', false], ['Late', 'late', false], ['Absences', 'absences', false],
+                    ['SSS (5%)', 'sss', true], ['PhilHealth (2.5%)', 'philhealth', true],
+                    ['HDMF (2%)', 'hdmf', true], ['PERAA/CEAP (4%)', 'peraaCeap', true],
+                ],
+
                 // [label, key] editable deductions
                 dedFields: [
-                    ['SSS', 'sss'], ['SSS LOAN', 'sssLoan'], ['PhilHealth', 'philhealth'],
-                    ['PERAA/CEAP', 'peraaCeap'], ['PERAA/CEAP LOAN', 'peraaCeapLoan'],
-                    ['HDMF', 'hdmf'], ['HDMF LOAN', 'hdmfLoan'],
-                    ['Cash advance (half per cutoff)', 'cashAdvance'],
+                    ['SSS LOAN', 'sssLoan'], ['PERAA/CEAP LOAN', 'peraaCeapLoan'], ['HDMF LOAN', 'hdmfLoan'],
+                    ['Cash advance balance (max \u20B12,000 per cutoff)', 'cashAdvance'],
                 ],
 
                 money(v) {
@@ -298,19 +355,22 @@
 
                     const ratio = days > 0 ? Math.min(Math.max(hours / days / 8, 0), 1) : 0;
                     const basicPay = wage * days * ratio;
-                    const honorarium = Math.max(0, Number(e.honorarium) || 0);
+                    const honorarium = e.isAdmin ? HONORARIUM : 0;
                     const grossPay = basicPay + honorarium;
 
                     const d = e.deductions || {};
                     const g = (k) => Math.max(0, Number(d[k]) || 0);
                     const is30 = this.cutoff === '30th';
+                    const monthly = wage * SCHEDULED_WORKDAYS;
+                    const c = (k) => is30 ? monthly * RATES[k] : 0;
+
                     const deductions = {
-                        fixed50: 50, late: lateDed, absences,
-                        sss: is30 ? g('sss') : 0, sssLoan: is30 ? g('sssLoan') : 0,
-                        philhealth: is30 ? g('philhealth') : 0,
-                        peraaCeap: is30 ? g('peraaCeap') : 0, peraaCeapLoan: is30 ? g('peraaCeapLoan') : 0,
-                        hdmf: is30 ? g('hdmf') : 0, hdmfLoan: is30 ? g('hdmfLoan') : 0,
-                        cashAdvance: g('cashAdvance') / 2,
+                        fixed50: MALASAKITAN, late: lateDed, absences,
+                        sss: c('sss'), philhealth: c('philhealth'), hdmf: c('hdmf'), peraaCeap: c('peraaCeap'),
+                        sssLoan: is30 ? g('sssLoan') : 0,
+                        peraaCeapLoan: is30 ? g('peraaCeapLoan') : 0,
+                        hdmfLoan: is30 ? g('hdmfLoan') : 0,
+                        cashAdvance: Math.min(CASH_ADVANCE_CAP, g('cashAdvance')),
                     };
                     const totalDeductions = Object.values(deductions).reduce((a, b) => a + b, 0);
 
@@ -319,6 +379,7 @@
 
                 get preview() { return this.draft ? this.calc(this.draft) : null; },
 
+                // loans: 30th only. Cash advance: both cutoffs.
                 isActive(field) { return this.cutoff === '30th' || field === 'cashAdvance'; },
 
                 // ---- table inputs: days / hours / late stay consistent with each other ----
@@ -343,9 +404,10 @@
                     e.hoursWorked = Math.max(0, std - e.lateMinutes / 60);
                     this.syncRow(e, el);
                 },
-                // Update the sibling inputs without re-rendering the one being typed in
+                // Update the sibling inputs without re-rendering the one being typed in.
+                // Only number inputs: the row also contains the select checkbox.
                 syncRow(e, el) {
-                    const inputs = el.closest('tr').querySelectorAll('input');
+                    const inputs = el.closest('tr').querySelectorAll('input[type="number"]');
                     [e.daysWorked, e.hoursWorked, e.lateMinutes].forEach((val, k) => {
                         if (inputs[k] !== el) inputs[k].value = val;
                     });
@@ -361,7 +423,6 @@
                     if (this.activeIndex === null) return;
                     const e = this.employees[this.activeIndex];
                     e.step = Math.max(1, Number(this.draft.step) || 1);
-                    e.honorarium = Math.max(0, Number(this.draft.honorarium) || 0);
                     e.deductions = { ...this.draft.deductions };
                     this.queueSave();
                     this.closeAll();
@@ -414,17 +475,16 @@
                     return { idle: '', saving: 'Saving...', saved: 'All changes saved', error: 'Not saved. Check your connection.' }[this.saveState];
                 },
 
+                // Contributions and honorarium are computed server-side; only manual fields are sent
                 rowsPayload() {
                     return this.employees.map((e) => ({
                         employee_id: e.id, step_no: e.step,
                         days_worked: Number(e.daysWorked) || 0,
                         hours_worked: Number(e.hoursWorked) || 0,
                         late_minutes: Number(e.lateMinutes) || 0,
-                        honorarium: Number(e.honorarium) || 0,
-                        sss: Number(e.deductions.sss) || 0, sss_loan: Number(e.deductions.sssLoan) || 0,
-                        philhealth: Number(e.deductions.philhealth) || 0,
-                        peraa_ceap: Number(e.deductions.peraaCeap) || 0, peraa_ceap_loan: Number(e.deductions.peraaCeapLoan) || 0,
-                        hdmf: Number(e.deductions.hdmf) || 0, hdmf_loan: Number(e.deductions.hdmfLoan) || 0,
+                        sss_loan: Number(e.deductions.sssLoan) || 0,
+                        peraa_ceap_loan: Number(e.deductions.peraaCeapLoan) || 0,
+                        hdmf_loan: Number(e.deductions.hdmfLoan) || 0,
                         cash_advance: Number(e.deductions.cashAdvance) || 0,
                     }));
                 },
@@ -469,7 +529,8 @@
                 },
 
                 async transfer(event) {
-                    if (!confirm('Transfer all ' + this.employees.length + ' payslips (' + this.cutoff + ' cutoff, ' + this.period + ') to Salary Monitoring?')) return;
+                    if (this.selected.length === 0) return;
+                    if (!confirm('Transfer ' + this.selected.length + ' selected payslip(s) (' + this.cutoff + ' cutoff, ' + this.period + ') to Salary Monitoring?')) return;
                     if (!(await this.flushSave())) { alert('Your changes could not be saved, so nothing was transferred.'); return; }
                     event.target.submit();
                 },

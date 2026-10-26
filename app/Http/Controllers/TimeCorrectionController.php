@@ -10,7 +10,10 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
-/** Employee side: submit a correction request and see its review status. */
+/**
+ * Employee side: submit a correction request and see its review status.
+ * app/Http/Controllers/TimeCorrectionController.php
+ */
 class TimeCorrectionController extends Controller
 {
     public function index(Request $request): View
@@ -36,16 +39,16 @@ class TimeCorrectionController extends Controller
             'employee_id'     => $request->user()->employee->id,
             'correction_date' => $data['correction_date'],
             'correction_type' => $data['correction_type'],
-            'incorrect_time'  => $data['incorrect_time'],
+            'incorrect_time'  => $data['incorrect_time'] ?? null,
             'correct_time'    => $data['correct_time'],
             'note'            => $data['note'] ?? 'No note provided.', // column is NOT NULL
-            'proof_path'      => $request->file('proof')->store('time-corrections', 'local'), // private disk
+            'proof_path'      => $request->file('proof')?->store('time-corrections', 'local'), // private disk
             'hr_status'       => TimeCorrection::PENDING,
             'admin_status'    => TimeCorrection::PENDING,
         ]);
 
         return redirect()
-            ->route('time-corrections.index')
+            ->route('time-corrections.employee.index')
             ->with('success', 'Correction request submitted for HR and Admin review.');
     }
 
@@ -54,10 +57,13 @@ class TimeCorrectionController extends Controller
     {
         $user    = $request->user();
         $isOwner = $user->employee?->id === $timeCorrection->employee_id;
-        $isStaff = in_array($user->role ?? null, ['hr', 'admin'], true);
+        $isStaff = $user->hasAnyRole(['HR', 'Admin']);
 
         abort_unless($isOwner || $isStaff, 403);
-        abort_unless($timeCorrection->proof_path && Storage::disk('local')->exists($timeCorrection->proof_path), 404);
+        abort_unless(
+            $timeCorrection->proof_path && Storage::disk('local')->exists($timeCorrection->proof_path),
+            404
+        );
 
         return response()->file(Storage::disk('local')->path($timeCorrection->proof_path));
     }

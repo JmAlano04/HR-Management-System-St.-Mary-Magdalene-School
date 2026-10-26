@@ -3,55 +3,121 @@
 namespace App\Http\Controllers;
 
 use App\Models\TimeCorrection;
+use App\Services\ApplyTimeCorrection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
-/** HR / Admin side: list requests and approve or reject them. */
+/**
+ * HR / Admin side: review correction requests and record a decision.
+ * app/Http/Controllers/TimeCorrectionReviewController.php
+ */
 class TimeCorrectionReviewController extends Controller
 {
+    /** Which status column belongs to the logged-in reviewer (Spatie roles). */
+    private function reviewer(Request $request): array
+    {
+        $user = $request->user();
+
+        if ($user->hasRole('HR')) {
+            return ['prefix' => 'hr', 'label' => 'HR'];
+        }
+
+        if ($user->hasRole('Admin')) {
+            return ['prefix' => 'admin', 'label' => 'Admin'];
+        }
+
+        abort(403);
+    }
+
     public function index(Request $request): View
     {
-        $this->authorizeReviewer($request);
+        $reviewer = $this->reviewer($request);
+        $column   = $reviewer['prefix'] . '_status';
+        $view     = $request->query('view') === 'archive' ? 'archive' : 'current';
 
-        $requests = TimeCorrection::with('employee')
-            ->when($request->status, fn ($q, $s) => $q->where(fn ($w) => $w->where('hr_status', $s)->orWhere('admin_status', $s)))
-            ->latest('id')
-            ->paginate(15)
-            ->withQueryString();
+        $query = TimeCorrection::with('employee')->latest('id');
 
-        return view('time-corrections.review', compact('requests'));
-    }
-
-    public function update(Request $request, TimeCorrection $timeCorrection, string $reviewer): RedirectResponse
-    {
-        $this->authorizeReviewer($request, $reviewer);
-
-        $validated = $request->validate([
-            'status' => ['required', 'in:Approved,Rejected'],
-        ]);
-
-        $timeCorrection->update([
-            "{$reviewer}_status"      => $validated['status'],
-            "{$reviewer}_reviewed_at" => now(),
-            "{$reviewer}_reviewed_by" => $request->user()->id,
-        ]);
-
-        return back()->with('success', 'Request marked as ' . $validated['status'] . '.');
-    }
-
-    /**
-     * Adjust to your own role system (Spatie, Gate, middleware, etc.).
-     * Assumes users.role is 'hr' or 'admin'.
-     */
-    private function authorizeReviewer(Request $request, ?string $reviewer = null): void
-    {
-        $role = $request->user()->role ?? null;
-
-        abort_unless(in_array($role, ['hr', 'admin'], true), 403);
-
-        if ($reviewer !== null) {
-            abort_unless($role === $reviewer, 403, 'You can only review as your own role.');
+        if ($view === 'archive') {
+            // Archive = both HR and Admin have decided
+            $query->where('hr_status', '!=', TimeCorrection::PENDING)
+                  ->where('admin_status', '!=', TimeCorrection::PENDING);
+        } else {
+            // Current = at least one of them still has to decide
+            $query->where(fn ($q) => $q->where('hr_status', TimeCorrection::PENDING)
+                                       ->orWhere('admin_status', TimeCorrection::PENDING));
         }
+
+        $requests = $query->paginate(10)->withQueryString();
+
+        // Data for the Alpine details modal, keyed by request id
+        $cards = [];
+        foreach ($requests as $r) {
+            $cards[$r->id] = [
+                'employee_name'  => $r->employee?->name ?? 'Unknown employee',
+                'date_label'     => $r->correction_date?->format('F j, Y') ?? '—',
+                'type'           => $r->correction_type,
+                'incorrect_time' => $r->incorrect_time ? substr($r->incorrect_time, 0, 5) : '—',
+                'correct_time'   => $r->correct_time ? substr($r->correct_time, 0, 5) : '—',
+                'note'           => $r->note,
+                'proof_url'      => $r->proof_path ? route('proof', $r) : null,
+                'can_decide'     => $r->{$column} === TimeCorrection::PENDING,
+            ];
+        }
+
+        // FIX: this must be the review view, not 'timeCorrection' (employee view)
+        return view('timeCorrection', [
+            'requests'     => $requests,
+            'cards'        => $cards,
+            'view'         => $view,
+            'reviewer'     => $reviewer['label'],
+            'pendingCount' => TimeCorrection::where($column, TimeCorrection::PENDING)->count(),
+        ]);
+    }
+
+    public function decide(Request $request, ApplyTimeCorrection $applier): RedirectResponse
+    {
+        $reviewer = $this->reviewer($request);
+        $prefix   = $reviewer['prefix'];
+        $column   = $prefix . '_status';
+
+        $data = $request->validate([
+            'time_correction_id' => ['required', 'exists:time_corrections,id'],
+            'decision'           => ['required', 'in:' . TimeCorrection::APPROVED . ',' . TimeCorrection::REJECTED],
+        ]);
+
+        $alreadyReviewed = false;
+        $applied         = false;
+
+        DB::transaction(function () use ($data, $column, $prefix, $request, $applier, &$alreadyReviewed, &$applied) {
+            // Lock the row so HR and Admin approving at the same moment can't double-apply
+            $correction = TimeCorrection::lockForUpdate()->findOrFail($data['time_correction_id']);
+
+            if ($correction->{$column} !== TimeCorrection::PENDING) {
+                $alreadyReviewed = true;
+                return;
+            }
+
+            $correction->update([
+                $column                 => $data['decision'],
+                "{$prefix}_reviewed_at" => now(),
+                "{$prefix}_reviewed_by" => $request->user()->id,
+            ]);
+
+            // Both HR and Admin approved -> write the corrected time to attendance
+            if ($correction->isFullyApproved() && ! $correction->applied_at) {
+                $applier->handle($correction);
+                $applied = true;
+            }
+        });
+
+        if ($alreadyReviewed) {
+            return back()->withErrors(['decision' => 'You have already reviewed this request.']);
+        }
+
+        return back()->with('success', $applied
+            ? 'Request Approved. Attendance has been updated.'
+            : "Request {$data['decision']}.");
     }
 }

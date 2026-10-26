@@ -26,7 +26,7 @@ class JobOpening extends Model
             ->map(fn (self $job) => [
                 'id'         => $job->id,
                 'title'      => $job->title,
-                'applicants' => (int) \DB::table('applications')
+                'applicants' => (int) \Illuminate\Support\Facades\DB::table('applications')
                     ->where('position', $job->title)
                     ->count(),
             ]);

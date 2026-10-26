@@ -27,6 +27,7 @@ use App\Http\Controllers\NonWorkingDayController;
 use App\Http\Controllers\EmployeeOffboardingController;
 use App\Http\Controllers\EmployeePayslipController;
 use App\Http\Controllers\JobOpeningController;
+use App\Http\Controllers\TimeCorrectionReviewController;
 use App\Http\Controllers\PayslipController;
 
 use App\Http\Controllers\LeaveRequestController;
@@ -276,7 +277,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::middleware('role:Admin|HR|Employee')->group(function () {
+    Route::middleware('role:Admin|HR')->group(function () {
 
         // Employee Management
         Route::resource('employees', EmployeeController::class)
@@ -313,20 +314,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ])->name('attendance.destroy');
 
         // Time Correction Management
-        Route::get('/time-corrections', [
-            TimeCorrectionController::class,
-            'index',
-        ])->name('time-corrections.index');
+    
 
-        Route::patch('/time-corrections/decision', [
-            TimeCorrectionController::class,
-            'decide',
-        ])->name('decide');
+        Route::get('/time-corrections', [TimeCorrectionReviewController::class, 'index'])->name('time-corrections.index');
+        Route::patch('/time-corrections/decide', [TimeCorrectionReviewController::class, 'decide'])->name('decide');
+        Route::get('/time-corrections/{timeCorrection}/proof', [TimeCorrectionController::class, 'proof'])->name('proof');
+  
 
-        Route::get('/time-corrections/{timeCorrection}/proof', [
-            TimeCorrectionController::class,
-            'proof',
-        ])->name('proof');
+
 
         // Leave Management
         Route::get('/leaves', [LeaveManagementController::class, 'index'])

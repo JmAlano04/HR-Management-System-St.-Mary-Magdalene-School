@@ -34,6 +34,8 @@ class LoanRequest extends Model
         'admin_reviewed_at',
         'admin_reviewed_by',
         'archived_at',          // employee Archive tab
+        'staff_archived_at',    // HR/Admin Archive tab
+        'staff_archived_by',
     ];
 
     protected $casts = [
@@ -43,6 +45,7 @@ class LoanRequest extends Model
         'accounting_reviewed_at' => 'datetime',
         'admin_reviewed_at'      => 'datetime',
         'archived_at'            => 'datetime',
+        'staff_archived_at'      => 'datetime',
     ];
 
     /* ---------- Relationships ---------- */
@@ -65,6 +68,11 @@ class LoanRequest extends Model
     public function accountingReviewer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'accounting_reviewed_by');
+    }
+
+    public function staffArchiver(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'staff_archived_by');
     }
 
     public function repayments(): HasMany
@@ -94,12 +102,61 @@ class LoanRequest extends Model
         return $archived ? $query->whereNotNull('archived_at') : $query->whereNull('archived_at');
     }
 
+    // HR/Admin side: Active tab (false) vs Archive tab (true)
+    public function scopeStaffArchived(Builder $query, bool $archived): Builder
+    {
+        return $archived
+            ? $query->whereNotNull('staff_archived_at')
+            : $query->whereNull('staff_archived_at');
+    }
+
+    // Month filter, expects "YYYY-MM" (matches <input type="month">)
+    public function scopeInMonth(Builder $query, ?string $month): Builder
+    {
+        if (! $month || ! preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $month)) {
+            return $query;
+        }
+
+        [$year, $mon] = explode('-', $month);
+
+        return $query->whereYear('requested_at', (int) $year)
+                     ->whereMonth('requested_at', (int) $mon);
+    }
+
     // Approved by HR, Accounting and Admin (counts toward loan balances)
     public function scopeFullyApproved(Builder $query): Builder
     {
         return $query->where('hr_status', 'approved')
             ->where('accounting_status', 'approved')
             ->where('admin_status', 'approved');
+    }
+
+    /* ---------- Staff-side review helpers ---------- */
+
+    // Which approval stage this user acts on: 'admin' | 'hr' | null
+    public static function stageForUser($user): ?string
+    {
+        if (! $user) {
+            return null;
+        }
+        if ($user->hasRole('Admin')) {
+            return 'admin';
+        }
+        if ($user->hasRole('HR')) {
+            return 'hr';
+        }
+
+        return null;
+    }
+
+    // Can this stage still be decided right now?
+    public function canReviewAs(?string $stage): bool
+    {
+        return match ($stage) {
+            'hr'    => $this->hr_status === 'pending',
+            'admin' => $this->can_review,   // HR + Accounting approved, Admin pending
+            default => false,
+        };
     }
 
     /* ---------- Accessors (admin side) ---------- */
@@ -110,6 +167,16 @@ class LoanRequest extends Model
         return $this->hr_status === 'approved'
             && $this->accounting_status === 'approved'
             && $this->admin_status === 'pending';
+    }
+
+    // Only finished requests can be archived (nothing still pending)
+    public function getCanArchiveAttribute(): bool
+    {
+        return $this->staff_archived_at === null && (
+            $this->hr_status === 'rejected'
+            || $this->accounting_status === 'rejected'
+            || in_array($this->admin_status, ['approved', 'rejected'], true)
+        );
     }
 
     // Text shown on the badge / next to the buttons

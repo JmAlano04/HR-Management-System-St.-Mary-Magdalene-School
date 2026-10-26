@@ -2,27 +2,29 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * NOTE: kung meron ka nang app/Models/Application.php, i-merge lang ang
- * mga casts, constants, scopes, at accessors dito — huwag palitan ang buong file
- * kung may ibang laman ang sa iyo.
- */
 class Application extends Model
 {
-    // Saang disk naka-save ang resume / cover letter / application letter.
-    // Palitan ng 'public' kung doon mo sinave.
-    public const DOCUMENT_DISK = 'local';
+    use HasFactory;
 
-    // route type => [label, column]
+    // Disk where applicant uploads are stored. Change if your upload code uses another disk.
+    public const DOCUMENT_DISK = 'public';
+
+    // column name => display meta
     public const DOCUMENTS = [
-        'resume'             => ['label' => 'Resume',             'column' => 'resume'],
-        'cover_letter'       => ['label' => 'Cover letter',       'column' => 'coverletter'],
-        'application_letter' => ['label' => 'Application letter', 'column' => 'appletter'],
+        'resume'      => ['label' => 'Resume'],
+        'coverletter' => ['label' => 'Cover Letter'],
+        'appletter'   => ['label' => 'Application Letter'],
     ];
+
+    // Statuses that mean the application is finished (goes to the Archive tab)
+    public const APPROVED_STATUSES = ['qualified', 'approved'];
+    public const REJECTED_STATUSES = ['rejected'];
 
     protected $fillable = [
         'user_id',
@@ -49,9 +51,9 @@ class Application extends Model
     protected $casts = [
         'birth_date'     => 'date',
         'interview_date' => 'date',
-        'phone'          => 'encrypted',   // AES-256, kaya TEXT ang column
-        'home_address'   => 'encrypted',
     ];
+
+    /* ---------- Relationships ---------- */
 
     public function user(): BelongsTo
     {
@@ -60,88 +62,133 @@ class Application extends Model
 
     /* ---------- Scopes ---------- */
 
-    public function scopeSearch(Builder $query, ?string $term): Builder
+    // Finished (approved or rejected) = Archive tab. Everything else = Active tab.
+    public function scopeArchived(Builder $query, bool $archived = true): Builder
     {
-        $term = trim((string) $term);
+        $finished = array_merge(self::APPROVED_STATUSES, self::REJECTED_STATUSES);
 
-        return $query->when($term !== '', function (Builder $q) use ($term) {
-            $like = "%{$term}%";
-
-            $q->where(function (Builder $w) use ($like, $term) {
-                $w->where('fullname', 'like', $like)
-                    ->orWhere('email', 'like', $like);
-
-                // Search by Applicant ID, e.g. "APP-0012" or "app12"
-                if (preg_match('/^app-?0*(\d+)$/i', $term, $m)) {
-                    $w->orWhere('id', (int) $m[1]);
-                }
-            });
-        });
+        return $archived
+            ? $query->whereIn('status', $finished)
+            : $query->whereNotIn('status', $finished);
     }
 
     /**
-     * Filter by workflow key: pending | scheduled | approved | rejected
+     * Filter by key: pending | scheduled | approved | rejected
+     * Empty string / unknown key = no filter.
      */
     public function scopeStatusKey(Builder $query, ?string $key): Builder
     {
+        $finished = array_merge(self::APPROVED_STATUSES, self::REJECTED_STATUSES);
+
         return match ($key) {
-            'approved'  => $query->where('status', 'qualified'),
-            'rejected'  => $query->where('status', 'rejected'),
-            // pending + may interview date (Interview Scheduled / Awaiting Admin Review)
-            'scheduled' => $query->where('status', 'pending')->whereNotNull('interview_date'),
-            // pending + wala pang interview date (Under Review)
-            'pending'   => $query->where('status', 'pending')->whereNull('interview_date'),
+            'approved'  => $query->whereIn('status', self::APPROVED_STATUSES),
+            'rejected'  => $query->whereIn('status', self::REJECTED_STATUSES),
+            'scheduled' => $query->whereNotIn('status', $finished)->whereNotNull('interview_date'),
+            'pending'   => $query->whereNotIn('status', $finished)->whereNull('interview_date'),
             default     => $query,
         };
     }
 
+    // Search by name, email, position, or code (e.g. APP-00012)
+    public function scopeSearch(Builder $query, ?string $term): Builder
+    {
+        $term = trim((string) $term);
+
+        if ($term === '') {
+            return $query;
+        }
+
+        return $query->where(function (Builder $q) use ($term) {
+            $q->where('fullname', 'like', "%{$term}%")
+              ->orWhere('email', 'like', "%{$term}%")
+              ->orWhere('position', 'like', "%{$term}%");
+
+            if (preg_match('/(\d+)/', $term, $m)) {
+                $q->orWhere('id', (int) $m[1]);
+            }
+        });
+    }
+
     /* ---------- Accessors ---------- */
 
-    // Applicant ID na ipinapakita: APP-0001
+    // Display code, e.g. APP-00012
     public function getCodeAttribute(): string
     {
-        return sprintf('APP-%04d', $this->id);
-    }
-
-    // Natapos na ang interview kapag dumating o lumipas na ang interview date
-    public function getInterviewCompletedAttribute(): bool
-    {
-        return $this->interview_date !== null && $this->interview_date->lte(today());
-    }
-
-    // Label sa Status column
-    public function getWorkflowStatusAttribute(): string
-    {
-        return match (true) {
-            $this->status === 'qualified'      => 'Approved',
-            $this->status === 'rejected'       => 'Rejected',
-            $this->interview_date === null     => 'Under Review',
-            $this->interview_completed         => 'Awaiting Admin Review',
-            default                            => 'Interview Scheduled',
-        };
+        return 'APP-' . str_pad((string) $this->id, 5, '0', STR_PAD_LEFT);
     }
 
     // pending | scheduled | approved | rejected
     public function getStatusKeyAttribute(): string
     {
-        return match ($this->workflow_status) {
-            'Approved'                                     => 'approved',
-            'Rejected'                                     => 'rejected',
-            'Interview Scheduled', 'Awaiting Admin Review' => 'scheduled',
-            default                                        => 'pending',
+        if (in_array($this->status, self::APPROVED_STATUSES, true)) {
+            return 'approved';
+        }
+        if (in_array($this->status, self::REJECTED_STATUSES, true)) {
+            return 'rejected';
+        }
+
+        return $this->interview_date ? 'scheduled' : 'pending';
+    }
+
+    // Label shown on the badge / modal
+    public function getWorkflowStatusAttribute(): string
+    {
+        return match ($this->status_key) {
+            'approved'  => 'Approved',
+            'rejected'  => 'Rejected',
+            'scheduled' => 'Interview Scheduled',
+            default     => 'Pending Review',
         };
     }
 
-    // Puwedeng mag-approve/reject ang Admin kapag tapos na ang interview at wala pang desisyon
-    public function getCanDecideAttribute(): bool
+    // true once the application is approved or rejected (archived)
+    public function getIsArchivedAttribute(): bool
     {
-        return $this->status === 'pending' && $this->interview_completed;
+        return in_array($this->status_key, ['approved', 'rejected'], true);
     }
 
+    // Interview date + time as one Carbon instance (null if not scheduled)
+    public function getInterviewAtAttribute(): ?Carbon
+    {
+        if (! $this->interview_date) {
+            return null;
+        }
+
+        $at = $this->interview_date->copy()->startOfDay();
+
+        if ($this->interview_time) {
+            try {
+                $time = Carbon::parse($this->interview_time);
+                $at->setTime($time->hour, $time->minute);
+            } catch (\Throwable $e) {
+                // unreadable time: keep start of day
+            }
+        }
+
+        return $at;
+    }
+
+    // Admin/HR can decide only after the interview is done, and only once
+    public function getCanDecideAttribute(): bool
+    {
+        if ($this->is_archived) {
+            return false;
+        }
+
+        $at = $this->interview_at;
+
+        return $at !== null && $at->lte(now());
+    }
+
+    /* ---------- Helpers ---------- */
+
+    // Stored path of an uploaded document (null if none)
     public function documentPath(string $type): ?string
     {
-        $column = self::DOCUMENTS[$type]['column'] ?? null;
+        if (! array_key_exists($type, self::DOCUMENTS)) {
+            return null;
+        }
 
-        return $column ? ($this->{$column} ?: null) : null;
+        return $this->getAttribute($type) ?: null;
     }
 }

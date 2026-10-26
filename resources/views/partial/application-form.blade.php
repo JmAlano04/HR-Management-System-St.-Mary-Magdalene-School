@@ -1,5 +1,4 @@
-
-    <x-slot name="title">My Application</x-slot>
+<x-slot name="title">My Application</x-slot>
 
     @php
         // Passed from ApplicationController@index (null if the applicant hasn't submitted yet)
@@ -232,10 +231,17 @@
                             <dl class="grid gap-3 text-[15px] sm:grid-cols-[150px_1fr]">
                                 <dt class="font-semibold text-gray-800">Date</dt>
                                 <dd class="text-gray-600">{{ $application->interview_date->format('F j, Y') }}</dd>
+
                                 <dt class="font-semibold text-gray-800">Time</dt>
-                                <dd class="text-gray-600">{{ $application->interview_time ?? 'To be announced' }}</dd>
+                                <dd class="text-gray-600">{{ $application->interview_time ?: 'To be announced' }}</dd>
+
                                 <dt class="font-semibold text-gray-800">Location</dt>
-                                <dd class="text-gray-600">{{ $application->interview_location ?? 'St. Mary Magdalene School' }}</dd>
+                                <dd class="text-gray-600">{{ $application->interview_location ?: 'St. Mary Magdalene School' }}</dd>
+
+                                @if ($application->interview_note)
+                                    <dt class="font-semibold text-gray-800">Note</dt>
+                                    <dd class="whitespace-pre-line break-words text-gray-600">{{ $application->interview_note }}</dd>
+                                @endif
                             </dl>
                         </div>
                     @else

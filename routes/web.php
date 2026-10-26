@@ -106,6 +106,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'document',
         ])->name('onboarding.document');
 
+        Route::post('/onboarding/{application}/schedule', [OnboardingManagementController::class, 'schedule'])->name('onboarding.schedule');
+
+
         // Offboarding Management
         Route::get('/offboarding', [OffboardingController::class, 'index'])
             ->name('offboarding.index');
@@ -194,7 +197,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/loan-employee', [
             EmployeeLoanController::class,
             'index',
-        ])->name('loans.employee.index');
+    ])->name('loans.employee.index');
 
         Route::post('/loan-employee', [
             EmployeeLoanController::class,
@@ -436,6 +439,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             LoanController::class,
             'decide',
         ])->name('loans.decide');
+
+    Route::patch('/loans/{loanRequest}/archive', [LoanController::class, 'archive'])->name('loans.archive');
+    Route::patch('/loans/{loanRequest}/restore', [LoanController::class, 'restore'])->name('loans.restore');
+
     });
 
     /*

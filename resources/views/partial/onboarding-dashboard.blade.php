@@ -27,19 +27,25 @@
             ['Rejected',         $stats['rejected'],     'Did not meet requirements'],
         ];
 
-        $statusOptions = [
-            ''          => 'All Status',
-            'pending'   => 'Under Review',
-            'approved'  => 'Approved',
-            'rejected'  => 'Rejected',
-            'scheduled' => 'Interview Scheduled',
-        ];
+        $statusOptions = $tab === 'archive'
+            ? [
+                ''         => 'All archived applicants',
+                'approved' => 'Approved',
+                'rejected' => 'Rejected',
+            ]
+            : [
+                ''          => 'All active applicants',
+                'pending'   => 'Under Review',
+                'scheduled' => 'Interview Scheduled',
+            ];
+
+        $fieldClass = 'rounded-md border border-gray-200 px-3 py-2.5 text-sm font-normal outline-none focus:border-[#dc2626] focus:ring-2 focus:ring-[#dc2626]/10';
     @endphp
 
     <div
         class="px-4 pb-12 sm:px-6 lg:px-10"
-        x-data="onboardingApplicants(@js(['items' => $cards]))"
-        @keydown.escape.window="rejecting ? rejecting = false : detailId = null"
+        x-data="onboardingApplicants(@js(['items' => $cards, 'open' => session('open_application')]))"
+        @keydown.escape.window="rejecting ? rejecting = false : closeDetail()"
     >
         {{-- ============ Stat cards ============ --}}
         <section aria-label="Applicant statistics" class="mt-2 grid max-w-[1100px] gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -52,6 +58,10 @@
             @endforeach
         </section>
 
+        @if (auth()->user()->hasRole('HR'))
+            @include('partial.jobopening')
+        @endif
+
         {{-- ============ Applications ============ --}}
         <section aria-labelledby="applicantQueueTitle"
             class="mt-6 max-w-[1100px] rounded-[22px] border border-[#f0dada] bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)] sm:p-7">
@@ -59,9 +69,12 @@
             <div class="mb-6">
                 <p class="mb-1.5 text-xs font-extrabold uppercase tracking-[0.08em] text-[#b22222]">Applicants</p>
                 <h2 id="applicantQueueTitle" class="flex items-center gap-3 text-2xl font-bold text-gray-900">
-                    <i class="fas fa-address-book text-[#dc2626]" aria-hidden="true"></i> Submitted applications
+                    <i class="fas fa-address-book text-[#dc2626]" aria-hidden="true"></i>
+                    {{ $tab === 'archive' ? 'Archived applications' : 'Submitted applications' }}
                 </h2>
-                <p class="mt-2 text-gray-500">Manage and review all applicant submissions.</p>
+                <p class="mt-2 text-gray-500">
+                    {{ $tab === 'archive' ? 'Approved and rejected applicants are automatically moved here.' : 'Manage and review active applicant submissions.' }}
+                </p>
             </div>
 
             {{-- Flash messages --}}
@@ -76,8 +89,31 @@
                 </div>
             @endif
 
+            {{-- Active / Archive tabs --}}
+            <nav aria-label="Applicant application status" class="mb-5 flex gap-2 border-b border-gray-200">
+                <a href="{{ route('onboarding.index', ['tab' => 'active', 'q' => $search]) }}"
+                    @class([
+                        'border-b-2 px-4 py-3 text-sm font-semibold transition',
+                        'border-[#b22222] text-[#b22222]' => $tab === 'active',
+                        'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-800' => $tab !== 'active',
+                    ])
+                    aria-current="{{ $tab === 'active' ? 'page' : 'false' }}">
+                    Active <span class="ml-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">{{ $counts['active'] }}</span>
+                </a>
+                <a href="{{ route('onboarding.index', ['tab' => 'archive', 'q' => $search]) }}"
+                    @class([
+                        'border-b-2 px-4 py-3 text-sm font-semibold transition',
+                        'border-[#b22222] text-[#b22222]' => $tab === 'archive',
+                        'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-800' => $tab !== 'archive',
+                    ])
+                    aria-current="{{ $tab === 'archive' ? 'page' : 'false' }}">
+                    Archive <span class="ml-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">{{ $counts['archive'] }}</span>
+                </a>
+            </nav>
+
             {{-- Search + status filter --}}
             <form method="GET" action="{{ route('onboarding.index') }}" class="mb-5 flex flex-col gap-3 sm:flex-row">
+                <input type="hidden" name="tab" value="{{ $tab }}">
                 <label class="flex flex-1 items-center gap-3 rounded-lg border border-gray-200 bg-white px-5 py-3 shadow-sm focus-within:border-[#dc2626] focus-within:ring-2 focus-within:ring-[#dc2626]/10">
                     <i class="fas fa-search text-gray-400" aria-hidden="true"></i>
                     <input type="text" name="q" value="{{ $search }}" placeholder="Search by name, email, or ID..."
@@ -153,6 +189,9 @@
                     @if ($search !== '' || $status !== '')
                         <h3 class="text-xl font-bold text-gray-800">No matching applications</h3>
                         <p class="max-w-md text-gray-500">Try a different search or status filter.</p>
+                    @elseif ($tab === 'archive')
+                        <h3 class="text-xl font-bold text-gray-800">Archive is empty</h3>
+                        <p class="max-w-md text-gray-500">Approved and rejected applications will appear here automatically.</p>
                     @else
                         <h3 class="text-xl font-bold text-gray-800">No Applications Yet</h3>
                         <p class="max-w-md text-gray-500">Once candidates apply, their information will appear here.</p>
@@ -163,7 +202,7 @@
 
         {{-- ============ Applicant details modal ============ --}}
         <div x-show="detail" x-cloak x-transition.opacity class="fixed inset-0 z-[60] grid place-items-center p-5">
-            <div class="absolute inset-0 bg-[rgba(17,24,39,0.55)]" @click="detailId = null"></div>
+            <div class="absolute inset-0 bg-[rgba(17,24,39,0.55)]" @click="closeDetail()"></div>
 
             <section role="dialog" aria-modal="true" aria-labelledby="applicantModalTitle"
                 class="relative max-h-[90vh] w-full max-w-[980px] overflow-auto rounded-[20px] bg-white p-[26px] shadow-[0_30px_80px_rgba(15,23,42,0.25)]">
@@ -178,9 +217,25 @@
                         <span class="whitespace-nowrap rounded-full px-4 py-2 text-xs font-semibold"
                             :class="detail ? statusClasses[detail.status_key] : ''"
                             x-text="detail ? detail.status : ''"></span>
-                        <button type="button" @click="detailId = null" aria-label="Close details"
+                        <button type="button" @click="closeDetail()" aria-label="Close details"
                             class="h-9 w-9 shrink-0 cursor-pointer rounded-full bg-gray-100 text-2xl leading-none text-gray-900 transition hover:bg-gray-200">&times;</button>
                     </div>
+                </div>
+
+                {{-- Result of the last action (shown when the page reloads with this modal open) --}}
+                <div x-show="reopened" class="mb-5 grid gap-2">
+                    @if (session('success'))
+                        <div class="rounded-lg border border-green-300 bg-green-50 px-4 py-3 text-sm font-semibold text-green-800">
+                            {{ session('success') }}
+                        </div>
+                    @endif
+                    @if ($errors->any())
+                        <div class="rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">
+                            @foreach ($errors->all() as $error)
+                                <p>{{ $error }}</p>
+                            @endforeach
+                        </div>
+                    @endif
                 </div>
 
                 <template x-if="detail">
@@ -227,6 +282,11 @@
                                         </p>
                                     @endforeach
 
+                                    <p x-show="detail.interview_note" class="min-w-0 text-sm">
+                                        <strong class="block text-[0.78rem] uppercase tracking-[0.04em] text-gray-500">Note to applicant</strong>
+                                        <span class="whitespace-pre-line break-words text-gray-700" x-text="detail.interview_note"></span>
+                                    </p>
+
                                     <p x-show="detail.rejection_reason" class="min-w-0 text-sm">
                                         <strong class="block text-[0.78rem] uppercase tracking-[0.04em] text-[#b22222]">Rejection reason</strong>
                                         <span class="break-words text-gray-700" x-text="detail.rejection_reason"></span>
@@ -268,14 +328,14 @@
                                     <input type="date" name="interview_date" required
                                         min="{{ now()->toDateString() }}"
                                         :value="detail.interview_date_value"
-                                        class="rounded-md border border-gray-200 px-3 py-2.5 text-sm font-normal outline-none focus:border-[#dc2626] focus:ring-2 focus:ring-[#dc2626]/10">
+                                        class="{{ $fieldClass }}">
                                 </label>
 
                                 <label class="grid gap-1 text-sm font-semibold text-gray-800">
                                     Scheduled time <span class="text-xs font-normal text-gray-400">(8:00 AM – 2:00 PM)</span>
                                     <input type="time" name="interview_time" required min="08:00" max="14:00"
                                         :value="detail.interview_time_value"
-                                        class="rounded-md border border-gray-200 px-3 py-2.5 text-sm font-normal outline-none focus:border-[#dc2626] focus:ring-2 focus:ring-[#dc2626]/10">
+                                        class="{{ $fieldClass }}">
                                 </label>
 
                                 <label class="grid gap-1 text-sm font-semibold text-gray-800 sm:col-span-2">
@@ -283,15 +343,16 @@
                                     <input type="text" name="interview_location" maxlength="255"
                                         placeholder="e.g. HR Office, 2nd floor"
                                         :value="detail.interview_location !== 'N/A' ? detail.interview_location : ''"
-                                        class="rounded-md border border-gray-200 px-3 py-2.5 text-sm font-normal outline-none focus:border-[#dc2626] focus:ring-2 focus:ring-[#dc2626]/10">
+                                        class="{{ $fieldClass }}">
+                                    <span class="text-xs font-normal text-gray-400">Leave blank to use St. Mary Magdalene School.</span>
                                 </label>
 
                                 <label class="grid gap-1 text-sm font-semibold text-gray-800 sm:col-span-2">
                                     Note
                                     <textarea name="interview_note" rows="2" maxlength="1000"
                                         placeholder="Optional message for applicant"
-                                        x-text="detail.interview_note"
-                                        class="resize-y rounded-md border border-gray-200 px-3 py-2.5 text-sm font-normal outline-none focus:border-[#dc2626] focus:ring-2 focus:ring-[#dc2626]/10"></textarea>
+                                        :value="detail.interview_note"
+                                        class="resize-y {{ $fieldClass }}"></textarea>
                                 </label>
 
                                 <div class="sm:col-span-2">
@@ -302,11 +363,12 @@
                             </form>
                         </div>
 
-                        {{-- Approve / Reject (enabled once the interview date has arrived) --}}
+                        {{-- Approve / Reject (enabled once the interview time has passed) --}}
                         <div>
                             <p x-show="!detail.can_decide && detail.status_key !== 'approved' && detail.status_key !== 'rejected'"
                                 class="mb-3 text-sm text-gray-500">
-                                Decision is available once the interview is completed (on or after the interview date).
+                                <span x-show="detail.status_key === 'scheduled'">Decision is available once the scheduled interview time has passed.</span>
+                                <span x-show="detail.status_key !== 'scheduled'">Schedule an interview first. A decision can be made after it is done.</span>
                             </p>
 
                             <div class="flex flex-wrap justify-between gap-4">
@@ -377,9 +439,13 @@
 
     <script>
         function onboardingApplicants(cfg) {
+            // If the page reloaded after a schedule/decision action, reopen that applicant's modal
+            const reopenId = cfg.open && cfg.items[cfg.open] ? Number(cfg.open) : null;
+
             return {
                 items: cfg.items,
-                detailId: null,
+                detailId: reopenId,
+                reopened: reopenId !== null, // shows the success/error banner inside the modal
                 rejecting: false,
 
                 statusClasses: {
@@ -395,7 +461,13 @@
 
                 openDetail(id) {
                     this.rejecting = false;
+                    this.reopened = false;
                     this.detailId = id;
+                },
+
+                closeDetail() {
+                    this.detailId = null;
+                    this.reopened = false;
                 },
             };
         }

@@ -28,6 +28,14 @@
     .net td { color: #fff; font-weight: bold; font-size: 13px; }
     .net td:last-child { text-align: right; }
     .foot { margin-top: 16px; font-size: 9px; }
+
+    /* Signature block */
+    .signature { margin-top: 40px; }
+    .signature td.sig-spacer { width: 60%; }
+    .signature td.sig-box { width: 40%; text-align: center; vertical-align: bottom; }
+    .sig-label { text-align: left; font-size: 11px; font-weight: bold; margin-bottom: 36px; }
+    .sig-line { border-top: 1px solid #1f2937; padding-top: 4px; font-size: 10px; font-weight: bold; }
+    .sig-role { font-size: 9px; color: #6b7280; }
 </style>
 </head>
 <body>
@@ -71,6 +79,20 @@
     </table>
 
     <table class="net"><tr><td>NET PAY</td><td>{{ $peso($card['net_pay']) }}</td></tr></table>
+
+    {{-- Approved By signature (right side) --}}
+    <table class="signature">
+        <tr>
+            <td class="sig-spacer"></td>
+            <td class="sig-box">
+                <div class="sig-label">Approved By:</div>
+                <div class="sig-line">
+                    {{ $approver_name ?? '' }}
+                </div>
+                <div class="sig-role">{{ $approver_position ?? 'Authorized Signatory' }}</div>
+            </td>
+        </tr>
+    </table>
 
     <p class="foot muted">
         Approved by employee on {{ $payslip->response?->reviewed_at?->format('M d, Y h:i A') }}.

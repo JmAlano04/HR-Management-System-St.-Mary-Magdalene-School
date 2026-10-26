@@ -66,7 +66,7 @@ class EmployeeLoanController extends Controller
             'requested_at' => now(),
         ]);
 
-        return redirect()->route('loan.loan-employee.index')->with('status', 'Request sent to HR for validation.');
+    return redirect()->route('loans.employee.index')->with('status', 'Request sent to HR for validation.');
     }
 
     /** POST /employee/loan-requests/archive  (ids[]) */

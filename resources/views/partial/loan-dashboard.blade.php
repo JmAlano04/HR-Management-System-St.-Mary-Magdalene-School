@@ -1,189 +1,202 @@
-{{-- resources/views/admin/loan-management/index.blade.php --}}
-    {{-- Browser tab title --}}
-    <x-slot name="title">
-        Financial Loan Dashboard
-    </x-slot>
+{{-- Needs: $loans, $awaitingAdmin, $tab, $month (from LoanController@index) --}}
+@php
+    $badge = [
+        'locked'   => 'bg-gray-100 text-gray-600',
+        'pending'  => 'bg-yellow-100 text-yellow-800',
+        'approved' => 'bg-green-100 text-green-800',
+        'rejected' => 'bg-red-100 text-red-800',
+    ];
+    $stage = \App\Models\LoanRequest::stageForUser(auth()->user());
+@endphp
 
-    {{-- Page heading (shown in the layout's top bar) --}}
-    <x-slot name="header">
-        <h1 class="text-2xl font-extrabold leading-none  ml-20 tracking-tight text-[#b22222] sm:text-4xl">Financial Loan Management</h1>
-    </x-slot>
+<div class="space-y-5">
+    {{-- Flash + errors --}}
+    @if (session('success'))
+        <div class="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700 shadow-sm">
+            {{ session('success') }}
+        </div>
+    @endif
+    @if ($errors->any())
+        <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 shadow-sm">
+            @foreach ($errors->all() as $error)
+                <div>{{ $error }}</div>
+            @endforeach
+        </div>
+    @endif
 
-    @php
-        // Look of the status badge
-        $badge = fn (string $key) => match ($key) {
-            'approved' => 'bg-[#edf8f1] text-[#177245]',
-            'rejected' => 'bg-[#fff0f0] text-[#b42318]',
-            'locked'   => 'bg-[#f0f2f5] text-[#667085]',
-            default    => 'bg-[#fff7e8] text-[#946200]',
-        };
-    @endphp
+    {{-- Overview --}}
+    <div class="flex items-center justify-between gap-4 rounded-2xl border border-gray-200 bg-white px-4 py-3 shadow-sm">
+        <div>
 
-    <div
-        class="px-4 pb-12 sm:px-6 lg:px-10"
-        x-data="loanReview()"
-        @keydown.escape.window="rejectUrl = null"
-    >
-        <section aria-labelledby="loanQueueTitle"
-            class="mt-2 max-w-[1100px] rounded-[22px] border border-[#f0dada] bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)] sm:p-7">
+           <h2 class="mt-4 mb-3 text-3xl font-semibold text-gray-800">Accounting-approved loan requests</h2>
 
-            {{-- Heading + awaiting counter --}}
-            <div class="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
-                <div>
-                    <p class="mb-1.5 text-xs font-extrabold uppercase tracking-[0.08em] text-[#b22222]">Loan requests</p>
-                    <h2 id="loanQueueTitle" class="text-2xl font-bold text-gray-900">Accounting-approved loan requests</h2>
-                    <p class="mt-2 text-gray-500">Admin review opens only after both HR and Accounting approve.</p>
-                </div>
-
-                <span class="whitespace-nowrap rounded-full border border-[#f0d5d5] bg-[#fff6f6] px-3 py-2 text-xs font-extrabold text-[#9b2424]" aria-live="polite">
-                    {{ $awaitingAdmin }} awaiting Admin
-                </span>
-            </div>
-
-            {{-- Flash messages --}}
-            @if (session('success'))
-                <div class="mb-4 rounded-lg border border-green-300 bg-green-50 px-4 py-3 text-sm font-semibold text-green-800">
-                    {{ session('success') }}
-                </div>
-            @endif
-            @if ($errors->any())
-                <div class="mb-4 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">
-                    {{ $errors->first() }}
-                </div>
-            @endif
-
-            {{-- Loan request list --}}
-            <div class="grid gap-3" aria-live="polite">
-                @forelse ($loans as $loan)
-                    <article class="grid gap-[18px] rounded-[14px] border border-[#ecebea] bg-white p-5 transition duration-200 hover:border-[#d9a5a5] hover:shadow-[0_10px_30px_rgba(15,23,42,0.05)] md:grid-cols-[minmax(0,1fr)_auto]">
-
-                        <div class="min-w-0">
-                            {{-- Employee + status --}}
-                            <div class="flex flex-col items-start justify-between gap-3 sm:flex-row">
-                                <div>
-                                    <h3 class="text-base font-bold text-slate-800">{{ $loan->employee?->name ?? 'Employee' }}</h3>
-                                    <span class="mt-1 inline-block text-xs text-gray-500">{{ $loan->employee?->employee_id ?? 'ID unavailable' }}</span>
-                                </div>
-
-                                <span class="whitespace-nowrap rounded-full px-2.5 py-1.5 text-xs font-extrabold {{ $badge($loan->badge_key) }}">
-                                    {{ $loan->gate_message }}
-                                </span>
-                            </div>
-
-                            {{-- Facts --}}
-                            <div class="mt-4 flex flex-wrap gap-x-7 gap-y-3">
-                                @foreach ([
-                                    ['Loan type',           $loan->loan_type ?: 'Not provided'],
-                                    ['Amount requested',    $loan->formatted_amount],
-                                    ['Submitted',           $loan->requested_at?->format('M d, Y, h:i A') ?? 'Date unavailable'],
-                                    ['HR decision',         ucfirst($loan->hr_status)],
-                                    ['Accounting decision', $loan->accounting_status === 'pending' && $loan->hr_status !== 'approved' ? 'Waiting' : ucfirst($loan->accounting_status)],
-                                ] as [$label, $value])
-                                    <span class="grid gap-1">
-                                        <small class="text-[0.72rem] text-gray-400">{{ $label }}</small>
-                                        <strong class="text-[0.84rem] text-gray-700">{{ $value }}</strong>
-                                    </span>
-                                @endforeach
-                            </div>
-
-                            {{-- Purpose --}}
-                            <p class="mt-4 break-words text-sm leading-relaxed text-gray-600">{{ $loan->reason ?: 'No purpose provided.' }}</p>
-
-                            {{-- Rejection reason (from whichever stage rejected it) --}}
-                            @if ($loan->rejection_reason_text)
-                                <p class="mt-2.5 break-words rounded-r-[7px] border-l-[3px] border-[#b22222] bg-[#fff5f5] px-3 py-2.5 text-[0.84rem] leading-relaxed text-[#842020]">
-                                    <strong>Rejection reason:</strong> {{ $loan->rejection_reason_text }}
-                                </p>
-                            @endif
-                        </div>
-
-                        {{-- Actions --}}
-                        <div class="flex min-w-0 flex-row flex-wrap items-center justify-center gap-2 md:min-w-[170px] md:flex-col">
-                            @if ($loan->can_review)
-                                <form method="POST" action="{{ route('loans.decide', $loan) }}" class="m-0 w-full flex-1 md:flex-none"
-                                    onsubmit="return confirm('Approve this loan request?');">
-                                    @csrf
-                                    @method('PATCH')
-                                    <input type="hidden" name="decision" value="approved">
-                                    <button type="submit"
-                                        class="min-h-[38px] w-full cursor-pointer rounded-lg bg-[#b22222] px-3 text-[0.8rem] font-extrabold text-white transition hover:bg-[#941b1b]">
-                                        Approve request
-                                    </button>
-                                </form>
-
-                                <button type="button" @click="openReject('{{ route('loans.decide', $loan) }}')"
-                                    class="min-h-[38px] w-full flex-1 cursor-pointer rounded-lg border border-[#efc9c9] bg-white px-3 text-[0.8rem] font-extrabold text-[#a32020] transition hover:bg-[#fff4f4] md:flex-none">
-                                    Reject
-                                </button>
-                            @else
-                                <span class="text-[0.8rem] leading-snug text-gray-500 md:text-right">{{ $loan->gate_message }}</span>
-                            @endif
-                        </div>
-                    </article>
-                @empty
-                    <div class="rounded-[14px] border border-dashed border-[#e5caca] p-[30px] text-center text-gray-500">
-                        No employee loan requests have been submitted yet.
-                    </div>
-                @endforelse
-            </div>
-
-            @if ($loans->hasPages())
-                <div class="mt-5">{{ $loans->links() }}</div>
-            @endif
-        </section>
-
-        {{-- ============ Rejection reason modal ============ --}}
-        <div x-show="rejectUrl" x-cloak x-transition.opacity class="fixed inset-0 z-[60] grid place-items-center p-5">
-            <div class="absolute inset-0 bg-[rgba(17,24,39,0.55)]" @click="rejectUrl = null"></div>
-
-            <section role="dialog" aria-modal="true" aria-labelledby="loanRejectionTitle"
-                class="relative w-full max-w-[520px] rounded-[16px] bg-white p-6 shadow-[0_30px_80px_rgba(15,23,42,0.25)] sm:p-[30px]">
-
-                <p class="mb-2 text-[0.72rem] font-extrabold uppercase tracking-[0.12em] text-[#b22222]">Admin decision</p>
-                <h2 id="loanRejectionTitle" class="text-[1.4rem] font-bold tracking-tight text-slate-900">Reason for rejection</h2>
-                <p class="mb-3 mt-2 text-sm leading-relaxed text-gray-500">
-                    Provide a reason so the employee understands why this request is being rejected.
-                </p>
-
-                <form method="POST" :action="rejectUrl" class="grid gap-2.5">
-                    @csrf
-                    @method('PATCH')
-                    <input type="hidden" name="decision" value="rejected">
-
-                    <label for="loanRejectionReason" class="text-[0.84rem] font-bold text-gray-700">
-                        Rejection reason <span class="text-[#b22222]" aria-hidden="true">*</span>
-                    </label>
-                    <textarea id="loanRejectionReason" name="reason" rows="4" maxlength="1000" required
-                        placeholder="Explain why this request is being rejected."
-                        x-ref="reason"
-                        x-effect="if (rejectUrl) $nextTick(() => { $refs.reason.value = ''; $refs.reason.focus(); })"
-                        class="min-h-[116px] w-full resize-y rounded-[9px] border border-gray-300 p-3 text-gray-800 outline-none focus:border-[#b22222] focus:ring-2 focus:ring-[#b22222]/15"></textarea>
-                    <small class="text-xs text-gray-400">Maximum 1,000 characters.</small>
-
-                    <div class="mt-2 flex flex-col-reverse justify-end gap-2 sm:flex-row">
-                        <button type="button" @click="rejectUrl = null"
-                            class="min-h-[40px] cursor-pointer rounded-lg border border-gray-300 bg-white px-4 text-[0.82rem] font-extrabold text-gray-600 transition hover:bg-gray-50">
-                            Cancel
-                        </button>
-                        <button type="submit"
-                            class="min-h-[40px] cursor-pointer rounded-lg bg-[#b22222] px-4 text-[0.82rem] font-extrabold text-white transition hover:bg-[#941b1b]">
-                            Confirm rejection
-                        </button>
-                    </div>
-                </form>
-            </section>
+            <p class="text-xs font-medium  text-gray-400">Admin review opens only after both HR and Accounting approve. </p>
+            
+        </div>
+        <div class="inline-flex items-center gap-2 rounded-full bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+            <span class="h-2.5 w-2.5 rounded-full bg-red-600"></span>
+            Awaiting Admin review: <span class="text-base font-bold">{{ $awaitingAdmin }}</span>
         </div>
     </div>
 
-    <script>
-        function loanReview() {
-            return {
-                rejectUrl: null,
+    {{-- Tabs + month filter (filter shows on Archive tab only) --}}
+    <div class="rounded-2xl border border-gray-200 bg-white px-3 py-2 shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-2 rounded-full bg-gray-100 p-1">
+                <a href="{{ route('loans.index', ['tab' => 'active']) }}"
+                   class="rounded-full px-4 py-2 text-sm font-semibold transition {{ $tab === 'active' ? 'bg-red-700 text-white shadow-sm' : 'text-gray-600 hover:text-gray-900' }}">
+                    Active
+                </a>
+                <a href="{{ route('loans.index', ['tab' => 'archive']) }}"
+                   class="rounded-full px-4 py-2 text-sm font-semibold transition {{ $tab === 'archive' ? 'bg-red-700 text-white shadow-sm' : 'text-gray-600 hover:text-gray-900' }}">
+                    Archive
+                </a>
+            </div>
 
-                openReject(url) {
-                    this.rejectUrl = url;
-                },
-            };
-        }
-    </script>
+            @if ($tab === 'archive')
+                <form method="GET" action="{{ route('loans.index') }}" class="flex flex-wrap items-center gap-2">
+                    <input type="hidden" name="tab" value="archive">
+                    <label for="month" class="text-sm font-medium text-gray-600">Month</label>
+                    <input type="month" id="month" name="month" value="{{ $month }}"
+                           class="rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-700 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-200">
+                    <button type="submit" class="rounded-lg bg-red-700 px-3 py-2 text-sm font-medium text-white transition hover:bg-red-800">Filter</button>
+                    @if ($month)
+                        <a href="{{ route('loans.index', ['tab' => 'archive']) }}"
+                           class="text-sm font-medium text-gray-500 underline-offset-2 hover:underline">Clear</a>
+                    @endif
+                </form>
+            @endif
+        </div>
+    </div>
 
+    {{-- Table --}}
+    <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm text-left text-gray-700">
+                <thead class="bg-gray-50 text-gray-600">
+                    <tr>
+                        <th class="px-4 py-3 font-semibold">Employee</th>
+                        <th class="px-4 py-3 font-semibold">Type</th>
+                        <th class="px-4 py-3 font-semibold">Amount</th>
+                        <th class="px-4 py-3 font-semibold">Reason</th>
+                        <th class="px-4 py-3 font-semibold">Requested</th>
+                        <th class="px-4 py-3 font-semibold">Status</th>
+                        <th class="px-4 py-3 font-semibold">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 bg-white">
+                    @foreach ($loans as $loan)
+                        <tr class="align-top transition hover:bg-gray-50">
+                            <td class="px-4 py-4 font-medium text-gray-800">
+                                {{ $loan->employee?->name ?? '—' }}
+                            </td>
+                            <td class="px-4 py-4">{{ $loan->loan_type }}</td>
+                            <td class="px-4 py-4 font-semibold text-gray-900">{{ $loan->formatted_amount }}</td>
+                            <td class="max-w-xs px-4 py-4 text-gray-600">
+                                <div class="line-clamp-2">{{ $loan->reason }}</div>
+                            </td>
+                            <td class="whitespace-nowrap px-4 py-4 text-gray-600">{{ $loan->requested_at?->format('M d, Y') }}</td>
+                            <td class="px-4 py-4">
+                                <div class="space-y-2">
+                                    <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold {{ $badge[$loan->badge_key] ?? $badge['locked'] }}">
+                                        {{ $loan->gate_message }}
+                                    </span>
+                                    @if ($loan->rejection_reason_text)
+                                        <div class="text-xs text-red-700">Reason: {{ $loan->rejection_reason_text }}</div>
+                                    @endif
+                                </div>
+                            </td>
+
+                            {{-- Actions --}}
+                            <td class="min-w-[170px] px-4 py-4">
+                                <div class="flex flex-col gap-2">
+
+                                    {{-- Approve / Reject (Active tab, only when this user's stage is open) --}}
+                                    @if ($tab === 'active' && $loan->canReviewAs($stage))
+                                        <form method="POST" action="{{ route('loans.decide', $loan) }}"
+                                              onsubmit="return confirm('Approve this loan request?')">
+                                            @csrf
+                                            @method('PATCH')
+                                            <input type="hidden" name="decision" value="approved">
+                                            <button type="submit"
+                                                    class="w-full rounded-lg bg-green-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-green-700">
+                                                Approve
+                                            </button>
+                                        </form>
+
+                                        <details class="group">
+                                            <summary class="flex w-full cursor-pointer list-none items-center justify-center rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-red-700 [&::-webkit-details-marker]:hidden">
+                                                Reject
+                                            </summary>
+                                            <form method="POST" action="{{ route('loans.decide', $loan) }}"
+                                                  class="mt-2 space-y-2 rounded-xl border border-red-100 bg-red-50 p-2.5">
+                                                @csrf
+                                                @method('PATCH')
+                                                <input type="hidden" name="decision" value="rejected">
+                                                <textarea name="reason" rows="2" required maxlength="1000"
+                                                          placeholder="Reason for rejection"
+                                                          class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-200"></textarea>
+                                                <button type="submit"
+                                                        class="w-full rounded-lg bg-red-700 px-3 py-2 text-sm font-medium text-white transition hover:bg-red-800">
+                                                    Confirm reject
+                                                </button>
+                                            </form>
+                                        </details>
+                                    @endif
+
+                                    {{-- Archive (Active tab, finished requests only) --}}
+                                    @if ($tab === 'active' && $loan->can_archive)
+                                        <form method="POST" action="{{ route('loans.archive', $loan) }}"
+                                              onsubmit="return confirm('Archive this loan request?')">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="submit"
+                                                    class="w-full rounded-lg bg-gray-700 px-3 py-2 text-sm font-medium text-white transition hover:bg-gray-800">
+                                                Archive
+                                            </button>
+                                        </form>
+                                    @endif
+
+                                    {{-- Restore (Archive tab) --}}
+                                    @if ($tab === 'archive')
+                                        <div class="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-500">
+                                            Archived {{ $loan->staff_archived_at?->format('M d, Y') }}
+                                        </div>
+                                        <form method="POST" action="{{ route('loans.restore', $loan) }}"
+                                              onsubmit="return confirm('Restore this loan request to Active?')">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="submit"
+                                                    class="w-full rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-blue-700">
+                                                Restore
+                                            </button>
+                                        </form>
+                                    @endif
+
+                                    {{-- Nothing to do --}}
+                                    @if ($tab === 'active' && ! $loan->canReviewAs($stage) && ! $loan->can_archive)
+                                        <span class="text-xs text-gray-400">No action available</span>
+                                    @endif
+                                </div>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+
+        @if ($loans->isEmpty())
+            <div class="flex items-center justify-center py-12 text-center text-gray-500">
+                @if ($tab === 'archive')
+                    No archived loan requests{{ $month ? ' for ' . \Carbon\Carbon::createFromFormat('Y-m', $month)->format('F Y') : '' }}.
+                @else
+                    No loan requests.
+                @endif
+            </div>
+        @endif
+    </div>
+
+    <div class="mt-4">
+        {{ $loans->links() }}
+    </div>
+</div>

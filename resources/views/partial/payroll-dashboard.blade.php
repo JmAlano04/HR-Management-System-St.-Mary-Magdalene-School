@@ -258,17 +258,17 @@
                         </div>
 
                         {{-- Download --}}
-                        @if ($empState === 'Pending' || 'Rejected')
-                        <div class="flex justify-end">
-                            
-                        </div>
-                        @elseif ($empState === 'Approved')
-                         <div class="flex justify-end">
+                        @if ($empState === 'Approved')
+                            <div class="flex justify-end">
                             <a :href="downloadUrl.replace('__ID__', slip.id)"
                                 class="inline-flex cursor-pointer items-center gap-2 rounded-[10px] border border-[#b22222] bg-[#b22222] px-4 py-[10px] text-[0.85rem] font-bold text-white transition hover:-translate-y-px">
                                 <i class="fa-solid fa-download" aria-hidden="true"></i> Download payslip (PDF)
                             </a>
                         </div>
+                        @elseif ($empState === 'Pending' || 'Rejected')
+                            <div>
+                                
+                            </div>
                         @endif
                     </div>
                 </template>

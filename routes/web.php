@@ -26,6 +26,7 @@ use App\Http\Controllers\EmployeeLoanController;
 use App\Http\Controllers\NonWorkingDayController;
 use App\Http\Controllers\EmployeeOffboardingController;
 use App\Http\Controllers\EmployeePayslipController;
+use App\Http\Controllers\JobOpeningController;
 use App\Http\Controllers\PayslipController;
 
 use App\Http\Controllers\LeaveRequestController;
@@ -108,6 +109,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::post('/onboarding/{application}/schedule', [OnboardingManagementController::class, 'schedule'])->name('onboarding.schedule');
 
+
+        Route::post('/job-openings', [JobOpeningController::class, 'store'])->name('job-openings.store');
+        Route::delete('/job-openings.store/{jobOpening}', [JobOpeningController::class, 'destroy'])->name('job-openings.destroy');
+ 
 
         // Offboarding Management
         Route::get('/offboarding', [OffboardingController::class, 'index'])

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Application;
+use App\Models\JobOpening;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -11,12 +12,6 @@ use Illuminate\Validation\Rule;
 
 class ApplicationController extends Controller
 {
-    // Must match the lists in the form (resources/views/application-form.blade.php)
-    private const POSITIONS = [
-        'teaching'     => ['Elementary Teacher', 'High School Teacher', 'Senior High School Teacher', 'Kindergarten Teacher'],
-        'non-teaching' => ['Registrar', 'Guidance Counselor', 'Librarian', 'Accountant', 'Security Guard', 'Janitor'],
-    ];
-
     private const EDUCATION = [
         'Elementary', 'High School', 'Senior High School', 'Vocational',
         'Associate Degree', "Bachelor's Degree", "Master's Degree",
@@ -27,6 +22,8 @@ class ApplicationController extends Controller
         return view('application-form', [
             'application' => Application::where('user_id', Auth::id())->first(),
             'user'        => Auth::user(),
+            // Only positions that are currently open (managed from the Open Positions page)
+            'jobOpenings' => JobOpening::orderBy('title')->pluck('title'),
         ]);
     }
 
@@ -47,17 +44,14 @@ class ApplicationController extends Controller
             'gender'       => 'required|in:Male,Female,Other',
             'civil_status' => 'required|in:Single,Married,Widowed,Separated,Divorced',
             'education'    => ['required', Rule::in(self::EDUCATION)],
-            'job_type'     => 'required|in:teaching,non-teaching',
-            'position'     => [
-                'required',
-                Rule::in(self::POSITIONS[$request->input('job_type')] ?? []),
-            ],
+            // Must be one of the currently open positions
+            'position'     => ['required', 'string', Rule::exists('job_openings', 'title')],
             'resume'       => 'required|file|mimes:pdf|max:5120',
             'coverletter'  => 'required|file|mimes:pdf|max:5120',
             'appletter'    => 'required|file|mimes:pdf|max:5120',
         ], [
             'birth_date.before_or_equal' => 'You must be at least 18 years old.',
-            'position.in'                => 'Please choose a position that matches the selected job type.',
+            'position.exists'            => 'That position is no longer open. Please choose another one.',
         ]);
 
         // Use the same disk the Application model reads from

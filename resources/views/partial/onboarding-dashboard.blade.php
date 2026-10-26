@@ -59,9 +59,46 @@
         </section>
 
         @if (auth()->user()->hasRole('HR'))
-            @include('partial.jobopening')
-        @endif
+          
 
+            {{-- resources/views/onboarding/applicants.blade.php (parent view) --}}
+            {{-- Your controller must pass: 'jobOpenings' => JobOpening::withApplicantCounts() --}}
+
+            <style>[x-cloak]{display:none !important;}</style>
+
+            <div x-data="{ managingJobs: false, addingJob: false }">
+
+                @if (session('status'))
+                    <div class="mt-6 max-w-[1100px] rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm font-semibold text-green-800">
+                        {{ session('status') }}
+                    </div>
+                @endif
+
+                {{-- ...the rest of your onboarding applicants page... --}}
+
+                @include('partial.jobopening', ['jobOpenings' => $jobOpenings])
+
+            </div>
+
+            {{--
+            Controller that renders the page, e.g.:
+
+            public function index()
+            {
+                return view('onboarding.applicants', [
+                    'jobOpenings' => \App\Models\JobOpening::withApplicantCounts(),
+                ]);
+            }
+
+            Note: if your existing x-data is a named component (Alpine.data('onboardingApplicants', ...)),
+            add `managingJobs: false, addingJob: false` to that object instead of using the inline x-data above.
+            --}}
+                    @endif
+                    
+
+
+
+        
         {{-- ============ Applications ============ --}}
         <section aria-labelledby="applicantQueueTitle"
             class="mt-6 max-w-[1100px] rounded-[22px] border border-[#f0dada] bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)] sm:p-7">

@@ -5,12 +5,15 @@
         $application = $application ?? null;
         $status = $application->status ?? null; // pending | qualified | rejected
 
+        // Titles of the currently open positions (from the job_openings table)
+        $jobOpenings = $jobOpenings ?? collect();
+
         $inputClass = 'min-h-[50px] w-full rounded-lg border-2 border-gray-200 bg-white px-4 py-3 text-[15px] transition hover:border-gray-300 focus:border-[#b22222] focus:outline-none focus:ring-4 focus:ring-red-700/10';
     @endphp
 
     <div
         class="bg-gradient-to-br from-[#f5f7fa] to-[#f5f7fa] px-5 py-10"
-        x-data="applicationForm({{ $application ? 3 : 1 }}, {{ $application ? 'true' : 'false' }})"
+        x-data="applicationForm({{ $application ? 3 : 1 }}, {{ $application ? 'true' : 'false' }}, {{ $jobOpenings->isNotEmpty() ? 'true' : 'false' }})"
     >
         <div class="mx-auto max-w-[850px] rounded-2xl bg-white p-5 shadow-[0_20px_60px_rgba(0,0,0,0.15)] sm:p-12">
 
@@ -158,29 +161,28 @@
                             </div>
                         </div>
 
-                        {{-- Job type --}}
-                        <div>
-                            <label for="job_type" class="mb-2 block font-semibold">Job Type <span class="font-bold text-red-600">*</span></label>
-                            <select id="job_type" name="job_type" required x-model="jobType" @change="position = ''" class="{{ $inputClass }}">
-                                <option value="" disabled hidden>Select Job Type</option>
-                                <option value="teaching">Teaching Position</option>
-                                <option value="non-teaching">Non-Teaching Position</option>
-                            </select>
-                            <p class="mt-1 text-[13px] text-gray-500">Select the category for your applied position</p>
-                            <p class="mt-1 text-[13px] font-semibold text-red-600">{{ $errors->first('job_type') }}</p>
-                        </div>
-
-                        {{-- Position (depends on job type) --}}
+                        {{-- Position (from the currently available job openings) --}}
                         <div>
                             <label for="position" class="mb-2 block font-semibold">Position Applied For <span class="font-bold text-red-600">*</span></label>
-                            <select id="position" name="position" required x-model="position" :disabled="!jobType"
-                                class="{{ $inputClass }} disabled:bg-gray-50 disabled:text-gray-400">
-                                <option value="" disabled hidden>Select a position</option>
-                                <template x-for="p in (positions[jobType] || [])" :key="p">
-                                    <option :value="p" x-text="p"></option>
-                                </template>
-                            </select>
-                            <p class="mt-1 text-[13px] text-gray-500">Choose from available positions</p>
+
+                            @if ($jobOpenings->isEmpty())
+                                <select id="position" name="position" disabled
+                                    class="{{ $inputClass }} cursor-not-allowed bg-gray-50 text-gray-400">
+                                    <option value="">No open positions available</option>
+                                </select>
+                                <p class="mt-1 text-[13px] font-semibold text-amber-700">
+                                    There are no open positions right now. Please check back later.
+                                </p>
+                            @else
+                                <select id="position" name="position" required class="{{ $inputClass }}">
+                                    <option value="" disabled @selected(! old('position')) hidden>Select a position</option>
+                                    @foreach ($jobOpenings as $title)
+                                        <option value="{{ $title }}" @selected(old('position') === $title)>{{ $title }}</option>
+                                    @endforeach
+                                </select>
+                                <p class="mt-1 text-[13px] text-gray-500">Choose from available positions</p>
+                            @endif
+
                             <p class="mt-1 text-[13px] font-semibold text-red-600">{{ $errors->first('position') }}</p>
                         </div>
                     </div>
@@ -297,8 +299,8 @@
                     </button>
 
                     {{-- Step 1 -> 2 --}}
-                    <button type="button" x-show="step === 1 && !submitted" @click="next()"
-                        class="min-w-[140px] cursor-pointer rounded-lg bg-[#b22222] px-7 py-3.5 font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#8b1a1a] hover:shadow-[0_6px_20px_rgba(178,34,34,0.4)]">
+                    <button type="button" x-show="step === 1 && !submitted" @click="next()" :disabled="!hasOpenings"
+                        class="min-w-[140px] cursor-pointer rounded-lg bg-[#b22222] px-7 py-3.5 font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#8b1a1a] hover:shadow-[0_6px_20px_rgba(178,34,34,0.4)] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:shadow-none">
                         Next
                     </button>
 
@@ -313,18 +315,13 @@
     </div>
 
     <script>
-        function applicationForm(startStep, submitted) {
+        function applicationForm(startStep, submitted, hasOpenings) {
             return {
                 step: startStep,
                 submitted: submitted,
+                hasOpenings: hasOpenings,
                 sending: false,
-                jobType: @js(old('job_type', '')),
-                position: @js(old('position', '')),
                 fileErrors: {},
-                positions: {
-                    'teaching': ['Elementary Teacher', 'High School Teacher', 'Senior High School Teacher', 'Kindergarten Teacher'],
-                    'non-teaching': ['Registrar', 'Guidance Counselor', 'Librarian', 'Accountant', 'Security Guard', 'Janitor'],
-                },
 
                 // Check every required field inside one step
                 validateStep(ref) {
@@ -339,6 +336,7 @@
                 },
 
                 next() {
+                    if (!this.hasOpenings) return;
                     if (this.validateStep('step1')) this.step = 2;
                 },
 
@@ -363,6 +361,7 @@
                 },
 
                 submit() {
+                    if (!this.hasOpenings) { this.step = 1; return; }
                     if (!this.validateStep('step1')) { this.step = 1; return; }
                     if (!this.validateStep('step2')) return;
                     this.sending = true;

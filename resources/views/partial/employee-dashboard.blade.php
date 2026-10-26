@@ -1,395 +1,473 @@
-{{-- resources/views/employees/index.blade.php --}}
+{{-- resources/views/admin/onboarding-management/index.blade.php --}}
+{{-- Expects: $applications (paginator), $cards (object keyed by id), $stats, $jobOpenings, $search, $status --}}
 
-    {{-- Browser tab title --}}
-     @auth
-    @if (auth()->user()->hasRole('Admin'))
-        <x-slot name="title">
-            Employee Monitoring
-        </x-slot>
-        <x-slot name="header">
-            <h1 class="text-2xl font-extrabold leading-none  ml-20 tracking-tight text-[#b22222] sm:text-4xl">Employee Monitoring</h1>
-        </x-slot>
-    @elseif (auth()->user()->hasRole('HR'))
-        <x-slot name="title">
-             Employee Management 
-        </x-slot>
-        <x-slot name="header">
-            <h1 class="text-2xl font-extrabold leading-none  ml-20 tracking-tight text-[#b22222] sm:text-4xl">Employee Management</h1>
-        </x-slot>
-    @endif
-@endauth
+    <x-slot name="title">
+        Onboarding Dashboard
+    </x-slot>
+
+    <x-slot name="header">
+        <h1 class="ml-20 text-2xl font-extrabold leading-none tracking-tight text-[#b22222] sm:text-4xl">Onboarding Management</h1>
+    </x-slot>
 
     @php
-        $inputClass = 'w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-3 text-[15px] text-gray-900 transition focus:border-[#b22222] focus:outline-none focus:ring-4 focus:ring-red-700/10';
-        $labelClass = 'mb-1.5 block text-sm font-bold text-gray-600';
-        $errClass   = 'mt-1 text-xs font-semibold text-red-600';
+        $badge = fn (string $key) => match ($key) {
+            'approved'  => 'bg-[#dcfce7] text-[#166534]',
+            'rejected'  => 'bg-[#fee2e2] text-[#991b1b]',
+            'scheduled' => 'bg-[#dbeafe] text-[#0369a1]',
+            default     => 'bg-[#fef3c7] text-[#b45309]',
+        };
 
-        // Only HR can add / edit / delete (Admin can view only)
-        $canManage = auth()->user()->hasRole('HR');
+        $statCards = [
+            ['Total Applicants', $stats['total'],        'All submitted applications'],
+            ['Under Review',     $stats['under_review'], 'Pending evaluation'],
+            ['Approved',         $stats['approved'],     'Qualified candidates'],
+            ['Rejected',         $stats['rejected'],     'Did not meet requirements'],
+        ];
 
-        // Keep what the user typed if validation failed, so the form can reopen
-        $old = collect(old())->only([
-            'user_id', 'employee_id', 'name', 'position', 'department', 'role_type', 'email',
-            'birthday', 'address', 'emergency_name', 'emergency_contact',
-        ])->all();
+        $statusOptions = $tab === 'archive'
+            ? [
+                ''         => 'All archived applicants',
+                'approved' => 'Approved',
+                'rejected' => 'Rejected',
+            ]
+            : [
+                ''          => 'All active applicants',
+                'pending'   => 'Under Review',
+                'scheduled' => 'Interview Scheduled',
+            ];
+
+        $fieldClass = 'rounded-md border border-gray-200 px-3 py-2.5 text-sm font-normal outline-none focus:border-[#dc2626] focus:ring-2 focus:ring-[#dc2626]/10';
     @endphp
 
     <div
-        class="px-4 pb-12 pt-2 sm:px-6 lg:px-10"
-        x-data="employeeDirectory(@js([
-            'employees'  => $cards,
-            'applicants' => $applicants,
-            'old'        => $old,
-            'reopen'     => $errors->any(),
-            'editingId'  => old('_editing_id'),
-            'storeUrl'   => route('employees.store'),
-            'updateUrl'  => route('employees.update', '__ID__'),
-            'destroyUrl' => route('employees.destroy', '__ID__'),
-        ]))"
-        @keydown.escape.window="closeAll()"
+        class="px-4 pb-12 sm:px-6 lg:px-10"
+        x-data="onboardingApplicants(@js(['items' => $cards, 'open' => session('open_application')]))"
+        @keydown.escape.window="addingJob ? addingJob = false : (managingJobs ? managingJobs = false : (rejecting ? rejecting = false : closeDetail()))"
     >
+        {{-- ============ Stat cards ============ --}}
+        <section aria-label="Applicant statistics" class="mt-2 grid max-w-[1100px] gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            @foreach ($statCards as [$label, $value, $description])
+                <div class="rounded-[18px] border border-[#f0dada] bg-white px-5 py-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+                    <strong class="block text-3xl font-extrabold leading-none text-gray-900">{{ $value }}</strong>
+                    <span class="mt-2 block text-sm font-bold text-gray-900">{{ $label }}</span>
+                    <span class="mt-1 block text-xs text-gray-400">{{ $description }}</span>
+                </div>
+            @endforeach
+        </section>
 
-        {{-- Page header --}}
-        <div class="mb-6 flex flex-wrap items-center justify-end gap-4">
-            @if ($canManage)
-                <button type="button" @click="openCreate()"
-                    class="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-[#b22222] px-5 py-3 font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#8b1a1a] hover:shadow-[0_6px_20px_rgba(178,34,34,0.4)]">
-                    <i class="fa-solid fa-user-plus"></i> Add Employee
-                </button>
-            @endif
-        </div>
-
-        {{-- Flash message --}}
-        @if (session('success'))
-            <div class="mb-5 rounded-lg border border-green-300 bg-green-50 px-4 py-3 text-sm font-semibold text-green-800">
-                {{ session('success') }}
-            </div>
+        {{-- ============ Open positions (HR only) ============ --}}
+        @if (auth()->user()->hasRole('HR'))
+            @include('partial.jobopening')
         @endif
 
-        <section aria-label="Employee directory" class="flex flex-col gap-5">
+        {{-- ============ Applications ============ --}}
+        <section aria-labelledby="applicantQueueTitle"
+            class="mt-6 max-w-[1100px] rounded-[22px] border border-[#f0dada] bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)] sm:p-7">
 
-            {{-- Toolbar: search + filters (runs in the database) --}}
-            <form method="GET" action="{{ route('employees.index') }}" x-ref="filters"
-                class="flex flex-wrap items-end gap-3.5 rounded-[20px] bg-white p-[18px] shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+            <div class="mb-6">
+                <p class="mb-1.5 text-xs font-extrabold uppercase tracking-[0.08em] text-[#b22222]">Applicants</p>
+                <h2 id="applicantQueueTitle" class="flex items-center gap-3 text-2xl font-bold text-gray-900">
+                    <i class="fas fa-address-book text-[#dc2626]" aria-hidden="true"></i>
+                    {{ $tab === 'archive' ? 'Archived applications' : 'Submitted applications' }}
+                </h2>
+                <p class="mt-2 text-gray-500">
+                    {{ $tab === 'archive' ? 'Approved and rejected applicants are automatically moved here.' : 'Manage and review active applicant submissions.' }}
+                </p>
+            </div>
 
-                <label for="employeeSearch" class="relative flex min-w-[240px] flex-[1_1_280px] flex-col gap-2 text-sm font-bold text-gray-600">
-                    <i class="fa-solid fa-magnifying-glass absolute bottom-[14px] left-[14px] text-gray-400"></i>
-                    <input type="search" id="employeeSearch" name="search" value="{{ request('search') }}"
-                        placeholder="Search employee name, ID or position"
-                        @input.debounce.400ms="$refs.filters.submit()"
-                        x-init="if ($el.value) { $el.focus(); $el.setSelectionRange($el.value.length, $el.value.length) }"
-                        class="w-full rounded-xl border border-gray-200 bg-gray-50 py-3 pl-[42px] pr-3.5 text-gray-900 focus:border-[#b22222] focus:outline-none focus:ring-4 focus:ring-red-700/10">
+            {{-- Flash messages --}}
+            @if (session('success'))
+                <div class="mb-4 rounded-lg border border-green-300 bg-green-50 px-4 py-3 text-sm font-semibold text-green-800">
+                    {{ session('success') }}
+                </div>
+            @endif
+            @if ($errors->any())
+                <div class="mb-4 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">
+                    {{ $errors->first() }}
+                </div>
+            @endif
+
+            {{-- Active / Archive tabs --}}
+            <nav aria-label="Applicant application status" class="mb-5 flex gap-2 border-b border-gray-200">
+                <a href="{{ route('onboarding.index', ['tab' => 'active', 'q' => $search]) }}"
+                    @class([
+                        'border-b-2 px-4 py-3 text-sm font-semibold transition',
+                        'border-[#b22222] text-[#b22222]' => $tab === 'active',
+                        'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-800' => $tab !== 'active',
+                    ])
+                    aria-current="{{ $tab === 'active' ? 'page' : 'false' }}">
+                    Active <span class="ml-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">{{ $counts['active'] }}</span>
+                </a>
+                <a href="{{ route('onboarding.index', ['tab' => 'archive', 'q' => $search]) }}"
+                    @class([
+                        'border-b-2 px-4 py-3 text-sm font-semibold transition',
+                        'border-[#b22222] text-[#b22222]' => $tab === 'archive',
+                        'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-800' => $tab !== 'archive',
+                    ])
+                    aria-current="{{ $tab === 'archive' ? 'page' : 'false' }}">
+                    Archive <span class="ml-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">{{ $counts['archive'] }}</span>
+                </a>
+            </nav>
+
+            {{-- Search + status filter --}}
+            <form method="GET" action="{{ route('onboarding.index') }}" class="mb-5 flex flex-col gap-3 sm:flex-row">
+                <input type="hidden" name="tab" value="{{ $tab }}">
+                <label class="flex flex-1 items-center gap-3 rounded-lg border border-gray-200 bg-white px-5 py-3 shadow-sm focus-within:border-[#dc2626] focus-within:ring-2 focus-within:ring-[#dc2626]/10">
+                    <i class="fas fa-search text-gray-400" aria-hidden="true"></i>
+                    <input type="text" name="q" value="{{ $search }}" placeholder="Search by name, email, or ID..."
+                        aria-label="Search applicants"
+                        class="flex-1 border-0 bg-transparent p-0 text-[15px] text-gray-800 outline-none placeholder:text-gray-400 focus:ring-0">
                 </label>
 
-                <label for="departmentFilter" class="flex min-w-[180px] flex-col gap-2 text-sm font-bold text-gray-600">
-                    <span>Department</span>
-                    <select id="departmentFilter" name="department" @change="$refs.filters.submit()" class="{{ $inputClass }}">
-                        <option value="">All Schools</option>
-                        @foreach (\App\Models\Employee::DEPARTMENTS as $value => $label)
-                            <option value="{{ $value }}" @selected(request('department') === $value)>{{ $label }}</option>
-                        @endforeach
-                    </select>
-                </label>
-
-                <label for="roleFilter" class="flex min-w-[180px] flex-col gap-2 text-sm font-bold text-gray-600">
-                    <span>Role Type</span>
-                    <select id="roleFilter" name="role_type" @change="$refs.filters.submit()" class="{{ $inputClass }}">
-                        <option value="">All Roles</option>
-                        @foreach (\App\Models\Employee::ROLE_TYPES as $value => $label)
-                            <option value="{{ $value }}" @selected(request('role_type') === $value)>{{ $label }}</option>
-                        @endforeach
-                    </select>
-                </label>
-
-                @if (request()->hasAny(['search', 'department', 'role_type']))
-                    <a href="{{ route('employees.index') }}"
-                        class="rounded-xl border border-gray-200 px-4 py-3 text-sm font-bold text-gray-600 transition hover:bg-gray-50">
-                        Clear
-                    </a>
-                @endif
+                <select name="status" aria-label="Filter by application status" onchange="this.form.submit()"
+                    class="cursor-pointer rounded-lg border border-gray-200 bg-white px-4 py-3 text-[15px] text-gray-800 shadow-sm outline-none focus:border-[#dc2626] focus:ring-2 focus:ring-[#dc2626]/10 sm:w-52">
+                    @foreach ($statusOptions as $value => $label)
+                        <option value="{{ $value }}" @selected($status === $value)>{{ $label }}</option>
+                    @endforeach
+                </select>
             </form>
 
-            {{-- Employee cards --}}
-            @if ($employees->isEmpty())
-                <div class="rounded-[20px] bg-white p-10 text-center text-gray-500 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
-                    <i class="fa-solid fa-users-slash mb-3 text-4xl text-gray-300"></i>
-                    <p class="font-semibold">No employees found.</p>
-                </div>
-            @else
-                <div class="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-[18px]">
-                    @foreach ($employees as $employee)
-                        <article
-                            @click="openDetail({{ $employee->id }})"
-                            class="flex cursor-pointer flex-col items-center gap-3 rounded-2xl border border-[#f3e0e0] bg-gradient-to-b from-white to-[#fff7f7] px-[18px] py-[22px] text-center shadow-[0_8px_24px_rgba(15,23,42,0.06)] transition duration-200 hover:-translate-y-1.5 hover:shadow-[0_18px_36px_rgba(15,23,42,0.1)]"
-                        >
-                            <div class="grid h-[88px] w-[88px] shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#b22222] to-[#dc2626] text-xl font-extrabold text-white">
-                                {{ $employee->initials }}
-                            </div>
-                            <div class="flex flex-col items-center gap-1.5">
-                                <h2 class="text-[1.05rem] font-bold text-gray-900">{{ $employee->name }}</h2>
-                                <p class="text-[15px] text-gray-500">{{ $employee->employee_id }}</p>
-                                <p class="text-[15px] text-gray-500">{{ $employee->position }}</p>
-                            </div>
-                        </article>
-                    @endforeach
+            {{-- Table --}}
+            @if ($applications->isNotEmpty())
+                <div class="overflow-x-auto rounded-[14px] border border-[#ecebea]">
+                    <table class="w-full border-collapse bg-white">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                @foreach (['Applicant ID', 'Name & Email', 'Position Applied', 'Job Type', 'Contact', 'Status', 'Actions'] as $heading)
+                                    <th class="whitespace-nowrap border-b border-gray-200 px-5 py-4 text-center text-xs font-bold uppercase tracking-[0.05em] text-gray-900">{{ $heading }}</th>
+                                @endforeach
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($applications as $application)
+                                <tr @click="openDetail({{ $application->id }})"
+                                    class="cursor-pointer transition-colors duration-200 hover:bg-gray-50">
+
+                                    <td class="whitespace-nowrap border-b border-gray-100 px-5 py-4 text-center text-sm text-gray-800">{{ $application->code }}</td>
+
+                                    <td class="border-b border-gray-100 px-5 py-4 text-center">
+                                        <strong class="block break-words text-[15px] font-bold text-slate-900">{{ $application->fullname }}</strong>
+                                        <span class="mt-1 block break-words text-[13px] text-gray-500">{{ $application->email }}</span>
+                                    </td>
+
+                                    <td class="border-b border-gray-100 px-5 py-4 text-center text-sm text-gray-800">{{ $application->position }}</td>
+                                    <td class="border-b border-gray-100 px-5 py-4 text-center text-sm text-gray-800">{{ $application->job_type ?: 'Staff' }}</td>
+                                    <td class="whitespace-nowrap border-b border-gray-100 px-5 py-4 text-center text-sm text-gray-800">{{ $application->phone ?: 'N/A' }}</td>
+
+                                    <td class="border-b border-gray-100 px-5 py-4 text-center">
+                                        <span class="inline-flex items-center whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold {{ $badge($application->status_key) }}">
+                                            {{ $application->workflow_status }}
+                                        </span>
+                                    </td>
+
+                                    <td class="border-b border-gray-100 px-5 py-4 text-center">
+                                        <form method="POST" action="{{ route('onboarding.destroy', $application) }}"
+                                            class="m-0 inline-block" @click.stop
+                                            onsubmit="return confirm('Are you sure you want to delete this applicant?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" aria-label="Delete applicant" title="Delete"
+                                                class="inline-flex h-8 cursor-pointer items-center justify-center rounded-md border border-gray-200 bg-white px-3 text-sm font-semibold text-[#dc2626] transition hover:border-red-300 hover:bg-red-50">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
 
-                <div>{{ $employees->links() }}</div>
+                @if ($applications->hasPages())
+                    <div class="mt-5">{{ $applications->links() }}</div>
+                @endif
+            @else
+                <div class="flex flex-col items-center gap-4 rounded-[14px] border border-dashed border-[#e5caca] px-10 py-14 text-center">
+                    <i class="fas fa-inbox text-6xl text-gray-300" aria-hidden="true"></i>
+                    @if ($search !== '' || $status !== '')
+                        <h3 class="text-xl font-bold text-gray-800">No matching applications</h3>
+                        <p class="max-w-md text-gray-500">Try a different search or status filter.</p>
+                    @elseif ($tab === 'archive')
+                        <h3 class="text-xl font-bold text-gray-800">Archive is empty</h3>
+                        <p class="max-w-md text-gray-500">Approved and rejected applications will appear here automatically.</p>
+                    @else
+                        <h3 class="text-xl font-bold text-gray-800">No Applications Yet</h3>
+                        <p class="max-w-md text-gray-500">Once candidates apply, their information will appear here.</p>
+                    @endif
+                </div>
             @endif
         </section>
 
-        {{-- ============ Details modal ============ --}}
-        <div x-show="detail" x-cloak x-transition.opacity
-            @click.self="detailId = null"
-            class="fixed inset-0 z-[60] grid place-items-center bg-[rgba(3,7,18,0.5)] p-4">
-            <div role="dialog" aria-modal="true" class="relative max-h-[90vh] w-full max-w-[500px] overflow-y-auto rounded-[14px] bg-white px-7 pb-7 pt-9 text-center shadow-[0_20px_50px_rgba(15,23,42,0.14)]">
-                <button type="button" @click="detailId = null" aria-label="Close"
-                    class="absolute right-3 top-2 cursor-pointer text-3xl leading-none text-gray-500 hover:text-gray-800">&times;</button>
+        {{-- ============ Applicant details modal ============ --}}
+        <div x-show="detail" x-cloak x-transition.opacity class="fixed inset-0 z-[60] grid place-items-center p-5">
+            <div class="absolute inset-0 bg-[rgba(17,24,39,0.55)]" @click="closeDetail()"></div>
+
+            <section role="dialog" aria-modal="true" aria-labelledby="applicantModalTitle"
+                class="relative max-h-[90vh] w-full max-w-[980px] overflow-auto rounded-[20px] bg-white p-[26px] shadow-[0_30px_80px_rgba(15,23,42,0.25)]">
+
+                <div class="mb-[22px] flex items-start justify-between gap-5">
+                    <div class="min-w-0">
+                        <h2 id="applicantModalTitle" class="text-[1.5rem] font-bold" x-text="detail ? detail.full_name : ''"></h2>
+                        <p class="mt-1 text-sm text-gray-500" x-text="detail ? detail.position + ' · ' + detail.code : ''"></p>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <span class="whitespace-nowrap rounded-full px-4 py-2 text-xs font-semibold"
+                            :class="detail ? statusClasses[detail.status_key] : ''"
+                            x-text="detail ? detail.status : ''"></span>
+                        <button type="button" @click="closeDetail()" aria-label="Close details"
+                            class="h-9 w-9 shrink-0 cursor-pointer rounded-full bg-gray-100 text-2xl leading-none text-gray-900 transition hover:bg-gray-200">&times;</button>
+                    </div>
+                </div>
+
+                {{-- Result of the last action (shown when the page reloads with this modal open) --}}
+                <div x-show="reopened" class="mb-5 grid gap-2">
+                    @if (session('success'))
+                        <div class="rounded-lg border border-green-300 bg-green-50 px-4 py-3 text-sm font-semibold text-green-800">
+                            {{ session('success') }}
+                        </div>
+                    @endif
+                    @if ($errors->any())
+                        <div class="rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">
+                            @foreach ($errors->all() as $error)
+                                <p>{{ $error }}</p>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
 
                 <template x-if="detail">
-                    <div>
-                        <div class="mx-auto grid h-[88px] w-[88px] place-items-center rounded-full bg-gradient-to-br from-[#b22222] to-[#dc2626] text-xl font-extrabold text-white" x-text="detail.initials"></div>
+                    <div class="grid gap-6">
+                        <div class="grid gap-6 md:grid-cols-[minmax(0,2fr)_minmax(220px,1fr)]">
+                            {{-- Contact details --}}
+                            <div>
+                                <h3 class="mb-3 text-base font-bold text-slate-900">Contact details</h3>
+                                <div class="grid gap-x-4 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
+                                    <p class="min-w-0 text-sm">
+                                        <strong class="block text-[0.78rem] uppercase tracking-[0.04em] text-gray-500">Email</strong>
+                                        <a :href="'mailto:' + detail.email" class="break-words text-[#b22222] underline" x-text="detail.email"></a>
+                                    </p>
+                                    @foreach ([
+                                        ['Phone', 'phone'],
+                                        ['Home address', 'address'],
+                                        ['Birth date', 'birth_date'],
+                                        ['Gender', 'gender'],
+                                        ['Civil status', 'civil_status'],
+                                        ['Highest education', 'education'],
+                                        ['Submitted', 'submitted_at'],
+                                        ['Job type', 'job_type'],
+                                    ] as [$label, $key])
+                                        <p class="min-w-0 text-sm">
+                                            <strong class="block text-[0.78rem] uppercase tracking-[0.04em] text-gray-500">{{ $label }}</strong>
+                                            <span class="break-words text-gray-700" x-text="detail.{{ $key }}"></span>
+                                        </p>
+                                    @endforeach
+                                </div>
+                            </div>
 
-                        <h3 class="mt-4 text-lg font-bold" x-text="detail.name"></h3>
+                            {{-- Interview details --}}
+                            <div>
+                                <h3 class="mb-3 text-base font-bold text-slate-900">Interview details</h3>
+                                <div class="grid gap-3">
+                                    @foreach ([
+                                        ['Date', 'interview_date'],
+                                        ['Time', 'interview_time'],
+                                        ['Location', 'interview_location'],
+                                    ] as [$label, $key])
+                                        <p class="min-w-0 text-sm">
+                                            <strong class="block text-[0.78rem] uppercase tracking-[0.04em] text-gray-500">{{ $label }}</strong>
+                                            <span class="break-words text-gray-700" x-text="detail.{{ $key }}"></span>
+                                        </p>
+                                    @endforeach
 
-                        <div class="mt-3 space-y-1.5 text-gray-700">
-                            <p><strong>ID:</strong> <span x-text="detail.employee_id"></span></p>
-                            <p><strong>Position:</strong> <span x-text="detail.position"></span></p>
-                            <p><strong>Department:</strong> <span x-text="detail.department_label"></span></p>
-                            <p><strong>Role Type:</strong> <span x-text="detail.role_label"></span></p>
-                            <p><strong>Email:</strong> <span x-text="detail.email"></span></p>
-                            <p><strong>Birthday:</strong> <span x-text="detail.birthday_label"></span></p>
-                            <p><strong>Address:</strong> <span x-text="detail.address"></span></p>
-                            <p><strong>Emergency Contact:</strong> <span x-text="detail.emergency_name + ' - ' + detail.emergency_contact"></span></p>
+                                    <p x-show="detail.interview_note" class="min-w-0 text-sm">
+                                        <strong class="block text-[0.78rem] uppercase tracking-[0.04em] text-gray-500">Note to applicant</strong>
+                                        <span class="whitespace-pre-line break-words text-gray-700" x-text="detail.interview_note"></span>
+                                    </p>
+
+                                    <p x-show="detail.rejection_reason" class="min-w-0 text-sm">
+                                        <strong class="block text-[0.78rem] uppercase tracking-[0.04em] text-[#b22222]">Rejection reason</strong>
+                                        <span class="break-words text-gray-700" x-text="detail.rejection_reason"></span>
+                                    </p>
+                                </div>
+                            </div>
                         </div>
 
-                        @if ($canManage)
-                        <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
-                            <button type="button" @click="openEdit()"
-                                class="cursor-pointer rounded-lg bg-[#b22222] px-6 py-2.5 font-bold text-white transition hover:bg-[#8b1a1a]">
-                                <i class="fa-solid fa-pen-to-square mr-1"></i> Edit
-                            </button>
+                        {{-- Uploaded documents --}}
+                        <div>
+                            <h3 class="mb-3 text-base font-bold text-slate-900">Uploaded documents</h3>
+                            <div class="grid gap-2 sm:grid-cols-3">
+                                <template x-for="doc in detail.documents" :key="doc.label">
+                                    <div class="min-w-0">
+                                        <a x-show="doc.url" :href="doc.url" target="_blank" rel="noopener"
+                                            class="inline-flex w-full min-w-0 items-center gap-3 break-words rounded-[10px] border border-[#dc2626] bg-[#fef2f2] px-4 py-3 text-sm font-extrabold text-[#dc2626] transition hover:bg-[#fdecea]">
+                                            <i class="fas fa-file" aria-hidden="true"></i>
+                                            <span class="min-w-0 break-all" x-text="doc.name || doc.label"></span>
+                                        </a>
+                                        <span x-show="!doc.url" class="inline-flex items-center gap-2 py-2.5 text-sm text-gray-400">
+                                            <i class="fas fa-times" aria-hidden="true"></i>
+                                            <span x-text="doc.label + ' not provided'"></span>
+                                        </span>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
 
-                            <form method="POST" :action="deleteAction()" onsubmit="return confirm('Delete this employee? This cannot be undone.')">
+                        {{-- Schedule interview --}}
+                        <div x-show="detail.can_schedule">
+                            <h3 class="mb-3 text-base font-bold text-slate-900"
+                                x-text="detail.status_key === 'scheduled' ? 'Reschedule interview' : 'Schedule interview'"></h3>
+
+                            <form method="POST" :action="detail.schedule_url" class="grid gap-3 sm:grid-cols-2">
                                 @csrf
-                                @method('DELETE')
-                                <button type="submit"
-                                    class="w-full cursor-pointer rounded-lg border border-[#b22222] bg-white px-6 py-2.5 font-bold text-[#b22222] transition hover:bg-red-50">
-                                    <i class="fa-solid fa-trash mr-1"></i> Delete
-                                </button>
+
+                                <label class="grid gap-1 text-sm font-semibold text-gray-800">
+                                    Scheduled date
+                                    <input type="date" name="interview_date" required
+                                        min="{{ now()->toDateString() }}"
+                                        :value="detail.interview_date_value"
+                                        class="{{ $fieldClass }}">
+                                </label>
+
+                                <label class="grid gap-1 text-sm font-semibold text-gray-800">
+                                    Scheduled time <span class="text-xs font-normal text-gray-400">(8:00 AM – 2:00 PM)</span>
+                                    <input type="time" name="interview_time" required min="08:00" max="14:00"
+                                        :value="detail.interview_time_value"
+                                        class="{{ $fieldClass }}">
+                                </label>
+
+                                <label class="grid gap-1 text-sm font-semibold text-gray-800 sm:col-span-2">
+                                    Location
+                                    <input type="text" name="interview_location" maxlength="255"
+                                        placeholder="e.g. HR Office, 2nd floor"
+                                        :value="detail.interview_location !== 'N/A' ? detail.interview_location : ''"
+                                        class="{{ $fieldClass }}">
+                                    <span class="text-xs font-normal text-gray-400">Leave blank to use St. Mary Magdalene School.</span>
+                                </label>
+
+                                <label class="grid gap-1 text-sm font-semibold text-gray-800 sm:col-span-2">
+                                    Note
+                                    <textarea name="interview_note" rows="2" maxlength="1000"
+                                        placeholder="Optional message for applicant"
+                                        :value="detail.interview_note"
+                                        class="resize-y {{ $fieldClass }}"></textarea>
+                                </label>
+
+                                <div class="sm:col-span-2">
+                                    <button type="submit"
+                                        class="cursor-pointer rounded-lg bg-[#dc2626] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-[#b91c1c]"
+                                        x-text="detail.status_key === 'scheduled' ? 'Update schedule' : 'Schedule interview'"></button>
+                                </div>
                             </form>
                         </div>
-                        @endif
+
+                        {{-- Approve / Reject (enabled once the interview time has passed) --}}
+                        <div>
+                            <p x-show="!detail.can_decide && detail.status_key !== 'approved' && detail.status_key !== 'rejected'"
+                                class="mb-3 text-sm text-gray-500">
+                                <span x-show="detail.status_key === 'scheduled'">Decision is available once the scheduled interview time has passed.</span>
+                                <span x-show="detail.status_key !== 'scheduled'">Schedule an interview first. A decision can be made after it is done.</span>
+                            </p>
+
+                            <div class="flex flex-wrap justify-between gap-4">
+                                <form method="POST" :action="detail.decide_url" class="m-0"
+                                    onsubmit="return confirm('Approve this application?');">
+                                    @csrf
+                                    @method('PATCH')
+                                    <input type="hidden" name="decision" value="approved">
+                                    <button type="submit" :disabled="!detail.can_decide"
+                                        class="cursor-pointer rounded-[10px] bg-[#15803d] px-[18px] py-[11px] font-extrabold text-white transition hover:-translate-y-px hover:brightness-95 hover:shadow-[0_8px_18px_rgba(15,23,42,0.12)] disabled:cursor-not-allowed disabled:opacity-55 disabled:hover:translate-y-0 disabled:hover:shadow-none">
+                                        Approve application
+                                    </button>
+                                </form>
+
+                                <button type="button" @click="rejecting = true" :disabled="!detail.can_decide"
+                                    class="cursor-pointer rounded-[10px] bg-[#b22222] px-[18px] py-[11px] font-extrabold text-white transition hover:-translate-y-px hover:brightness-95 hover:shadow-[0_8px_18px_rgba(15,23,42,0.12)] disabled:cursor-not-allowed disabled:opacity-55 disabled:hover:translate-y-0 disabled:hover:shadow-none">
+                                    Reject application
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </template>
-            </div>
+            </section>
         </div>
 
-        {{-- ============ Add / Edit modal ============ --}}
-        <div x-show="formOpen" x-cloak x-transition.opacity
-            class="fixed inset-0 z-[60] grid place-items-center bg-[rgba(3,7,18,0.5)] p-4">
-            <div role="dialog" aria-modal="true" class="relative max-h-[92vh] w-full max-w-[640px] overflow-y-auto rounded-[14px] bg-white p-6 shadow-[0_20px_50px_rgba(15,23,42,0.14)] sm:p-8">
-                <button type="button" @click="formOpen = false" aria-label="Close"
-                    class="absolute right-3 top-2 cursor-pointer text-3xl leading-none text-gray-500 hover:text-gray-800">&times;</button>
+        {{-- ============ Rejection reason modal ============ --}}
+        <div x-show="rejecting && detail" x-cloak x-transition.opacity class="fixed inset-0 z-[70] grid place-items-center p-5">
+            <div class="absolute inset-0 bg-[rgba(17,24,39,0.7)]" @click="rejecting = false"></div>
 
-                <h3 class="mb-5 text-2xl font-extrabold text-[#b22222]" x-text="editingId ? 'Edit Employee' : 'Add Employee'"></h3>
+            <section role="dialog" aria-modal="true" aria-labelledby="rejectReasonTitle"
+                class="relative w-full max-w-[520px] rounded-[20px] bg-white p-[26px] shadow-[0_30px_90px_rgba(0,0,0,0.3)]">
 
-                <form method="POST" :action="formAction()" class="space-y-4">
+                <div class="mb-4 flex items-start justify-between gap-5">
+                    <div>
+                        <h2 id="rejectReasonTitle" class="text-xl font-bold">Reason for rejection</h2>
+                        <p class="mt-1 text-sm text-gray-500">Provide a reason before rejecting this application.</p>
+                    </div>
+                    <button type="button" @click="rejecting = false" aria-label="Close rejection reason dialog"
+                        class="h-9 w-9 shrink-0 cursor-pointer rounded-full bg-gray-100 text-2xl leading-none text-gray-900 transition hover:bg-gray-200">&times;</button>
+                </div>
+
+                <form method="POST" :action="detail ? detail.decide_url : ''" class="grid gap-3">
                     @csrf
-                    <input type="hidden" name="_method" value="PUT" :disabled="!editingId">
-                    <input type="hidden" name="_editing_id" :value="editingId ?? ''">
+                    @method('PATCH')
+                    <input type="hidden" name="decision" value="rejected">
 
-                    {{-- NEW: pick an applicant (Add mode only). Name and email come from the account. --}}
-                    <div x-show="!editingId">
-                        <label for="f_user_id" class="{{ $labelClass }}">Applicant <span class="text-red-600">*</span></label>
+                    <label for="rejectReasonInput" class="text-sm font-bold text-gray-800">Rejection reason</label>
+                    <textarea id="rejectReasonInput" name="reason" rows="5" required maxlength="1000"
+                        placeholder="Enter the reason for rejecting this application"
+                        x-ref="reason"
+                        x-effect="if (rejecting) $nextTick(() => { $refs.reason.value = ''; $refs.reason.focus(); })"
+                        class="w-full resize-y rounded-md border border-gray-200 p-3 text-sm leading-normal outline-none focus:border-[#dc2626] focus:ring-2 focus:ring-[#dc2626]/10"></textarea>
 
-                        <select id="f_user_id" name="user_id" x-model="form.user_id" @change="pickApplicant()"
-                            :disabled="!!editingId" :required="!editingId" class="{{ $inputClass }} cursor-pointer">
-                            <option value="" disabled hidden>Select an applicant</option>
-                            <template x-for="a in Object.values(applicants)" :key="a.id">
-                                <option :value="a.id" :selected="String(a.id) === String(form.user_id)" x-text="a.name + ' (' + a.email + ')'"></option>
-                            </template>
-                        </select>
-
-                        <p x-show="!hasApplicants" class="mt-1 text-xs font-semibold text-amber-700">
-                            No applicants available. Only accounts with the Applicant role and no employee record yet are listed.
-                        </p>
-                        <p class="{{ $errClass }}">{{ $errors->first('user_id') }}</p>
-                    </div>
-
-                    <div class="grid gap-4 sm:grid-cols-2">
-                        <div>
-                            <label for="f_name" class="{{ $labelClass }}">Full Name <span class="text-red-600">*</span></label>
-                            <input id="f_name" name="name" x-model="form.name" placeholder="e.g. Maria Santos" required
-                                :readonly="!editingId" :class="!editingId ? 'cursor-not-allowed !bg-gray-100 text-gray-500' : ''"
-                                class="{{ $inputClass }}">
-                            <p class="{{ $errClass }}">{{ $errors->first('name') }}</p>
-                        </div>
-                        <div>
-                            <label for="f_employee_id" class="{{ $labelClass }}">Employee ID</label>
-                            <input id="f_employee_id" name="employee_id" x-model="form.employee_id" placeholder="Leave blank to auto-generate" class="{{ $inputClass }}">
-                            <p class="{{ $errClass }}">{{ $errors->first('employee_id') }}</p>
-                        </div>
-                    </div>
-
-                    <div class="grid gap-4 sm:grid-cols-2">
-                        <div>
-                            <label for="f_position" class="{{ $labelClass }}">Position <span class="text-red-600">*</span></label>
-                            <input id="f_position" name="position" x-model="form.position" placeholder="e.g. Mathematics Teacher" required class="{{ $inputClass }}">
-                            <p class="{{ $errClass }}">{{ $errors->first('position') }}</p>
-                        </div>
-                        <div>
-                            <label for="f_email" class="{{ $labelClass }}">Email <span class="text-red-600">*</span></label>
-                            <input id="f_email" type="email" name="email" x-model="form.email" placeholder="name@smms.edu.ph" required
-                                :readonly="!editingId" :class="!editingId ? 'cursor-not-allowed !bg-gray-100 text-gray-500' : ''"
-                                class="{{ $inputClass }}">
-                            <p class="{{ $errClass }}">{{ $errors->first('email') }}</p>
-                        </div>
-                    </div>
-
-                    <div class="grid gap-4 sm:grid-cols-2">
-                        <div>
-                            <label for="f_department" class="{{ $labelClass }}">Department <span class="text-red-600">*</span></label>
-                            <select id="f_department" name="department" x-model="form.department" required class="{{ $inputClass }}">
-                                <option value="" disabled hidden>Select department</option>
-                                @foreach (\App\Models\Employee::DEPARTMENTS as $value => $label)
-                                    <option value="{{ $value }}">{{ $label }}</option>
-                                @endforeach
-                            </select>
-                            <p class="{{ $errClass }}">{{ $errors->first('department') }}</p>
-                        </div>
-                        <div>
-                            <label for="f_role_type" class="{{ $labelClass }}">Role Type <span class="text-red-600">*</span></label>
-                            <select id="f_role_type" name="role_type" x-model="form.role_type" required class="{{ $inputClass }}">
-                                <option value="" disabled hidden>Select role type</option>
-                                @foreach (\App\Models\Employee::ROLE_TYPES as $value => $label)
-                                    <option value="{{ $value }}">{{ $label }}</option>
-                                @endforeach
-                            </select>
-                            <p class="{{ $errClass }}">{{ $errors->first('role_type') }}</p>
-                        </div>
-                    </div>
-
-                    <div class="grid gap-4 sm:grid-cols-2">
-                        <div>
-                            <label for="f_birthday" class="{{ $labelClass }}">Birthday <span class="text-red-600">*</span></label>
-                            <input id="f_birthday" type="date" name="birthday" x-model="form.birthday" max="{{ now()->subDay()->toDateString() }}" required class="{{ $inputClass }}">
-                            <p class="{{ $errClass }}">{{ $errors->first('birthday') }}</p>
-                        </div>
-                        <div>
-                            <label for="f_address" class="{{ $labelClass }}">Address <span class="text-red-600">*</span></label>
-                            <input id="f_address" name="address" x-model="form.address" placeholder="House no., street, city, province" required class="{{ $inputClass }}">
-                            <p class="{{ $errClass }}">{{ $errors->first('address') }}</p>
-                        </div>
-                    </div>
-
-                    <div class="grid gap-4 sm:grid-cols-2">
-                        <div>
-                            <label for="f_emergency_name" class="{{ $labelClass }}">Emergency Contact Name <span class="text-red-600">*</span></label>
-                            <input id="f_emergency_name" name="emergency_name" x-model="form.emergency_name" placeholder="e.g. Ana Santos" required class="{{ $inputClass }}">
-                            <p class="{{ $errClass }}">{{ $errors->first('emergency_name') }}</p>
-                        </div>
-                        <div>
-                            <label for="f_emergency_contact" class="{{ $labelClass }}">Emergency Contact Number <span class="text-red-600">*</span></label>
-                            <input id="f_emergency_contact" type="tel" name="emergency_contact" x-model="form.emergency_contact" placeholder="+639XXXXXXXXX" required class="{{ $inputClass }}">
-                            <p class="{{ $errClass }}">{{ $errors->first('emergency_contact') }}</p>
-                        </div>
-                    </div>
-
-                    <p class="rounded-lg bg-gray-50 px-3 py-2 text-xs text-gray-500">
-                        <i class="fa-solid fa-lock mr-1"></i> Address and emergency contact details are stored encrypted (AES-256).
-                    </p>
-
-                    <div class="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-end">
-                        <button type="button" @click="formOpen = false"
-                            class="cursor-pointer rounded-lg bg-gray-100 px-6 py-3 font-bold text-gray-800 transition hover:bg-gray-300">
+                    <div class="mt-1 flex justify-end gap-3">
+                        <button type="button" @click="rejecting = false"
+                            class="cursor-pointer rounded-lg bg-gray-100 px-5 py-3 font-bold text-gray-800 transition hover:bg-gray-200">
                             Cancel
                         </button>
-                        <button type="submit" :disabled="!editingId && !hasApplicants"
-                            class="cursor-pointer rounded-lg bg-[#b22222] px-6 py-3 font-bold text-white transition hover:bg-[#8b1a1a] hover:shadow-[0_6px_20px_rgba(178,34,34,0.4)] disabled:cursor-not-allowed disabled:opacity-60">
-                            <span x-text="editingId ? 'Save Changes' : 'Add Employee'"></span>
+                        <button type="submit"
+                            class="cursor-pointer rounded-lg bg-[#ef4444] px-5 py-3 font-bold text-white transition hover:bg-[#dc2626]">
+                            Reject application
                         </button>
                     </div>
                 </form>
-            </div>
+            </section>
         </div>
     </div>
 
     <script>
-        function employeeDirectory(cfg) {
-            const blank = () => ({
-                user_id: '',
-                employee_id: '', name: '', position: '', department: '', role_type: '',
-                email: '', birthday: '', address: '', emergency_name: '', emergency_contact: '',
-            });
+        function onboardingApplicants(cfg) {
+            // If the page reloaded after a schedule/decision action, reopen that applicant's modal
+            const reopenId = cfg.open && cfg.items[cfg.open] ? Number(cfg.open) : null;
 
             return {
-                employees: cfg.employees,
-                applicants: cfg.applicants || {},   // { userId: { id, name, email } }
-                detailId: null,
-                formOpen: false,
-                editingId: null,
-                form: blank(),
+                items: cfg.items,
+                detailId: reopenId,
+                reopened: reopenId !== null, // shows the success/error banner inside the modal
+                rejecting: false,
+                managingJobs: false,         // job openings list modal
+                addingJob: false,            // add job opening modal
+
+                statusClasses: {
+                    pending:   'bg-[#fef3c7] text-[#b45309]',
+                    scheduled: 'bg-[#dbeafe] text-[#0369a1]',
+                    approved:  'bg-[#dcfce7] text-[#166534]',
+                    rejected:  'bg-[#fee2e2] text-[#991b1b]',
+                },
 
                 get detail() {
-                    return this.detailId ? this.employees[this.detailId] : null;
+                    return this.detailId ? this.items[this.detailId] : null;
                 },
 
-                get hasApplicants() {
-                    return Object.keys(this.applicants).length > 0;
+                openDetail(id) {
+                    this.rejecting = false;
+                    this.reopened = false;
+                    this.detailId = id;
                 },
 
-                init() {
-                    // Validation failed on the server: reopen the form with the typed values
-                    if (cfg.reopen) {
-                        this.editingId = cfg.editingId || null;
-                        this.form = Object.assign(blank(), cfg.old);
-                        this.formOpen = true;
-                    }
-                },
-
-                // NEW: fill name and email from the chosen applicant's account
-                pickApplicant() {
-                    const a = this.applicants[this.form.user_id];
-                    this.form.name  = a ? a.name : '';
-                    this.form.email = a ? a.email : '';
-                },
-
-                openDetail(id) { this.detailId = id; },
-
-                closeAll() {
+                closeDetail() {
                     this.detailId = null;
-                    this.formOpen = false;
-                },
-
-                openCreate() {
-                    this.editingId = null;
-                    this.form = blank();
-                    this.detailId = null;
-                    this.formOpen = true;
-                },
-
-                openEdit() {
-                    const e = this.detail;
-                    if (!e) return;
-                    this.form = {
-                        user_id: '',
-                        employee_id: e.employee_id, name: e.name, position: e.position,
-                        department: e.department, role_type: e.role_type, email: e.email,
-                        birthday: e.birthday, address: e.address,
-                        emergency_name: e.emergency_name, emergency_contact: e.emergency_contact,
-                    };
-                    this.editingId = e.id;
-                    this.detailId = null;
-                    this.formOpen = true;
-                },
-
-                formAction() {
-                    return this.editingId ? cfg.updateUrl.replace('__ID__', this.editingId) : cfg.storeUrl;
-                },
-
-                deleteAction() {
-                    return cfg.destroyUrl.replace('__ID__', this.detailId);
+                    this.reopened = false;
                 },
             };
         }

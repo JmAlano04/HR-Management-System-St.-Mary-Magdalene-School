@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
 @utility no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;

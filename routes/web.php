@@ -29,6 +29,7 @@ use App\Http\Controllers\EmployeePayslipController;
 use App\Http\Controllers\JobOpeningController;
 use App\Http\Controllers\TimeCorrectionReviewController;
 use App\Http\Controllers\PayslipController;
+use App\Http\Controllers\NotificationController;
 
 use App\Http\Controllers\LeaveRequestController;
 
@@ -365,6 +366,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::middleware('role:Admin|HR|Accounting')->group(function () {
 
+
+
         // Reports
         Route::get('/reports', [ReportController::class, 'index'])
             ->name('reports.index');
@@ -443,6 +446,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('/loans/{loanRequest}/archive', [LoanController::class, 'archive'])->name('loans.archive');
     Route::patch('/loans/{loanRequest}/restore', [LoanController::class, 'restore'])->name('loans.restore');
 
+
+
+    Route::get('/notifications',              [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/feed',         [NotificationController::class, 'feed'])->name('notifications.feed');
+    Route::post('/notifications/read-all',    [NotificationController::class, 'readAll'])->name('notifications.read-all');
+    Route::post('/notifications/{id}/read',   [NotificationController::class, 'read'])->name('notifications.read');
     });
 
     /*

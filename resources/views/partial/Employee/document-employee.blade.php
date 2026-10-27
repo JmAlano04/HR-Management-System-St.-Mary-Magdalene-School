@@ -143,8 +143,8 @@
                                         <small class="text-[0.88rem] text-gray-500"
                                             x-text="d.type + ' · ' + d.size + ' · Uploaded ' + d.uploaded_at"></small>
                                     </span>
-                                    <span class="rounded-full px-2.5 py-1 text-[0.7rem] font-extrabold max-[600px]:col-start-2 max-[600px]:justify-self-start"
-                                        :class="badge(d.status)" x-text="d.status"></span>
+                                    {{-- <span class="rounded-full px-2.5 py-1 text-[0.7rem] font-extrabold max-[600px]:col-start-2 max-[600px]:justify-self-start"
+                                        :class="badge(d.status)" x-text="d.status"></span> --}}
                                 </article>
                             </template>
                         </div>
@@ -174,8 +174,8 @@
                             x-text="doc.name"></a>
 
                         <div class="mt-6 grid justify-items-start gap-4">
-                            <span class="rounded-full px-2.5 py-1 text-[0.8rem] font-extrabold" :class="badge(doc.status)" x-text="doc.status"></span>
-                            <p class="text-gray-500" x-text="doc.status_message"></p>
+                            {{-- <span class="rounded-full px-2.5 py-1 text-[0.8rem] font-extrabold" :class="badge(doc.status)" x-text="doc.status"></span>
+                            <p class="text-gray-500" x-text="doc.status_message"></p> --}}
                         </div>
                     </div>
                 </template>

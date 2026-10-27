@@ -3,14 +3,16 @@
     $user = Auth::user();
 
     // Uses Spatie roles, same as your dashboard
-    $role = $user->getRoleNames()->first() ?? 'No Role';
+    $role = $user?->getRoleNames()->first() ?? 'No Role';
 
     // "Daniel Reyes" -> "DR"
-    $initials = collect(preg_split('/\s+/', trim($user->name)))
-        ->filter()
-        ->map(fn ($word) => mb_strtoupper(mb_substr($word, 0, 1)))
-        ->take(2)
-        ->implode('');
+    $initials = $user
+        ? collect(preg_split('/\s+/', trim($user->name)))
+            ->filter()
+            ->map(fn ($word) => mb_strtoupper(mb_substr($word, 0, 1)))
+            ->take(2)
+            ->implode('')
+        : '';
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
@@ -21,27 +23,21 @@
 
         <title>{{ $title ?? config('app.name', 'HR Management System') }}</title>
 
-    
         {{-- Favicons --}}
-     
-
-        <link rel="shortcut icon"
-            href="{{ asset('favicon.ico') }}">
-
-      
-
+        <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
-        <!-- Icons (Font Awesome) used by the sidebar -->
+        <!-- Icons (Font Awesome) used by the sidebar and the notification bell -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+        {{-- Hides Alpine elements until Alpine has loaded (needed by the notification bell) --}}
+        <style>[x-cloak] { display: none !important; }</style>
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
-     
-
     </head>
     <body class="font-sans antialiased">
         {{-- sidebarOpen controls the sidebar on mobile (shared with layouts.navigation) --}}
@@ -49,21 +45,24 @@
 
             @auth
 
-                {{-- Applicant at Employee: top navigation --}}
+                {{-- Applicant: top navigation (applicants receive no notifications) --}}
                 @hasanyrole('Applicant')
                     @include('layouts.applicant-nav')
                 @endhasanyrole
 
-                {{-- Admin, HR, Accounting: left sidebar navigation --}}
+                {{-- Admin, HR, Accounting, Employee: left sidebar navigation --}}
                 @hasanyrole('Admin|HR|Accounting|Employee')
                     @include('layouts.navigation')
-          
-         
+                @endhasanyrole
 
-            {{-- Everything on the right; lg:pl-64 leaves room for the fixed sidebar --}}
-            <div class="lg:pl-64">
+            @endauth
 
-                <!-- Top bar: hamburger (mobile) + page heading on the left, profile dropdown on the right -->
+            {{-- lg:pl-64 leaves room for the fixed sidebar (only for roles that have the sidebar) --}}
+            <div @auth @hasanyrole('Admin|HR|Accounting|Employee') class="lg:pl-64" @endhasanyrole @endauth>
+
+                @auth
+                @hasanyrole('Admin|HR|Accounting|Employee')
+                <!-- Top bar: hamburger (mobile) + page heading on the left, bell + profile dropdown on the right -->
                 <div class="max-w-7xl mx-auto flex items-center justify-between gap-4 px-4 py-6 sm:px-6 lg:px-8">
 
                     <div class="flex min-w-0 items-center gap-3">
@@ -79,51 +78,60 @@
                         @endisset
                     </div>
 
-                    <!-- Profile dropdown -->
-                    <x-dropdown align="right" width="48"  content-classes=" p-2 bg-white">
-                        <x-slot name="trigger">
-                            <button type="button"
-                                    class="inline-flex items-center gap-3 mr-[70px] rounded-full border border-gray-200 bg-white py-2 pl-2 pr-4 text-lg shadow-sm transition hover:bg-gray-50 focus:outline-none">
-                                <span class="flex h-9 w-9 items-center justify-center rounded-full bg-red-700 text-sm font-bold text-white">
-                                    {{ $initials }}
-                                </span>
+                    <div class="flex items-center gap-4">
 
-                                <span class="hidden text-left leading-tight sm:block">
-                                    <span class="block font-semibold text-gray-900">{{ $user->name }}</span>
-                                    <span class="block text-xs text-gray-500">
-                                       {{ $user->getRoleNames()->first() ?? 'No role assigned' }}
+                        <!-- Notification bell -->
+                        <x-notification-bell />
+
+                        <!-- Profile dropdown -->
+                        <x-dropdown align="right" width="48" content-classes=" p-2 bg-white">
+                            <x-slot name="trigger">
+                                <button type="button"
+                                        class="inline-flex items-center gap-3 mr-[70px] rounded-full border border-gray-200 bg-white py-2 pl-2 pr-4 text-lg shadow-sm transition hover:bg-gray-50 focus:outline-none">
+                                    <span class="flex h-9 w-9 items-center justify-center rounded-full bg-red-700 text-sm font-bold text-white">
+                                        {{ $initials }}
                                     </span>
-                                </span>
 
-                                <i class="fa-solid fa-chevron-down text-xs text-gray-500"></i>
-                            </button>
-                        </x-slot>
+                                    <span class="hidden text-left leading-tight sm:block">
+                                        <span class="block font-semibold text-gray-900">{{ $user->name }}</span>
+                                        <span class="block text-xs text-gray-500">
+                                            {{ $user->getRoleNames()->first() ?? 'No role assigned' }}
+                                        </span>
+                                    </span>
 
-                        <x-slot name="content">{{-- resources/views/layouts/navigation.blade.php (left sidebar, menu depends on the user's role) --}}
+                                    <i class="fa-solid fa-chevron-down text-xs text-gray-500"></i>
+                                </button>
+                            </x-slot>
 
-                            <x-dropdown-link :href="route('profile.edit')">
-                                {{ __('My Account') }}
-                            </x-dropdown-link>
-
-                            <x-dropdown-link href="#">
-                                {{ __('Help') }}
-                            </x-dropdown-link>
-
-                            <!-- Authentication -->
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
-
-                                <x-dropdown-link :href="route('logout')"
-                                        onclick="event.preventDefault(); this.closest('form').submit();">
-                                    {{ __('Log Out') }}
+                            <x-slot name="content">
+                                <x-dropdown-link :href="route('profile.edit')">
+                                    {{ __('My Account') }}
                                 </x-dropdown-link>
-                            </form>
-                        </x-slot>
-                    </x-dropdown>
-                </div>
 
-      @endhasanyrole
-    @endauth
+                                <x-dropdown-link :href="route('notifications.index')">
+                                    {{ __('Notifications') }}
+                                </x-dropdown-link>
+
+                                <x-dropdown-link href="#">
+                                    {{ __('Help') }}
+                                </x-dropdown-link>
+
+                                <!-- Authentication -->
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+
+                                    <x-dropdown-link :href="route('logout')"
+                                            onclick="event.preventDefault(); this.closest('form').submit();">
+                                        {{ __('Log Out') }}
+                                    </x-dropdown-link>
+                                </form>
+                            </x-slot>
+                        </x-dropdown>
+                    </div>
+                </div>
+                @endhasanyrole
+                @endauth
+
                 <!-- Page Content -->
                 <main>
                     {{ $slot }}

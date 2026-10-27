@@ -1,8 +1,11 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\AttendanceRecord;
 use App\Models\SchoolEmployee;
+use App\Support\AttendanceSchedule;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
@@ -21,14 +24,8 @@ class EmployeeAttendanceController extends Controller
 
         // Validate month and status filters.
         $filters = $request->validate([
-            'month' => [
-                'nullable',
-                'date_format:Y-m',
-            ],
-            'status' => [
-                'nullable',
-                Rule::in(AttendanceRecord::STATUSES),
-            ],
+            'month' => ['nullable', 'date_format:Y-m'],
+            'status' => ['nullable', Rule::in(AttendanceRecord::STATUSES)],
         ]);
 
         // Get the selected month.
@@ -37,15 +34,7 @@ class EmployeeAttendanceController extends Controller
             $filters['month'] ?? now()->format('Y-m')
         )->startOfMonth();
 
-        /*
-        |--------------------------------------------------------------------------
-        | Find the Employee Linked to the Logged-in User
-        |--------------------------------------------------------------------------
-        |
-        | school_employees.user_id must match users.id.
-        |
-        */
-
+        // Find the employee linked to the logged-in user.
         $employee = SchoolEmployee::query()
             ->where('user_id', $user->id)
             ->first();
@@ -58,6 +47,7 @@ class EmployeeAttendanceController extends Controller
             'nextMonth' => $month->copy()->addMonth()->format('Y-m'),
             'isCurrent' => $month->isSameMonth(now()),
             'status' => $filters['status'] ?? '',
+            'schedule' => null,
             'records' => collect(),
             'summary' => [
                 'present' => 0,
@@ -73,12 +63,13 @@ class EmployeeAttendanceController extends Controller
             return view('attendance', $data);
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Retrieve Attendance Records for the Selected Month
-        |--------------------------------------------------------------------------
-        */
+        // Schedule for the selected month (auto-adjusted in May).
+        // NOTE: change `position` if your role column has a different name.
+        $roleColumn = $employee->position;
 
+        $data['schedule'] = AttendanceSchedule::for($roleColumn, $month);
+
+        // Retrieve attendance records for the selected month.
         $base = AttendanceRecord::query()
             ->where('employee_id', $employee->id)
             ->where('archived', false)
@@ -93,7 +84,7 @@ class EmployeeAttendanceController extends Controller
             ->groupBy('status')
             ->pluck('total', 'status');
 
-        // Calculate the monthly summary.
+        // Monthly summary.
         $data['summary'] = [
             'present' => (int) ($counts['Present'] ?? 0),
             'late' => (int) ($counts['Late'] ?? 0),
@@ -102,20 +93,31 @@ class EmployeeAttendanceController extends Controller
             'hours' => (float) (clone $base)->sum('hours_worked'),
         ];
 
-        // Apply the optional status filter and paginate results.
+        // Apply the optional status filter, paginate, and attach computed values.
         $data['records'] = (clone $base)
             ->when(
                 ! empty($filters['status']),
-                fn ($query) => $query->where(
-                    'status',
-                    $filters['status']
-                )
+                fn ($query) => $query->where('status', $filters['status'])
             )
             ->orderByDesc('date')
             ->paginate(15)
-            ->withQueryString();
+            ->withQueryString()
+            ->through(function ($record) use ($roleColumn) {
+                $date = Carbon::parse($record->date)->startOfDay();
+                $schedule = AttendanceSchedule::for($roleColumn, $date);
 
-        // Return the attendance page.
+                $in = AttendanceSchedule::toCarbon($date, $record->time_in);
+                $out = $record->time_out
+                    ? Carbon::parse($date->toDateString().' '.$record->time_out)
+                    : null;
+
+                $record->late_minutes = $schedule->lateMinutes($in);
+                $record->computed_hours = $schedule->hoursWorked($in, $out);
+                $record->computed_status = $schedule->status($in, $out);
+
+                return $record;
+            });
+
         return view('attendance', $data);
     }
 }

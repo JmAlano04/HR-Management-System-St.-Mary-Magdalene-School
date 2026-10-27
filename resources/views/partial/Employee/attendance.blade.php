@@ -34,6 +34,18 @@
             ['Half Days',     $summary['half_day']],
             ['Avg. Hours/Day', number_format($avgHours, 2)],
         ];
+
+        // Table columns (6 columns now: added "Late (mins)")
+        $columns = [
+            'Date'         => 'w-[18%]',
+            'Time In'      => 'w-[15%]',
+            'Time Out'     => 'w-[15%]',
+            'Late (mins)'  => 'w-[14%]',
+            'Hours Worked' => 'w-[18%]',
+            'Status'       => 'w-[20%]',
+        ];
+
+        $cell = 'border-b border-gray-900/[0.06] px-[18px] py-[22px] text-center align-middle text-gray-900';
     @endphp
 
     <div class="mx-auto max-w-[1920px] px-4 pb-12 pt-2 sm:px-6 lg:px-10" x-data>
@@ -56,6 +68,19 @@
                         </article>
                     @endforeach
                 </div>
+
+                {{-- Work schedule (auto-adjusts to 8:00 AM - 4:00 PM in May) --}}
+                @if ($schedule)
+                    <div class="flex flex-wrap items-center gap-x-8 gap-y-3 rounded-2xl border border-gray-900/[0.03] bg-white/80 px-[22px] py-4 shadow-[0_2px_8px_rgba(15,23,42,0.03)]" aria-label="Work schedule">
+                        <div class="flex items-center gap-2 font-bold text-gray-900">
+                            <i class="fa-regular fa-clock text-[#b22222]"></i> Work Schedule
+                        </div>
+                        <div class="text-sm text-gray-600">Work hours: <strong class="text-gray-900">{{ $schedule->label() }}</strong></div>
+                        <div class="text-sm text-gray-600">Lunch: <strong class="text-gray-900">{{ $schedule->lunchLabel() }}</strong></div>
+                        <div class="text-sm text-gray-600">Grace period: <strong class="text-gray-900">{{ $schedule->graceMinutes ? $schedule->graceMinutes.' mins' : 'None' }}</strong></div>
+                        <div class="text-sm text-gray-600">Overtime: <strong class="text-gray-900">Not counted</strong></div>
+                    </div>
+                @endif
 
                 {{-- Attendance panel --}}
                 <div class="overflow-hidden rounded-[18px] border border-gray-900/5 bg-white/50 shadow-[0_4px_14px_rgba(15,23,42,0.02)]">
@@ -136,23 +161,36 @@
 
                     {{-- Table --}}
                     <div class="overflow-x-auto border-t border-gray-900/[0.07] bg-white/60">
-                        <table id="attendanceTable" class="w-full min-w-[760px] table-fixed border-collapse">
+                        <table id="attendanceTable" class="w-full min-w-[860px] table-fixed border-collapse">
                             <thead>
                                 <tr>
-                                    @foreach (['Date' => 'w-[22%]', 'Time In' => 'w-[17%]', 'Time Out' => 'w-[17%]', 'Hours Worked' => 'w-[22%]', 'Status' => 'w-[22%]'] as $heading => $width)
+                                    @foreach ($columns as $heading => $width)
                                         <th class="{{ $width }} border-b border-gray-900/[0.08] px-[18px] pb-3.5 pt-[18px] text-center align-middle text-[1.1rem] font-bold text-gray-900">{{ $heading }}</th>
                                     @endforeach
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse ($records as $record)
+                                    @php
+                                        $late  = (int) ($record->late_minutes ?? 0);
+                                        // Hours computed from the schedule (no overtime, lunch deducted).
+                                        // Falls back to the stored label when there is no time out yet.
+                                        $hours = ($record->computed_hours ?? 0) > 0
+                                            ? number_format($record->computed_hours, 2)
+                                            : $record->hours_label;
+                                    @endphp
                                     <tr class="transition hover:bg-[#fff7f7]">
-                                        <td class="border-b border-gray-900/[0.06] px-[18px] py-[22px] text-center align-middle text-gray-900">
-                                            {{ $record->date->format('Y-m-d') }}
+                                        <td class="{{ $cell }}">{{ $record->date->format('Y-m-d') }}</td>
+                                        <td class="{{ $cell }}">{{ $record->time_in_label }}</td>
+                                        <td class="{{ $cell }}">{{ $record->time_out_label }}</td>
+                                        <td class="{{ $cell }}">
+                                            @if ($late > 0)
+                                                <span class="font-bold text-[#a16207]">{{ $late }}</span>
+                                            @else
+                                                0
+                                            @endif
                                         </td>
-                                        <td class="border-b border-gray-900/[0.06] px-[18px] py-[22px] text-center align-middle text-gray-900">{{ $record->time_in_label }}</td>
-                                        <td class="border-b border-gray-900/[0.06] px-[18px] py-[22px] text-center align-middle text-gray-900">{{ $record->time_out_label }}</td>
-                                        <td class="border-b border-gray-900/[0.06] px-[18px] py-[22px] text-center align-middle text-gray-900">{{ $record->hours_label }}</td>
+                                        <td class="{{ $cell }}">{{ $hours }}</td>
                                         <td class="border-b border-gray-900/[0.06] px-[18px] py-[22px] text-center align-middle">
                                             <span class="inline-flex min-w-[98px] items-center justify-center rounded-full px-3.5 py-2 text-[0.9rem] font-bold tracking-[-0.01em] {{ $pill($record->status) }}">
                                                 {{ $record->status }}
@@ -161,7 +199,7 @@
                                     </tr>
                                 @empty
                                     <tr data-empty>
-                                        <td colspan="5" class="px-[18px] pb-[54px] pt-[42px] text-center text-[1.05rem] font-medium text-gray-500">
+                                        <td colspan="6" class="px-[18px] pb-[54px] pt-[42px] text-center text-[1.05rem] font-medium text-gray-500">
                                             No records found
                                         </td>
                                     </tr>

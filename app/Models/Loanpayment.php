@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class LoanRepayment extends Model
+class Loanpayment extends Model
 {
     protected $fillable = ['loan_request_id', 'amount', 'paid_at', 'payslip_id'];
 

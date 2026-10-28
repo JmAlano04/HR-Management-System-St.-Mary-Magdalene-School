@@ -1,1 +1,1 @@
-<img src="{{ asset('image/SMMS Logo.png') }}"  alt="Application Logo" {{ $attributes->merge(['class' => 'w-64 h-64 fill-current text-gray-500']) }}>
+<img src="{{ asset('Image/SMMS Logo.png') }}"  alt="Application Logo" {{ $attributes->merge(['class' => 'w-64 h-64 fill-current text-gray-500']) }}>

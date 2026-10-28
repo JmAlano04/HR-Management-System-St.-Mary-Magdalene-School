@@ -392,7 +392,7 @@
             aria-label="Go to home dashboard"
         >
             <img
-                src="{{ asset('image/SMMS Logo.png') }}"
+                src="{{ asset('Image/SMMS Logo.png') }}"
                 alt="St. Mary Magdalene School Logo"
                 class="h-20 w-auto object-contain"
             >

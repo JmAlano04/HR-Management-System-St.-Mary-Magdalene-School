@@ -108,9 +108,6 @@
                                     {{ __('My Account') }}
                                 </x-dropdown-link>
 
-                                <x-dropdown-link :href="route('notifications.index')">
-                                    {{ __('Notifications') }}
-                                </x-dropdown-link>
 
                                 <x-dropdown-link href="#">
                                     {{ __('Help') }}

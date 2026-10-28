@@ -112,6 +112,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/onboarding/{application}/schedule', [OnboardingManagementController::class, 'schedule'])->name('onboarding.schedule');
 
 
+
+        
+
         Route::post('/job-openings', [JobOpeningController::class, 'store'])->name('job-openings.store');
         Route::delete('/job-openings.store/{jobOpening}', [JobOpeningController::class, 'destroy'])->name('job-openings.destroy');
  

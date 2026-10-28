@@ -1324,8 +1324,6 @@ body {
      ===================================================================== --}}
 @section('scripts')
 
-    {{-- Kept as-is: not part of the design/interactivity files you sent --}}
-    @vite(['resources/js/shared-sync.js'])
 
 @verbatim
 <script>

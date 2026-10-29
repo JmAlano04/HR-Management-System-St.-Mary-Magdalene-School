@@ -12,15 +12,15 @@
 
     {{-- Page heading --}}
     <x-slot name="header">
-        <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl  font-extrabold leading-tight ml-[130px] text-red-700">
+        <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl  font-extrabold leading-tight ml-[80px] text-red-700">
             {{ __('Dashboard') }}
         </h2>
     </x-slot>
 
-    <div class="pb-12  ml-4">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="ml-4 -mt-8">
+        <div class="max-w-7xl mx-auto ">
             <div class="overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
+                <div class=" text-gray-900">
             
                         {{-- Role-specific message --}}
                         @switch($role)

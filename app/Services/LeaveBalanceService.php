@@ -14,9 +14,12 @@ class LeaveBalanceService
     /** regular | non-regular | unknown */
     public function status(Employee $employee): string
     {
-        return match ($employee->employment_status) {
+        // Sa database ay 'non regular' (may espasyo); tinatanggap din ang 'non-regular' at 'non_regular'
+        $value = strtolower(str_replace(['-', '_'], ' ', trim((string) $employee->employment_status)));
+
+        return match ($value) {
             'regular'     => 'regular',
-            'non-regular' => 'non-regular',
+            'non regular' => 'non-regular',
             default       => 'unknown',
         };
     }
@@ -34,25 +37,33 @@ class LeaveBalanceService
         $status = $this->status($employee);
         $nonReg = $status === 'non-regular';
 
-        $nonRegType = config('leave.non_regular.type');
+        // May default lahat para hindi mag-crash kapag kulang ang config/leave.php
+        $nonRegType = (string) config('leave.non_regular.type', 'Non-Convertible Leave');
+        $nonRegDays = (int) config('leave.non_regular.days', 0);
+        $total      = (int) config('leave.total', 0);
+        $configured = (array) config('leave.types', []);
 
-        $approved = LeaveRequest::forUser($employee->user_id)
-            ->approved()
-            ->whereYear('start_date', $year)
-            ->get(['type', 'start_date', 'end_date']);
+        // Kapag walang user account ang employee, walang leave requests na maiuugnay
+        // (iwas din na mabilang ang mga request na NULL ang user_id).
+        $approved = $employee->user_id
+            ? LeaveRequest::forUser($employee->user_id)
+                ->approved()
+                ->whereYear('start_date', $year)
+                ->get(['type', 'start_date', 'end_date'])
+            : collect();
 
         // Non-regular: only the allowed type counts
         $eligible  = $nonReg ? $approved->where('type', $nonRegType) : $approved;
         $totalUsed = (int) $eligible->sum(fn (LeaveRequest $r) => $r->days_count);
 
-        $totalInitial = $nonReg ? (int) config('leave.non_regular.days') : (int) config('leave.total');
+        $totalInitial = $nonReg ? $nonRegDays : $total;
+
+        // Non-regular: ang allowed type lang, kahit wala ito sa leave.types
+        $typeList = $nonReg ? [$nonRegType => $nonRegDays] : $configured;
 
         $types = [];
-        foreach (config('leave.types') as $type => $configured) {
-            if ($nonReg && $type !== $nonRegType) {
-                continue; // hidden for non-regular employees
-            }
-            $initial = $nonReg ? (int) config('leave.non_regular.days') : (int) $configured;
+        foreach ($typeList as $type => $days) {
+            $initial = (int) $days;
             $used    = (int) $eligible->where('type', $type)->sum(fn (LeaveRequest $r) => $r->days_count);
 
             $types[$type] = [

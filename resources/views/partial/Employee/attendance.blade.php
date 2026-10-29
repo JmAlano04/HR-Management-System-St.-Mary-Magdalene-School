@@ -1,17 +1,17 @@
 {{-- resources/views/employee/attendance.blade.php --}}
 
     <x-slot name="header">
-        <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold leading-tight ml-[80px] text-red-700">Attendance</h1>
+        <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-extrabold leading-tight ml-[80px] text-red-700">Attendance</h1>
     </x-slot>
 
     @php
-        // Same pill colours as the HTML design (.status-pill)
-        $pill = fn (string $status) => match ($status) {
-            'Present'  => 'bg-[rgba(34,197,94,0.12)] text-[#15803d]',
-            'Late'     => 'bg-[rgba(251,191,36,0.18)] text-[#a16207]',
-            'Half Day' => 'bg-[rgba(96,165,250,0.18)] text-[#1d4ed8]',
-            'Absent'   => 'bg-[rgba(239,68,68,0.1)] text-[#dc2626]',
-            default    => 'bg-[#dbeafe] text-[#1d4ed8]',
+        // Status badges: same look as the HR attendance table
+        $badge = fn (string $status) => match (strtolower($status)) {
+            'present'  => 'bg-[#ecfdf5] text-[#065f46]',
+            'absent'   => 'bg-[#fee2e2] text-[#b22222]',
+            'late'     => 'bg-[#fff7ed] text-[#92400e]',
+            'half day' => 'bg-[#eff6ff] text-[#1e40af]',
+            default    => 'bg-gray-100 text-gray-600',
         };
 
         $inputClass = 'w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-3 text-[15px] text-gray-900 transition focus:border-[#b22222] focus:outline-none focus:ring-4 focus:ring-red-700/10';
@@ -35,17 +35,8 @@
             ['Avg. Hours/Day', number_format($avgHours, 2)],
         ];
 
-        // Table columns (6 columns now: added "Late (mins)")
-        $columns = [
-            'Date'         => 'w-[18%]',
-            'Time In'      => 'w-[15%]',
-            'Time Out'     => 'w-[15%]',
-            'Late (mins)'  => 'w-[14%]',
-            'Hours Worked' => 'w-[18%]',
-            'Status'       => 'w-[20%]',
-        ];
-
-        $cell = 'border-b border-gray-900/[0.06] px-[18px] py-[22px] text-center align-middle text-gray-900';
+        // Table headings: same columns as the HR attendance table
+        $columns = ['Employee ID', 'Employee Type', 'Department', 'Date', 'Time In', 'Time Out', 'Hours Worked', 'Status'];
     @endphp
 
     <div class="mx-auto max-w-[1920px] px-4 pb-12 pt-2 sm:px-6 lg:px-10" x-data>
@@ -97,7 +88,7 @@
                         <button type="button" id="exportBtn" data-file="attendance-{{ $month->format('Y-m') }}.xlsx"
                             @disabled($records->isEmpty())
                             class="inline-flex items-center justify-center gap-2.5 whitespace-nowrap rounded-xl border border-gray-900/10 bg-[#f7f7f8] px-[18px] py-3 font-semibold text-gray-900 shadow-[0_2px_8px_rgba(15,23,42,0.03)] transition hover:-translate-y-px hover:border-[#b22222]/30 hover:bg-[#fff5f5] hover:shadow-[0_6px_16px_rgba(15,23,42,0.08)] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0">
-                            <i class="fa-solid fa-download"></i> Export to Excel
+                            <i class="fa-solid fa-download"></i>
                         </button>
                     </div>
 
@@ -159,57 +150,45 @@
                         @endif
                     </form>
 
-                    {{-- Table --}}
-                    <div class="overflow-x-auto border-t border-gray-900/[0.07] bg-white/60">
-                        <table id="attendanceTable" class="w-full min-w-[860px] table-fixed border-collapse">
-                            <thead>
-                                <tr>
-                                    @foreach ($columns as $heading => $width)
-                                        <th class="{{ $width }} border-b border-gray-900/[0.08] px-[18px] pb-3.5 pt-[18px] text-center align-middle text-[1.1rem] font-bold text-gray-900">{{ $heading }}</th>
-                                    @endforeach
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse ($records as $record)
-                                    @php
-                                        $late  = (int) ($record->late_minutes ?? 0);
-                                        // Hours computed from the schedule (no overtime, lunch deducted).
-                                        // Falls back to the stored label when there is no time out yet.
-                                        $hours = ($record->computed_hours ?? 0) > 0
-                                            ? number_format($record->computed_hours, 2)
-                                            : $record->hours_label;
-                                    @endphp
-                                    <tr class="transition hover:bg-[#fff7f7]">
-                                        <td class="{{ $cell }}">{{ $record->date->format('Y-m-d') }}</td>
-                                        <td class="{{ $cell }}">{{ $record->time_in_label }}</td>
-                                        <td class="{{ $cell }}">{{ $record->time_out_label }}</td>
-                                        <td class="{{ $cell }}">
-                                            @if ($late > 0)
-                                                <span class="font-bold text-[#a16207]">{{ $late }}</span>
-                                            @else
-                                                0
-                                            @endif
-                                        </td>
-                                        <td class="{{ $cell }}">{{ $hours }}</td>
-                                        <td class="border-b border-gray-900/[0.06] px-[18px] py-[22px] text-center align-middle">
-                                            <span class="inline-flex min-w-[98px] items-center justify-center rounded-full px-3.5 py-2 text-[0.9rem] font-bold tracking-[-0.01em] {{ $pill($record->status) }}">
-                                                {{ $record->status }}
-                                            </span>
-                                        </td>
+                    {{-- Table (same design as the HR attendance table) --}}
+                    <div class="px-[22px] pb-5">
+                        <div class="overflow-x-auto rounded-xl border border-[#f3f4f6] bg-white">
+                            <table id="attendanceTable" class="w-full min-w-[820px] border-collapse">
+                                <thead class="bg-slate-50">
+                                    <tr>
+                                        @foreach ($columns as $heading)
+                                            <th class="whitespace-nowrap border-b border-[#f3f4f6] px-2 py-5 text-left font-bold text-gray-900">{{ $heading }}</th>
+                                        @endforeach
                                     </tr>
-                                @empty
-                                    <tr data-empty>
-                                        <td colspan="6" class="px-[18px] pb-[54px] pt-[42px] text-center text-[1.05rem] font-medium text-gray-500">
-                                            No records found
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    @forelse ($records as $record)
+                                        <tr class="transition-colors hover:bg-gray-50">
+                                            <td class="whitespace-nowrap border-b border-[#f3f4f6] px-2 py-5 font-semibold">{{ $record['name'] ?? 'N/A' }}
+                                                <p class="text-sm text-gray-400">{{ $record['employee_code'] ?? 'N/A' }}</p>
+                                            </td>
+                                            <td class="border-b border-[#f3f4f6] px-2 py-5 font-semibold">{{ $record['role_type'] ?? 'Unknown employee' }}</td>
+                                            <td class="border-b border-[#f3f4f6] px-2 py-5 font-semibold">{{ $record['department_label'] }}</td>
+                                            <td class="whitespace-nowrap border-b border-[#f3f4f6] px-2 py-5 font-semibold">{{ \Illuminate\Support\Carbon::parse($record['date'])->format('M d, Y') }}</td>
+                                            <td class="whitespace-nowrap border-b border-[#f3f4f6] px-2 py-5 font-semibold">{{ $record['time_in'] }}</td>
+                                            <td class="whitespace-nowrap border-b border-[#f3f4f6] px-2 py-5 font-semibold">{{ $record['time_out'] }}</td>
+                                            <td class="border-b border-[#f3f4f6] px-2 py-5 font-semibold">{{ $record['hours'] }}</td>
+                                            <td class="border-b border-[#f3f4f6] px-2 py-5">
+                                                <span class="inline-block whitespace-nowrap rounded-full px-2.5 py-1.5 text-[0.9rem] font-bold {{ $badge($record['status']) }}">{{ $record['status'] }}</span>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr data-empty>
+                                            <td colspan="8" class="px-4 py-[26px] text-center text-gray-400">No records found</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
 
                     @if ($records->hasPages())
-                        <div class="border-t border-gray-900/[0.07] px-[22px] py-4">{{ $records->links() }}</div>
+                        <div class="border-t border-red-900/[0.07] px-[22px] py-4">{{ $records->links() }}</div>
                     @endif
                 </div>
             </section>

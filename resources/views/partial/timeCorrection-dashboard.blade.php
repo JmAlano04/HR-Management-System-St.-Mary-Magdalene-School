@@ -60,7 +60,7 @@
             <div class="mb-4 flex gap-2 border-b border-[#f0dada]" role="tablist" aria-label="Time correction request views">
                 @foreach (['current' => 'Current', 'archive' => 'Archive'] as $key => $label)
                     <a href="{{ route('time-corrections.index', ['view' => $key]) }}" role="tab" aria-selected="{{ $view === $key ? 'true' : 'false' }}"
-                        class="-mb-px border-b-[3px] px-3.5 py-2.5 font-extrabold transition {{ $view === $key ? 'border-[#b22222] text-[#b22222]' : 'border-transparent text-gray-500 hover:text-gray-700' }}">
+                        class="-mb-px border-b-[3px] px-3.5 py-2.5 font-extrabold transition {{ $view === $key ? 'bg-red-200 rounded-full text-[#b22222]' : 'border-transparent text-gray-500 hover:text-gray-700' }}">
                         {{ $label }}
                     </a>
                 @endforeach

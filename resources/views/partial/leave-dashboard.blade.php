@@ -77,7 +77,7 @@
                 <div class="flex gap-2" role="tablist" aria-label="Leave request views">
                     @foreach (['current' => 'Current', 'archive' => 'Archive'] as $key => $label)
                         <a href="{{ route('leaves.index', ['view' => $key]) }}" role="tab" aria-selected="{{ $view === $key ? 'true' : 'false' }}"
-                            class="-mb-px border-b-[3px] px-3.5 py-2.5 font-extrabold transition {{ $view === $key ? 'border-[#b22222] text-[#b22222]' : 'border-transparent text-gray-500 hover:text-gray-700' }}">
+                            class="-mb-px border-b-[3px] px-3.5 py-2.5 font-extrabold  transition {{ $view === $key ? 'text-[#b22222] bg-red-200 rounded-full' : 'border-transparent 0 text-gray-500 hover:text-gray-700' }}">
                             {{ $label }}
                         </a>
                     @endforeach
@@ -90,7 +90,7 @@
                         @method('DELETE')
                         <button type="submit"
                             class="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-[#dc2626] bg-white px-3.5 py-2 text-sm font-bold text-[#b91c1c] transition hover:bg-[#fef2f2]">
-                            <i class="fa-solid fa-trash" aria-hidden="true"></i> Clear Archive
+                        
                         </button>
                     </form>
                 @endif
@@ -164,22 +164,24 @@
 
                 <template x-if="detail">
                     <div>
-                        <div class="grid gap-3">
-                            @foreach ([
-                                ['Leave type', 'type'],
-                                ['Requested date', 'requested_date'],
-                                ['Duration', 'duration'],
-                                ['Total days', 'days'],
-                                ['Reason', 'reason'],
-                                ['Leave balance', 'leave_balance'],
-                                ['Status', 'status'],
-                            ] as [$label, $key])
-                                <p class="grid gap-1 border-b border-gray-100 pb-2.5">
-                                    <strong class="text-[0.78rem] uppercase tracking-[0.04em] text-gray-500">{{ $label }}</strong>
-                                    <span x-text="detail.{{ $key }}"></span>
-                                </p>
-                            @endforeach
-                        </div>
+                       <div class="grid gap-3">
+                        @foreach ([
+                            ['Leave type', 'type'],
+                            ['Requested date', 'requested_date'],
+                            ['Duration', 'duration'],
+                            ['Total days', 'days'],
+                            ['Reason', 'reason'],
+                            ['Leave balance', 'leave_balance'],
+                            ['Status', 'status'],
+                        ] as [$label, $key])
+                            <div class="flex flex-col gap-1 border-b border-gray-100 pb-2.5 last:border-0 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+                                <span class="shrink-0 text-[0.78rem] font-bold uppercase tracking-[0.04em] text-gray-500">
+                                    {{ $label }}
+                                </span>
+                                <span class="min-w-0 break-words text-gray-900 sm:text-right" x-text="detail?.{{ $key }}"></span>
+                            </div>
+                        @endforeach
+                    </div>
 
                         {{-- Approve / Reject (only while the request is Pending) --}}
                         <template x-if="detail.can_decide">

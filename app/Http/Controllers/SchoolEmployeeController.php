@@ -4,52 +4,47 @@ namespace App\Http\Controllers;
 
 use App\Models\SchoolEmployee;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 
 class SchoolEmployeeController extends Controller
 {
+    /** School employee directory (view only, sensitive data masked). */
     public function index(Request $request)
     {
-        $filters = $request->validate([
-            'search' => ['nullable', 'string', 'max:100'],
-            'department' => [
-                'nullable',
-                Rule::in(array_keys(SchoolEmployee::DEPARTMENTS)),
-            ],
-            'role_type' => [
-                'nullable',
-                Rule::in(array_keys(SchoolEmployee::ROLE_TYPES)),
-            ],
-        ]);
+        // Search + department + role type filters run in the database (see SchoolEmployee::scopeFilter)
+        $authId = Auth::id();
 
         $employees = SchoolEmployee::query()
-            ->filter($filters)
-            ->when(Auth::check(), function ($query) {
-                $query->where('user_id', '!=', Auth::id());
-            })
+            // Hide the logged-in user's own employee record.
+            // whereNull keeps records that have no linked account.
+            ->where(fn ($q) => $q
+                ->whereNull('user_id')
+                ->orWhere('user_id', '!=', $authId))
+            ->filter($request->only(['search', 'department', 'role_type']))
             ->orderBy('name')
             ->paginate(12)
             ->withQueryString();
 
-        $cards = $employees->getCollection()->mapWithKeys(
-            fn (SchoolEmployee $e) => [
-                $e->id => [
-                    'id' => $e->id,
-                    'initials' => $e->initials,
-                    'name' => $e->name,
-                    'employee_id' => $e->employee_id,
-                    'position' => $e->position,
-                    'department_label' => $e->department_label,
-                    'role_label' => $e->role_label,
-                    'email' => $e->masked_email,
-                    'birthday_label' => $e->masked_birthday,
-                    'emergency_name' => $e->emergency_name,
-                    'emergency_contact' => $e->masked_emergency_contact,
-                ],
-            ]
-        );
+        // Keyed by id for the details modal; only masked values reach the browser
+        $cards = $employees->getCollection()->mapWithKeys(fn (SchoolEmployee $e) => [
+            $e->id => [
+                'id'                => $e->id,
+                'initials'          => $e->initials,
+                'name'              => $e->name,
+                'employee_id'       => $e->employee_id,
+                'position'          => $e->position,
+                'department_label'  => $e->department_label,
+                'role_label'        => $e->role_label,
+                'email'             => $e->masked_email,
+                'birthday_label'    => $e->masked_birthday,
+                'emergency_contact' => $e->masked_emergency_contact,
+            ],
+        ]);
 
-        return view('school-employee', compact('employees', 'cards'));
+        return view('school-employee', [
+            'employees'         => $employees,
+            'cards'             => $cards,
+            'filterDepartments' => SchoolEmployee::departmentsInDatabase(),
+        ]);
     }
 }

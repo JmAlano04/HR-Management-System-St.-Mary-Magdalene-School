@@ -1,12 +1,15 @@
 {{-- resources/views/employee/school-employees.blade.php --}}
 
-    {{-- Browser tab title --}}
-    <x-slot name="title">
-      School Employees
-    </x-slot>
+<x-slot name="header">
+    <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-extrabold leading-tight ml-[80px] text-red-700">School Employees</h1>
+</x-slot>
 
     @php
         $inputClass = 'w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-3 text-[15px] text-gray-900 transition focus:border-[#b22222] focus:outline-none focus:ring-4 focus:ring-red-700/10';
+
+        // Only departments that actually exist in SQL (no hardcoded extras).
+        // Uses the controller's list if it passed one, otherwise reads the database here.
+        $filterDepartments = $filterDepartments ?? \App\Models\SchoolEmployee::departmentsInDatabase();
     @endphp
 
     <div
@@ -30,11 +33,12 @@
                         class="w-full rounded-xl border border-gray-200 bg-gray-50 py-3 pl-[42px] pr-3.5 text-gray-900 focus:border-[#b22222] focus:outline-none focus:ring-4 focus:ring-red-700/10">
                 </label>
 
+                {{-- Department filter: options come only from the departments stored in SQL --}}
                 <label for="departmentFilter" class="flex min-w-[180px] flex-col gap-2 text-sm font-bold text-gray-600">
                     <span>Department</span>
                     <select id="departmentFilter" name="department" @change="$refs.filters.submit()" class="{{ $inputClass }}">
-                        <option value="">All Schools</option>
-                        @foreach (\App\Models\SchoolEmployee::DEPARTMENTS as $value => $label)
+                        <option value="">All Department</option>
+                        @foreach ($filterDepartments as $value => $label)
                             <option value="{{ $value }}" @selected(request('department') === $value)>{{ $label }}</option>
                         @endforeach
                     </select>
@@ -108,7 +112,7 @@
                             <p><strong>Role Type:</strong> <span x-text="detail.role_label"></span></p>
                             <p><strong>Email:</strong> <span x-text="detail.email"></span></p>
                             <p><strong>Birthday:</strong> <span x-text="detail.birthday_label"></span></p>
-                            <p><strong>Emergency Contact:</strong> <span x-text=" detail.emergency_contact"></span></p>
+                            <p><strong>Emergency Contact:</strong> <span x-text="detail.emergency_contact"></span></p>
                         </div>
                     </div>
                 </template>

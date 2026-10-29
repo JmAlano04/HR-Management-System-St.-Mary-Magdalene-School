@@ -75,11 +75,12 @@
                         class="w-full rounded-xl border border-gray-200 bg-gray-50 py-3 pl-[42px] pr-3.5 text-gray-900 focus:border-[#b22222] focus:outline-none focus:ring-4 focus:ring-red-700/10">
                 </label>
 
+                {{-- Department filter: options come from the departments stored in SQL --}}
                 <label for="departmentFilter" class="flex min-w-[180px] flex-col gap-2 text-sm font-bold text-gray-600">
                     <span>Department</span>
                     <select id="departmentFilter" name="department" @change="$refs.filters.submit()" class="{{ $inputClass }}">
-                        <option value="">All Schools</option>
-                        @foreach (\App\Models\Employee::DEPARTMENTS as $value => $label)
+                        <option value="">All Department</option>
+                        @foreach ($filterDepartments as $value => $label)
                             <option value="{{ $value }}" @selected(request('department') === $value)>{{ $label }}</option>
                         @endforeach
                     </select>
@@ -193,7 +194,7 @@
                     <input type="hidden" name="_method" value="PUT" :disabled="!editingId">
                     <input type="hidden" name="_editing_id" :value="editingId ?? ''">
 
-                    {{-- NEW: pick an applicant (Add mode only). Name and email come from the account. --}}
+                    {{-- Pick an applicant (Add mode only). Name and email come from the account. --}}
                     <div x-show="!editingId">
                         <label for="f_user_id" class="{{ $labelClass }}">Applicant <span class="text-red-600">*</span></label>
 
@@ -244,9 +245,10 @@
                     <div class="grid gap-4 sm:grid-cols-2">
                         <div>
                             <label for="f_department" class="{{ $labelClass }}">Department <span class="text-red-600">*</span></label>
+                            {{-- Options = standard departments + any value already stored in SQL --}}
                             <select id="f_department" name="department" x-model="form.department" required class="{{ $inputClass }}">
                                 <option value="" disabled hidden>Select department</option>
-                                @foreach (\App\Models\Employee::DEPARTMENTS as $value => $label)
+                                @foreach ($formDepartments as $value => $label)
                                     <option value="{{ $value }}">{{ $label }}</option>
                                 @endforeach
                             </select>
@@ -342,7 +344,7 @@
                     }
                 },
 
-                // NEW: fill name and email from the chosen applicant's account
+                // Fill name and email from the chosen applicant's account
                 pickApplicant() {
                     const a = this.applicants[this.form.user_id];
                     this.form.name  = a ? a.name : '';

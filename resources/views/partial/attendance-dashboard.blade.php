@@ -91,7 +91,7 @@
                             <button type="button" @click="selectMode = true"
                                 class="inline-flex cursor-pointer items-center gap-2 rounded-[10px] border border-black/5 bg-white px-3.5 py-2.5 font-bold text-gray-900 transition hover:border-[#b22222]/25 hover:bg-[#fff1f2] hover:text-[#b22222]">
                                 <i class="fa-solid fa-square-check" aria-hidden="true"></i>
-                                {{ $isArchive ? 'Select to Delete' : 'Select to Archive' }}
+                                {{ $isArchive ? 'Select to Delete' : ' ' }}
                             </button>
                         </template>
 
@@ -111,7 +111,7 @@
 
                         <a href="{{ route('attendance.export', request()->query()) }}"
                             class="inline-flex cursor-pointer items-center gap-2 rounded-[10px] border border-black/5 bg-white px-3.5 py-2.5 font-bold text-gray-900 transition hover:border-[#b22222]/25 hover:bg-[#fff1f2] hover:text-[#b22222]">
-                            <i class="fa-solid fa-download" aria-hidden="true"></i> Export to Excel
+                            <i class="fa-solid fa-download" aria-hidden="true"></i>
                         </a>
                     </div>
                 @endif
@@ -218,7 +218,7 @@
                 </div>
 
                 @if ($records->hasPages())
-                    <div class="mt-5">{{ $records->links() }}</div>
+                    <div class="border-t border-red-900/[0.07] px-[22px] py-4">{{ $records->links() }}</div>
                 @endif
             @endif
         </section>

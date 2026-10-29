@@ -81,7 +81,7 @@
                     <div class="flex items-center gap-4">
 
                         <!-- Notification bell -->
-                        <x-notification-bell />
+                        {{-- <x-notification-bell /> --}}
 
                         <!-- Profile dropdown -->
                         <x-dropdown align="right" width="48" content-classes=" p-2 bg-white">

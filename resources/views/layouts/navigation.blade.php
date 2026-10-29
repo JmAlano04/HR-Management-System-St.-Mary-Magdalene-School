@@ -387,8 +387,7 @@
     <div class="flex flex-col items-center px-4 py-6">
         <a
             href="{{ $homeUrl }}"
-            class="rounded-md focus:outline-none focus:ring-2
-                   focus:ring-red-500"
+            class="rounded-md"
             aria-label="Go to home dashboard"
         >
             <img

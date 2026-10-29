@@ -23,7 +23,7 @@
 @endphp
 
     <x-slot name="header">
-        <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold leading-tight ml-[80px] text-red-700">Documents</h1>
+        <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-extrabold leading-tight ml-[80px] text-red-700">Documents</h1>
     </x-slot>
 
     <div

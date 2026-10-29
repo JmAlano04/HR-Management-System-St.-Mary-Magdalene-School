@@ -60,6 +60,10 @@ class Employee extends Model
         'user_id', 'employee_id', 'name', 'position', 'department', 'role_type',
         'email', 'birthday', 'address', 'emergency_name', 'emergency_contact',
 
+        // Nasa database pero wala dati sa fillable.
+        // Ang employment_status ay NOT NULL at walang default sa database.
+        'nickname', 'employment_status',
+
         // My Account
         'gender', 'civil_status', 'phone', 'education',
         'sss_number', 'philhealth_number', 'pagibig_number', 'tin',

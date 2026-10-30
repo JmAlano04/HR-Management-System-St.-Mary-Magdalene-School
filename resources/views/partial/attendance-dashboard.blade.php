@@ -36,6 +36,20 @@
         $inputClass = 'rounded-xl border border-[#e6e7ea] bg-white px-3 py-2.5 text-sm text-gray-800 outline-none focus:border-[#b22222] focus:ring-2 focus:ring-[#b22222]/15';
     @endphp
 
+
+<form
+    method="POST"
+    action="{{ route('zkteco.sync') }}"
+>
+    @csrf
+
+    <button
+        type="submit"
+        class="inline-flex items-center gap-2 rounded-lg bg-green-700 px-4 py-2 text-sm font-semibold text-white hover:bg-green-800"
+    >
+        Sync Biometric Attendance
+    </button>
+</form>
     <div
         class="px-4 pb-12 sm:px-6 lg:px-10"
         x-data="attendanceTable(@js(['pageIds' => $pageIds]))"

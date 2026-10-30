@@ -23,9 +23,35 @@
 
         // Keep what the user typed if validation failed, so the form can reopen
         $old = collect(old())->only([
-            'user_id', 'employee_id', 'name', 'position', 'department', 'role_type', 'email',
+            'user_id', 'employee_id', 'name', 'position', 'department', 'role_type', 'employment_status', 'email',
             'birthday', 'address', 'emergency_name', 'emergency_contact',
         ])->all();
+
+        // Role types: the stored value and the label are the same text.
+        $roleTypes = [
+            'Administrative Staff' => 'Administrative Staff',
+            'Teaching Staff'       => 'Teaching Staff',
+            'Maintenance Staff'    => 'Maintenance Staff',
+            'Support Staff'        => 'Support Staff',
+        ];
+
+        // Employment status: stored value => label.
+        // Uses the controller's list if it passed one.
+        $employmentStatuses = $employmentStatuses ?? [
+            'regular'     => 'Regular',
+            'non regular' => 'Non-Regular',
+        ];
+
+        // Standard departments, merged with whatever is already stored in SQL.
+        // The "+" operator keeps the left-hand keys, so there are no duplicates.
+        $standardDepartments = [
+            'Elementary'         => 'Elementary',
+            'High School'        => 'High School',
+            'Senior High School' => 'Senior High School',
+        ];
+
+        $filterDepartments = $standardDepartments + collect($filterDepartments ?? [])->all();
+        $formDepartments   = $standardDepartments + collect($formDepartments ?? [])->all();
     @endphp
 
     <div
@@ -33,6 +59,7 @@
         x-data="employeeDirectory(@js([
             'employees'  => $cards,
             'applicants' => $applicants,
+            'statuses'   => $employmentStatuses,
             'old'        => $old,
             'reopen'     => $errors->any(),
             'editingId'  => old('_editing_id'),
@@ -75,7 +102,7 @@
                         class="w-full rounded-xl border border-gray-200 bg-gray-50 py-3 pl-[42px] pr-3.5 text-gray-900 focus:border-[#b22222] focus:outline-none focus:ring-4 focus:ring-red-700/10">
                 </label>
 
-                {{-- Department filter: options come from the departments stored in SQL --}}
+                {{-- Department filter: Elementary / High School / Senior High School + departments stored in SQL --}}
                 <label for="departmentFilter" class="flex min-w-[180px] flex-col gap-2 text-sm font-bold text-gray-600">
                     <span>Department</span>
                     <select id="departmentFilter" name="department" @change="$refs.filters.submit()" class="{{ $inputClass }}">
@@ -86,11 +113,12 @@
                     </select>
                 </label>
 
+                {{-- Role type filter --}}
                 <label for="roleFilter" class="flex min-w-[180px] flex-col gap-2 text-sm font-bold text-gray-600">
                     <span>Role Type</span>
                     <select id="roleFilter" name="role_type" @change="$refs.filters.submit()" class="{{ $inputClass }}">
                         <option value="">All Roles</option>
-                        @foreach (\App\Models\Employee::ROLE_TYPES as $value => $label)
+                        @foreach ($roleTypes as $value => $label)
                             <option value="{{ $value }}" @selected(request('role_type') === $value)>{{ $label }}</option>
                         @endforeach
                     </select>
@@ -147,11 +175,16 @@
 
                         <h3 class="mt-4 text-lg font-bold" x-text="detail.name"></h3>
 
+                        {{-- Employment status badge --}}
+                        <span class="mt-2 inline-block rounded-full bg-red-50 px-3 py-1 text-xs font-bold text-[#b22222]"
+                            x-text="statusLabel(detail.employment_status)"></span>
+
                         <div class="mt-3 space-y-1.5 text-gray-700">
                             <p><strong>ID:</strong> <span x-text="detail.employee_id"></span></p>
                             <p><strong>Position:</strong> <span x-text="detail.position"></span></p>
-                            <p><strong>Department:</strong> <span x-text="detail.department_label"></span></p>
-                            <p><strong>Role Type:</strong> <span x-text="detail.role_label"></span></p>
+                            <p><strong>Department:</strong> <span x-text="detail.department_label || detail.department"></span></p>
+                            <p><strong>Role Type:</strong> <span x-text="detail.role_type"></span></p>
+                            <p><strong>Employment Status:</strong> <span x-text="statusLabel(detail.employment_status)"></span></p>
                             <p><strong>Email:</strong> <span x-text="detail.email"></span></p>
                             <p><strong>Birthday:</strong> <span x-text="detail.birthday_label"></span></p>
                             <p><strong>Address:</strong> <span x-text="detail.address"></span></p>
@@ -245,7 +278,7 @@
                     <div class="grid gap-4 sm:grid-cols-2">
                         <div>
                             <label for="f_department" class="{{ $labelClass }}">Department <span class="text-red-600">*</span></label>
-                            {{-- Options = standard departments + any value already stored in SQL --}}
+                            {{-- Options = Elementary / High School / Senior High School + any value already stored in SQL --}}
                             <select id="f_department" name="department" x-model="form.department" required class="{{ $inputClass }}">
                                 <option value="" disabled hidden>Select department</option>
                                 @foreach ($formDepartments as $value => $label)
@@ -256,9 +289,10 @@
                         </div>
                         <div>
                             <label for="f_role_type" class="{{ $labelClass }}">Role Type <span class="text-red-600">*</span></label>
+                            {{-- Options = Administrative / Teaching / Maintenance / Support Staff --}}
                             <select id="f_role_type" name="role_type" x-model="form.role_type" required class="{{ $inputClass }}">
                                 <option value="" disabled hidden>Select role type</option>
-                                @foreach (\App\Models\Employee::ROLE_TYPES as $value => $label)
+                                @foreach ($roleTypes as $value => $label)
                                     <option value="{{ $value }}">{{ $label }}</option>
                                 @endforeach
                             </select>
@@ -268,15 +302,26 @@
 
                     <div class="grid gap-4 sm:grid-cols-2">
                         <div>
+                            <label for="f_employment_status" class="{{ $labelClass }}">Employment Status <span class="text-red-600">*</span></label>
+                            <select id="f_employment_status" name="employment_status" x-model="form.employment_status" required class="{{ $inputClass }}">
+                                <option value="" disabled hidden>Select employment status</option>
+                                @foreach ($employmentStatuses as $value => $label)
+                                    <option value="{{ $value }}">{{ $label }}</option>
+                                @endforeach
+                            </select>
+                            <p class="{{ $errClass }}">{{ $errors->first('employment_status') }}</p>
+                        </div>
+                        <div>
                             <label for="f_birthday" class="{{ $labelClass }}">Birthday <span class="text-red-600">*</span></label>
                             <input id="f_birthday" type="date" name="birthday" x-model="form.birthday" max="{{ now()->subDay()->toDateString() }}" required class="{{ $inputClass }}">
                             <p class="{{ $errClass }}">{{ $errors->first('birthday') }}</p>
                         </div>
-                        <div>
-                            <label for="f_address" class="{{ $labelClass }}">Address <span class="text-red-600">*</span></label>
-                            <input id="f_address" name="address" x-model="form.address" placeholder="House no., street, city, province" required class="{{ $inputClass }}">
-                            <p class="{{ $errClass }}">{{ $errors->first('address') }}</p>
-                        </div>
+                    </div>
+
+                    <div>
+                        <label for="f_address" class="{{ $labelClass }}">Address <span class="text-red-600">*</span></label>
+                        <input id="f_address" name="address" x-model="form.address" placeholder="House no., street, city, province" required class="{{ $inputClass }}">
+                        <p class="{{ $errClass }}">{{ $errors->first('address') }}</p>
                     </div>
 
                     <div class="grid gap-4 sm:grid-cols-2">
@@ -316,12 +361,14 @@
             const blank = () => ({
                 user_id: '',
                 employee_id: '', name: '', position: '', department: '', role_type: '',
+                employment_status: 'regular',
                 email: '', birthday: '', address: '', emergency_name: '', emergency_contact: '',
             });
 
             return {
                 employees: cfg.employees,
                 applicants: cfg.applicants || {},   // { userId: { id, name, email } }
+                statuses: cfg.statuses || {},       // { regular: 'Regular', ... }
                 detailId: null,
                 formOpen: false,
                 editingId: null,
@@ -342,6 +389,11 @@
                         this.form = Object.assign(blank(), cfg.old);
                         this.formOpen = true;
                     }
+                },
+
+                // Readable label for a stored employment status
+                statusLabel(value) {
+                    return this.statuses[value] || value || '—';
                 },
 
                 // Fill name and email from the chosen applicant's account
@@ -371,7 +423,9 @@
                     this.form = {
                         user_id: '',
                         employee_id: e.employee_id, name: e.name, position: e.position,
-                        department: e.department, role_type: e.role_type, email: e.email,
+                        department: e.department, role_type: e.role_type,
+                        employment_status: e.employment_status || 'regular',
+                        email: e.email,
                         birthday: e.birthday, address: e.address,
                         emergency_name: e.emergency_name, emergency_contact: e.emergency_contact,
                     };

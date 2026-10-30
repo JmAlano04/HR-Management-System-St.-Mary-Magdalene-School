@@ -30,6 +30,7 @@ use App\Http\Controllers\JobOpeningController;
 use App\Http\Controllers\TimeCorrectionReviewController;
 use App\Http\Controllers\PayslipController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ZKTecoController;
 
 use App\Http\Controllers\LeaveRequestController;
 
@@ -72,6 +73,14 @@ Route::middleware('auth')->group(function () {
 
     Route::delete('/profile', [ProfileController::class, 'destroy'])
         ->name('profile.destroy');
+
+
+        
+Route::get('/zkteco/test', [ZKTecoController::class, 'test']);
+Route::post(
+    '/zkteco/sync',
+    [ZKTecoController::class, 'sync']
+)->name('zkteco.sync');
 });
 
 /*

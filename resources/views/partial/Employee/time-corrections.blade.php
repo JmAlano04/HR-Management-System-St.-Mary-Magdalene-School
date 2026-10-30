@@ -1,6 +1,6 @@
 {{-- resources/views/time-corrections/employee.blade.php (Employee: submit a correction request) --}}
       <x-slot name="header">
-        <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-extrabold leading-tight ml-[80px] text-red-700">Time Correction Request</h1>
+        <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-extrabold leading-tight sm:ml-[10px] md:ml-[20px] lg:ml-[80px] text-red-700">Time Correction Request</h1>
     </x-slot>
     @php
         $wrapClass  = 'flex min-h-[50px] w-full items-center gap-2.5 rounded-xl border border-[#e8e0e0] bg-[#fffdfd] px-3.5 text-gray-500 transition focus-within:border-[#b22222] focus-within:ring-4 focus-within:ring-[#b22222]/10';

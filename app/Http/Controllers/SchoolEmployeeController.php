@@ -8,10 +8,20 @@ use Illuminate\Support\Facades\Auth;
 
 class SchoolEmployeeController extends Controller
 {
+    /**
+     * Allowed role types. The stored value and the label are the same text,
+     * so they match the options in the Role Type filter of the view.
+     */
+    private const ROLE_TYPES = [
+        'Administrative Staff' => 'Administrative Staff',
+        'Teaching Staff'       => 'Teaching Staff',
+        'Maintenance Staff'    => 'Maintenance Staff',
+        'Support Staff'        => 'Support Staff',
+    ];
+
     /** School employee directory (view only, sensitive data masked). */
     public function index(Request $request)
     {
-        // Search + department + role type filters run in the database (see SchoolEmployee::scopeFilter)
         $authId = Auth::id();
 
         $employees = SchoolEmployee::query()
@@ -20,7 +30,11 @@ class SchoolEmployeeController extends Controller
             ->where(fn ($q) => $q
                 ->whereNull('user_id')
                 ->orWhere('user_id', '!=', $authId))
-            ->filter($request->only(['search', 'department', 'role_type']))
+            // Search + department filters run in the database (see SchoolEmployee::scopeFilter)
+            ->filter($request->only(['search', 'department']))
+            // Role type filter is applied here so it uses the four role types above
+            ->when(array_key_exists((string) $request->role_type, self::ROLE_TYPES),
+                fn ($q) => $q->where('role_type', $request->role_type))
             ->orderBy('name')
             ->paginate(12)
             ->withQueryString();
@@ -34,7 +48,7 @@ class SchoolEmployeeController extends Controller
                 'employee_id'       => $e->employee_id,
                 'position'          => $e->position,
                 'department_label'  => $e->department_label,
-                'role_label'        => $e->role_label,
+                'role_label'        => $e->role_type, // stored value is already the label
                 'email'             => $e->masked_email,
                 'birthday_label'    => $e->masked_birthday,
                 'emergency_contact' => $e->masked_emergency_contact,
@@ -45,6 +59,7 @@ class SchoolEmployeeController extends Controller
             'employees'         => $employees,
             'cards'             => $cards,
             'filterDepartments' => SchoolEmployee::departmentsInDatabase(),
+            'roleTypes'         => self::ROLE_TYPES,
         ]);
     }
 }

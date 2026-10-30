@@ -11,6 +11,10 @@ use App\Models\LeaveRequest;
  */
 class LeaveBalanceService
 {
+    /** Non-regular employees: the only leave type they can use and its days. */
+    public const NON_REGULAR_TYPE = 'Non-Convertible Leave';
+    public const NON_REGULAR_DAYS = 5;
+
     /** regular | non-regular | unknown */
     public function status(Employee $employee): string
     {
@@ -37,9 +41,11 @@ class LeaveBalanceService
         $status = $this->status($employee);
         $nonReg = $status === 'non-regular';
 
-        // May default lahat para hindi mag-crash kapag kulang ang config/leave.php
-        $nonRegType = (string) config('leave.non_regular.type', 'Non-Convertible Leave');
-        $nonRegDays = (int) config('leave.non_regular.days', 0);
+        // May default lahat para hindi mag-crash kapag kulang ang config/leave.php.
+        // Non-regular: laging 5 days ng Non-Convertible Leave. Hindi na binabasa ang
+        // leave.non_regular.days sa config, kaya hindi na ito magiging 4 (o ibang bilang).
+        $nonRegType = (string) config('leave.non_regular.type', self::NON_REGULAR_TYPE);
+        $nonRegDays = self::NON_REGULAR_DAYS;
         $total      = (int) config('leave.total', 0);
         $configured = (array) config('leave.types', []);
 

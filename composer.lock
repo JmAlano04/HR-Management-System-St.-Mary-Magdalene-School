@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "655254a7ff5c7030d744f028dcb794c5",
+    "content-hash": "1801e81e5b1d150ca459f9990ed4e82f",
     "packages": [
         {
             "name": "barryvdh/laravel-dompdf",
@@ -1292,6 +1292,85 @@
                 }
             ],
             "time": "2026-08-24T09:15:32+00:00"
+        },
+        {
+            "name": "hafizasifali/zkteco-php",
+            "version": "dev-main",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/hafizasifali/zkteco-php-laravel-sdk.git",
+                "reference": "c59a28116c3bbc30bb2a2e0f28c16b0faee3ff8f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/hafizasifali/zkteco-php-laravel-sdk/zipball/c59a28116c3bbc30bb2a2e0f28c16b0faee3ff8f",
+                "reference": "c59a28116c3bbc30bb2a2e0f28c16b0faee3ff8f",
+                "shasum": ""
+            },
+            "require": {
+                "ext-iconv": "*",
+                "php": "^8.2"
+            },
+            "conflict": {
+                "laravel/framework": "<11.0"
+            },
+            "require-dev": {
+                "larastan/larastan": "^3.0",
+                "laravel/pint": "^1.18",
+                "mockery/mockery": "^1.6",
+                "orchestra/testbench": "^9.0 || ^10.0 || ^11.0",
+                "phpstan/phpstan": "^2.0",
+                "phpunit/phpunit": "^10.5 || ^11.0"
+            },
+            "suggest": {
+                "illuminate/support": "Enables the Laravel integration (Laravel 11, 12 or 13): config, facade, Artisan commands, events, storage and the push server routes."
+            },
+            "default-branch": true,
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "aliases": {
+                        "ZkTeco": "HafizAsifAli\\ZkTeco\\Laravel\\Facades\\ZkTeco"
+                    },
+                    "providers": [
+                        "HafizAsifAli\\ZkTeco\\Laravel\\ZkTecoServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "HafizAsifAli\\ZkTeco\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Hafiz Asif Ali",
+                    "email": "hafizasifali5@gmail.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Modern PHP SDK for ZKTeco biometric attendance devices — fetch attendance, manage users and stream live punches over TCP/UDP, plus an ADMS push server. First-class Laravel support.",
+            "homepage": "https://github.com/hafizasifali/zkteco-php",
+            "keywords": [
+                "Fingerprint",
+                "access-control",
+                "adms",
+                "attendance",
+                "biometric",
+                "laravel",
+                "php",
+                "time-attendance",
+                "zkteco"
+            ],
+            "support": {
+                "issues": "https://github.com/hafizasifali/zkteco-php/issues",
+                "source": "https://github.com/hafizasifali/zkteco-php"
+            },
+            "time": "2026-09-15T07:06:22+00:00"
         },
         {
             "name": "laravel/framework",
@@ -10211,7 +10290,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": {
+        "hafizasifali/zkteco-php": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {

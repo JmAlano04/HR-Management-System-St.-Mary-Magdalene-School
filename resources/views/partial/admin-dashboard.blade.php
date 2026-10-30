@@ -30,74 +30,80 @@
     ];
 </script>
 
-<div class="admin-dashboard pb-12 ml-4">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+{{-- Mobile-first: base = phones, sm = 640px+, lg = 1024px+ --}}
+<div class="admin-dashboard w-full pb-8 sm:pb-12 sm:ml-4">
+    <div class="mx-auto max-w-7xl px-0 sm:px-6 lg:px-8">
 
         {{-- .main-content --}}
-        <main class="main-content relative min-w-0 pt-[34px] pb-[42px] px-[clamp(20px,2.5vw,42px)] max-[960px]:pt-[82px]">
+        <main class="main-content relative min-w-0 pt-[34px] pb-8 px-[clamp(12px,2.5vw,42px)] sm:pb-[42px] max-[960px]:pt-[82px]">
 
             {{-- .promo-banner --}}
-            <section class="promo-banner relative mb-6 p-4 rounded-[28px] overflow-hidden max-[720px]:p-3 max-[720px]:rounded-3xl">
-                <div class="promo-slides relative overflow-hidden rounded-[20px]" id="promoSlides">
+            <section class="promo-banner relative mb-4 overflow-hidden rounded-2xl p-2 sm:mb-6 sm:rounded-[28px] sm:p-4">
+                <div class="promo-slides relative overflow-hidden rounded-xl sm:rounded-[20px]" id="promoSlides">
                     @foreach (['promote1', 'promote2', 'promote3'] as $i => $img)
                         <div class="promo-slide hidden [&.active]:block {{ $i === 0 ? 'active' : '' }}">
-                            <div class="promo-slide-image relative aspect-[16/6.4] min-h-[300px] overflow-hidden rounded-[20px] bg-white max-[720px]:min-h-[220px] max-[720px]:aspect-[4/3]">
-                                <img src="{{ asset('Image/' . $img . '.jpg') }}" alt="{{ $img }}" class="block w-full h-full object-cover object-center" />
+                            <div class="promo-slide-image relative aspect-[4/3] min-h-[200px] overflow-hidden rounded-xl bg-white sm:aspect-[16/9] sm:min-h-[260px] sm:rounded-[20px] lg:aspect-[16/6.4] lg:min-h-[300px]">
+                                <img src="{{ asset('Image/' . $img . '.jpg') }}" alt="{{ $img }}" class="block h-full w-full object-cover object-center" />
                             </div>
                         </div>
                     @endforeach
                 </div>
-                <div class="promo-controls absolute left-1/2 bottom-[26px] -translate-x-1/2 flex gap-2.5 z-[2]" id="promoControls"></div>
-                <button id="editBannerBtn" class="edit-banner-btn absolute top-[26px] right-[26px] z-[3] grid place-items-center w-11 h-11 border-0 rounded-full bg-white/90 text-gray-900 shadow-[0_10px_30px_rgba(15,23,42,0.05)] cursor-pointer max-[720px]:top-4 max-[720px]:right-4 max-[720px]:w-10 max-[720px]:h-10" type="button">
+                <div class="promo-controls absolute bottom-4 left-1/2 z-[2] flex -translate-x-1/2 gap-2 sm:bottom-[26px] sm:gap-2.5" id="promoControls"></div>
+                <button id="editBannerBtn" aria-label="Edit banner images"
+                    class="edit-banner-btn absolute right-4 top-4 z-[3] grid h-10 w-10 cursor-pointer place-items-center rounded-full border-0 bg-white/90 text-gray-900 shadow-[0_10px_30px_rgba(15,23,42,0.05)] sm:right-[26px] sm:top-[26px] sm:h-11 sm:w-11" type="button">
                     <i class="fas fa-edit"></i>
                 </button>
             </section>
 
-            {{-- Banner modal --}}
-            <div id="bannerModal" class="modal hidden fixed inset-0 z-[1000] flex items-center justify-center p-5 bg-black/50 backdrop-blur-lg [&.hidden]:hidden">
-                <div class="modal-content banner-modal-content flex flex-col w-full max-w-[720px] max-h-[calc(100vh-32px)] overflow-hidden bg-white rounded-3xl shadow-[0_28px_70px_rgba(15,23,42,0.2)]">
-                    <div class="modal-header flex justify-between items-center gap-4 pt-6 px-7 pb-5 border-b border-[#ecebea]">
-                        <h3 class="m-0 text-gray-900 text-[1.17em] font-bold">Edit Banner Images</h3>
-                        <button id="closeBannerModal" class="close-btn w-[38px] h-[38px] border-0 rounded-full bg-transparent text-[#b22222] text-[1.4rem] cursor-pointer transition-transform hover:text-[#dc2626] hover:scale-[1.08] active:scale-[0.94]">&times;</button>
+            {{-- Banner modal (bottom sheet on phones, centered dialog on sm+) --}}
+            <div id="bannerModal" class="modal hidden fixed inset-0 z-[1000] flex items-end justify-center overflow-y-auto bg-black/50 p-0 backdrop-blur-lg sm:items-center sm:p-5 [&.hidden]:hidden">
+                <div class="modal-content banner-modal-content flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-3xl bg-white shadow-[0_28px_70px_rgba(15,23,42,0.2)] sm:max-h-[calc(100dvh-40px)] sm:max-w-[720px] sm:rounded-3xl" role="dialog" aria-modal="true" aria-labelledby="bannerModalTitle">
+                    <div class="modal-header flex shrink-0 items-center justify-between gap-3 border-b border-[#ecebea] px-4 pb-4 pt-5 sm:gap-4 sm:px-7 sm:pb-5 sm:pt-6">
+                        <h3 id="bannerModalTitle" class="m-0 min-w-0 text-base font-bold text-gray-900 sm:text-[1.17rem]">Edit Banner Images</h3>
+                        <button id="closeBannerModal" aria-label="Close" class="close-btn h-10 w-10 shrink-0 cursor-pointer rounded-full border-0 bg-transparent text-[1.4rem] text-[#b22222] transition-transform hover:scale-[1.08] hover:text-[#dc2626] active:scale-[0.94] sm:h-[38px] sm:w-[38px]">&times;</button>
                     </div>
-                    <div class="modal-body flex-1 min-h-0 overflow-y-auto pt-6 px-7 pb-7">
+                    <div class="modal-body min-h-0 flex-1 overflow-y-auto px-4 pb-5 pt-4 sm:px-7 sm:pb-7 sm:pt-6">
                         <div class="upload-section grid gap-3">
-                            <div class="upload-area relative overflow-hidden px-5 py-[34px] rounded-[22px] border-2 border-dashed border-gray-300 bg-gray-50 text-center cursor-pointer transition duration-200 hover:-translate-y-px hover:border-[#dc2626] hover:bg-[#fef2f2]" id="uploadArea">
+                            <div class="upload-area relative cursor-pointer overflow-hidden rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 px-4 py-6 text-center transition duration-200 hover:-translate-y-px hover:border-[#dc2626] hover:bg-[#fef2f2] sm:rounded-[22px] sm:px-5 sm:py-[34px]" id="uploadArea">
                                 <div class="upload-placeholder">
-                                    <i class="fas fa-cloud-upload-alt block mb-3 text-gray-400 text-[2.8rem]"></i>
-                                    <p class="m-0 mb-2 text-gray-700 font-bold">Click to upload images or drag and drop</p>
-                                    <span class="text-[#6b7280] text-[0.92rem]">Any image format supported by your browser</span>
+                                    <i class="fas fa-cloud-upload-alt mb-2 block text-4xl text-gray-400 sm:mb-3 sm:text-[2.8rem]"></i>
+                                    <p class="m-0 mb-1.5 text-sm font-bold text-gray-700 sm:mb-2 sm:text-base">Tap to upload images<span class="hidden sm:inline"> or drag and drop</span></p>
+                                    <span class="text-[0.82rem] text-[#6b7280] sm:text-[0.92rem]">PNG or JPEG images</span>
                                 </div>
-                                <input type="file" id="imageUpload" class="absolute inset-0 opacity-0 cursor-pointer" multiple accept="image/png,image/jpeg" />
+                                <input type="file" id="imageUpload" class="absolute inset-0 cursor-pointer opacity-0" multiple accept="image/png,image/jpeg" />
                             </div>
-                            <div class="upload-info flex justify-end items-center gap-3">
-                                <p id="imageCount" class="m-0 mr-auto text-[#6b7280] text-[0.92rem]">0 images selected</p>
+                            <div class="upload-info flex items-center justify-end gap-3">
+                                <p id="imageCount" class="m-0 mr-auto text-[0.85rem] text-[#6b7280] sm:text-[0.92rem]">0 images selected</p>
                             </div>
-                            <div class="uploaded-images grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3.5" id="uploadedImages"></div>
+                            <div class="uploaded-images grid grid-cols-2 gap-2.5 min-[480px]:grid-cols-3 sm:grid-cols-[repeat(auto-fill,minmax(140px,1fr))] sm:gap-3.5" id="uploadedImages"></div>
                         </div>
-                        <div class="modal-footer flex items-center gap-3 justify-end pt-1.5 mt-1 max-[720px]:flex-col max-[720px]:items-stretch">
-                            <button type="button" id="resetToDefaults" class="white-btn rounded-[14px] border border-gray-300 bg-white text-[#b22222] px-4 py-3 font-bold cursor-pointer transition duration-200 hover:-translate-y-px hover:border-[rgba(143,36,31,0.28)] active:translate-y-px active:scale-[0.98]">Reset to Defaults</button>
-                            <button type="button" id="saveBannerImages" class="red-btn ml-auto max-[720px]:ml-0 rounded-[14px] border border-transparent bg-[#dc2626] text-white px-4 py-3 font-bold cursor-pointer transition duration-200 hover:-translate-y-px active:translate-y-px active:scale-[0.98]">Save Changes</button>
-                            <button type="button" id="cancelBannerEdit" class="white-btn rounded-[14px] border border-gray-300 bg-white text-[#b22222] px-4 py-3 font-bold cursor-pointer transition duration-200 hover:-translate-y-px hover:border-[rgba(143,36,31,0.28)] active:translate-y-px active:scale-[0.98]">Cancel</button>
+                        <div class="modal-footer mt-3 flex flex-col gap-2.5 pt-1.5 sm:mt-1 sm:flex-row sm:items-center sm:justify-end sm:gap-3">
+                            <button type="button" id="resetToDefaults" class="white-btn w-full cursor-pointer rounded-[14px] border border-gray-300 bg-white px-4 py-3 font-bold text-[#b22222] transition duration-200 hover:-translate-y-px hover:border-[rgba(143,36,31,0.28)] active:translate-y-px active:scale-[0.98] sm:w-auto">Reset to Defaults</button>
+                            <button type="button" id="saveBannerImages" class="red-btn order-first w-full cursor-pointer rounded-[14px] border border-transparent bg-[#dc2626] px-4 py-3 font-bold text-white transition duration-200 hover:-translate-y-px active:translate-y-px active:scale-[0.98] sm:order-none sm:ml-auto sm:w-auto">Save Changes</button>
+                            <button type="button" id="cancelBannerEdit" class="white-btn w-full cursor-pointer rounded-[14px] border border-gray-300 bg-white px-4 py-3 font-bold text-[#b22222] transition duration-200 hover:-translate-y-px hover:border-[rgba(143,36,31,0.28)] active:translate-y-px active:scale-[0.98] sm:w-auto">Cancel</button>
                         </div>
                     </div>
                 </div>
             </div>
 
             {{-- Calendar --}}
-            <div class="dashboard-content grid grid-cols-1 gap-6 items-start">
-                <section class="calendar-panel p-7 bg-white max-[720px]:p-3.5">
-                    <div class="calendar-header flex justify-between items-center gap-4 mb-3">
-                        <h2 id="calendarHeading" class="m-0 text-gray-900 text-[1.8rem] font-extrabold">August 3, 2026</h2>
+            <div class="dashboard-content grid grid-cols-1 items-start gap-4 sm:gap-6">
+                <section class="calendar-panel min-w-0 bg-white p-2 sm:p-4 lg:p-7">
+                    <div class="calendar-header mb-3 flex items-center justify-between gap-4">
+                        <h2 id="calendarHeading" class="m-0 text-xl font-extrabold text-gray-900 sm:text-2xl lg:text-[1.8rem]">August 3, 2026</h2>
                     </div>
 
-                    <div class="calendar-widget grid gap-3.5 p-5 w-full bg-white rounded-[28px] border border-[#f0eef0] max-[720px]:p-2.5">
-                        <div class="calendar-weekdays grid grid-cols-[repeat(7,minmax(0,1fr))] gap-3 max-[720px]:gap-[5px]">
+                    <div class="calendar-widget grid w-full gap-2 rounded-2xl border border-[#f0eef0] bg-white p-2 sm:gap-3.5 sm:rounded-[28px] sm:p-4 lg:p-5">
+                        <div class="calendar-weekdays grid grid-cols-[repeat(7,minmax(0,1fr))] gap-1 sm:gap-2 lg:gap-3">
                             @foreach (['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as $d)
-                                <span class="grid items-center justify-center min-h-[42px] text-gray-400 font-bold uppercase tracking-[0.12em] text-[0.72rem]">{{ $d }}</span>
+                                <span class="grid min-h-[28px] items-center justify-center text-[0.65rem] font-bold uppercase tracking-[0.06em] text-gray-400 sm:min-h-[42px] sm:text-[0.72rem] sm:tracking-[0.12em]">
+                                    <span class="sm:hidden" aria-hidden="true">{{ substr($d, 0, 1) }}</span>
+                                    <span class="hidden sm:inline">{{ $d }}</span>
+                                    <span class="sr-only">{{ $d }}</span>
+                                </span>
                             @endforeach
                         </div>
-                        <div class="calendar-grid grid grid-cols-[repeat(7,minmax(0,1fr))] auto-rows-[minmax(110px,1fr)] gap-3.5 max-[720px]:gap-[5px] max-[720px]:auto-rows-[minmax(64px,1fr)]" id="calendarGrid"></div>
+                        <div class="calendar-grid grid auto-rows-[minmax(44px,1fr)] grid-cols-[repeat(7,minmax(0,1fr))] gap-1 sm:auto-rows-[minmax(72px,1fr)] sm:gap-2 lg:auto-rows-[minmax(110px,1fr)] lg:gap-3.5" id="calendarGrid"></div>
                     </div>
                 </section>
             </div>
@@ -109,33 +115,35 @@
     // Prefer the Blade-generated asset URLs for the default banners
     const bladeDefaultPromoSlides = window.adminPromoDefaults;
 
-    // ---------- Tailwind class strings used by the dynamically-rendered markup ----------
+    // ---------- Tailwind class strings used by the dynamically-rendered markup (mobile-first) ----------
     const TW = {
         redBtn: "red-btn rounded-[14px] border border-transparent bg-[#dc2626] text-white px-4 py-3 font-bold cursor-pointer transition duration-200 hover:-translate-y-px active:translate-y-px active:scale-[0.98]",
-        clearBtn: "clear-btn rounded-[14px] border border-gray-300 bg-white text-[#b22222] px-4 py-3 font-bold cursor-pointer transition duration-200 hover:-translate-y-px hover:border-[rgba(143,36,31,0.28)] active:translate-y-px active:scale-[0.98]",
-        promoDot: "w-[11px] h-[11px] border-0 rounded-full bg-white cursor-pointer [&.active]:w-[15px] [&.active]:bg-[#b22222]",
-        imagePreview: "image-preview relative overflow-hidden rounded-[18px] bg-gray-100 border-2 border-gray-200",
-        imagePreviewImg: "block w-full h-32 object-cover",
-        removeImage: "remove-image absolute top-2 right-2 w-[26px] h-[26px] border-0 rounded-full bg-red-500/90 text-white cursor-pointer",
-        dayBase: "calendar-day grid grid-rows-[auto_1fr] items-start relative overflow-hidden aspect-square p-2.5 rounded-[20px] border bg-white text-gray-900 cursor-pointer transition duration-200 hover:-translate-y-px hover:shadow-[0_12px_24px_rgba(15,23,42,0.08)] max-[720px]:p-[7px] max-[720px]:rounded-xl",
+        clearBtn: "clear-btn shrink-0 rounded-[14px] border border-gray-300 bg-white text-[#b22222] px-3 py-2 text-sm font-bold cursor-pointer transition duration-200 hover:-translate-y-px hover:border-[rgba(143,36,31,0.28)] active:translate-y-px active:scale-[0.98] sm:px-4 sm:py-3 sm:text-base",
+        promoDot: "h-2.5 w-2.5 cursor-pointer rounded-full border-0 bg-white sm:h-[11px] sm:w-[11px] [&.active]:w-[15px] [&.active]:bg-[#b22222]",
+        promoSlideImage: "promo-slide-image relative aspect-[4/3] min-h-[200px] overflow-hidden rounded-xl bg-white sm:aspect-[16/9] sm:min-h-[260px] sm:rounded-[20px] lg:aspect-[16/6.4] lg:min-h-[300px]",
+        imagePreview: "image-preview relative overflow-hidden rounded-2xl bg-gray-100 border-2 border-gray-200 sm:rounded-[18px]",
+        imagePreviewImg: "block w-full h-24 object-cover sm:h-32",
+        removeImage: "remove-image absolute top-1.5 right-1.5 h-7 w-7 rounded-full border-0 bg-red-500/90 text-white cursor-pointer sm:top-2 sm:right-2 sm:h-[26px] sm:w-[26px]",
+        dayBase: "calendar-day grid grid-rows-[auto_1fr] items-start relative overflow-hidden aspect-square p-1 rounded-lg border bg-white text-left text-gray-900 cursor-pointer transition duration-200 hover:-translate-y-px hover:shadow-[0_12px_24px_rgba(15,23,42,0.08)] sm:p-2 sm:rounded-xl lg:p-2.5 lg:rounded-[20px]",
         dayNormal: "border-[#ececec]",
         dayToday: "today border-[#fbcaca] bg-[#fff7f7]",
         daySelected: "selected border-[#fca5a5] bg-[#f7f2f2]",
         numNormal: "text-gray-900",
         numToday: "text-[#b22222]",
         numSelected: "text-[#991b1b]",
-        taskModal: "task-modal fixed inset-0 z-[1100] flex items-center justify-center p-5 bg-black/50",
-        taskModalContent: "task-modal-content w-full max-w-[520px] overflow-hidden bg-white rounded-3xl shadow-[0_28px_70px_rgba(15,23,42,0.2)]",
-        taskModalHeader: "task-modal-header flex justify-between items-center gap-4 px-6 py-[22px] border-b border-[#ecebea]",
-        taskModalTitle: "m-0 text-gray-900 text-[1.17em] font-bold",
-        taskClose: "close-btn w-[38px] h-[38px] border-0 rounded-full bg-white/90 text-[#b22222] text-[1.4rem] cursor-pointer transition-transform hover:text-[#dc2626] hover:scale-[1.08]",
-        taskModalBody: "task-modal-body p-6",
-        taskInputRow: "task-input-row grid grid-cols-[1fr_auto] gap-2.5 mb-[18px]",
-        taskInput: "w-full px-4 py-3.5 rounded-[14px] border border-gray-300 bg-gray-50",
-        taskList: "task-list grid gap-3",
-        taskItem: "task-item flex justify-between items-center gap-3 px-3.5 py-3 rounded-2xl bg-slate-50 border border-gray-200",
-        taskTitle: "text-gray-900 font-semibold",
-        emptyTask: "empty-task m-0 text-[#6b7280]",
+        taskModal: "task-modal fixed inset-0 z-[1100] flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-5",
+        taskModalContent: "task-modal-content flex max-h-[90dvh] w-full flex-col overflow-hidden rounded-t-3xl bg-white shadow-[0_28px_70px_rgba(15,23,42,0.2)] sm:max-h-[calc(100dvh-40px)] sm:max-w-[520px] sm:rounded-3xl",
+        taskModalHeader: "task-modal-header flex shrink-0 items-center justify-between gap-3 border-b border-[#ecebea] px-4 py-4 sm:gap-4 sm:px-6 sm:py-[22px]",
+        taskModalTitle: "m-0 min-w-0 break-words text-base font-bold text-gray-900 sm:text-[1.17rem]",
+        taskClose: "close-btn h-10 w-10 shrink-0 cursor-pointer rounded-full border-0 bg-white/90 text-[1.4rem] text-[#b22222] transition-transform hover:scale-[1.08] hover:text-[#dc2626] sm:h-[38px] sm:w-[38px]",
+        taskModalBody: "task-modal-body min-h-0 flex-1 overflow-y-auto p-4 sm:p-6",
+        taskInputRow: "task-input-row mb-4 grid grid-cols-1 gap-2.5 sm:mb-[18px] sm:grid-cols-[1fr_auto]",
+        taskAddBtn: "w-full sm:w-auto",
+        taskInput: "w-full min-w-0 rounded-[14px] border border-gray-300 bg-gray-50 px-4 py-3 text-base sm:py-3.5",
+        taskList: "task-list grid gap-2.5 sm:gap-3",
+        taskItem: "task-item flex items-center justify-between gap-2 rounded-2xl border border-gray-200 bg-slate-50 px-3 py-3 sm:gap-3 sm:px-3.5",
+        taskTitle: "min-w-0 break-words text-sm font-semibold text-gray-900 sm:text-base",
+        emptyTask: "empty-task m-0 text-sm text-[#6b7280] sm:text-base",
     };
 
     // Element references
@@ -287,7 +295,7 @@
         const slides = getStoredPromoSlides();
         promoSlides.innerHTML = slides.map((slide, index) => `
             <div class="promo-slide hidden [&.active]:block ${index === 0 ? "active" : ""}">
-                <div class="promo-slide-image relative aspect-[16/6.4] min-h-[300px] overflow-hidden rounded-[20px] bg-white max-[720px]:min-h-[220px] max-[720px]:aspect-[4/3]"><img class="block w-full h-full object-cover object-center" src="${slide.image}" alt="${slide.alt}" /></div>
+                <div class="${TW.promoSlideImage}"><img class="block w-full h-full object-cover object-center" src="${slide.image}" alt="${slide.alt}" /></div>
             </div>
         `).join("");
         promoControls.innerHTML = slides.map((slide, index) => `<button type="button" class="${TW.promoDot} ${index === 0 ? "active" : ""}" aria-label="Show banner ${index + 1}"></button>`).join("");
@@ -320,7 +328,7 @@
         uploadedFiles.forEach((slide, index) => {
             const preview = document.createElement("div");
             preview.className = TW.imagePreview;
-            preview.innerHTML = `<img class="${TW.imagePreviewImg}" src="${slide.image}" alt="${slide.alt}" /><button class="${TW.removeImage}" type="button">&times;</button>`;
+            preview.innerHTML = `<img class="${TW.imagePreviewImg}" src="${slide.image}" alt="${slide.alt}" /><button class="${TW.removeImage}" type="button" aria-label="Remove image">&times;</button>`;
             preview.querySelector("button").addEventListener("click", () => {
                 uploadedFiles.splice(index, 1);
                 renderUploadedImages();
@@ -416,10 +424,14 @@
             const today = isToday(dayDate);
             const stateClass = isSelected ? TW.daySelected : today ? TW.dayToday : TW.dayNormal;
             const numClass = isSelected ? TW.numSelected : today ? TW.numToday : TW.numNormal;
+            const count = dayTasks.length;
+            const taskLabel = `${count} task${count === 1 ? "" : "s"}`;
             const cell = document.createElement("button");
             cell.type = "button";
             cell.className = `${TW.dayBase} ${stateClass}`;
-            cell.innerHTML = `<div class="calendar-day-content grid w-full gap-1"><span class="day-number text-base font-extrabold leading-none ${numClass}">${day}</span>${dayTasks.length ? `<span class="calendar-task-preview text-[#6b7280] text-[0.78rem] leading-[1.1] overflow-hidden text-ellipsis whitespace-nowrap max-[720px]:text-[0.64rem]">${dayTasks.length} task${dayTasks.length === 1 ? "" : "s"}</span>` : ""}</div>`;
+            cell.setAttribute("aria-label", `${dayDate.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}${count ? ", " + taskLabel : ""}`);
+            // Phones: small count badge. sm and up: full "N tasks" text.
+            cell.innerHTML = `<div class="calendar-day-content grid w-full gap-0.5 sm:gap-1"><span class="day-number text-sm font-extrabold leading-none sm:text-base ${numClass}">${day}</span>${count ? `<span class="sm:hidden justify-self-start inline-grid h-4 min-w-[1rem] place-items-center rounded-full bg-[#b22222] px-1 text-[0.6rem] font-bold leading-none text-white">${count}</span><span class="calendar-task-preview hidden overflow-hidden text-ellipsis whitespace-nowrap text-[0.72rem] leading-[1.1] text-[#6b7280] sm:block lg:text-[0.78rem]">${taskLabel}</span>` : ""}</div>`;
             cell.addEventListener("click", () => { selectedDate = dayDate; renderCalendar(); openTaskModal(dayDate); });
             calendarGrid.appendChild(cell);
         }
@@ -429,7 +441,7 @@
         const dateKey = formatDay(date);
         const modal = document.createElement("div");
         modal.className = TW.taskModal;
-        modal.innerHTML = `<div class="${TW.taskModalContent}"><div class="${TW.taskModalHeader}"><h3 class="${TW.taskModalTitle}">Tasks for ${date.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</h3><button type="button" class="${TW.taskClose}">&times;</button></div><div class="${TW.taskModalBody}"><div class="${TW.taskInputRow}"><input class="${TW.taskInput}" type="text" placeholder="Add a new task" /><button type="button" class="${TW.redBtn}">Add</button></div><div class="${TW.taskList}"></div></div></div>`;
+        modal.innerHTML = `<div class="${TW.taskModalContent}" role="dialog" aria-modal="true"><div class="${TW.taskModalHeader}"><h3 class="${TW.taskModalTitle}">Tasks for ${date.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</h3><button type="button" class="${TW.taskClose}" aria-label="Close">&times;</button></div><div class="${TW.taskModalBody}"><div class="${TW.taskInputRow}"><input class="${TW.taskInput}" type="text" placeholder="Add a new task" /><button type="button" class="${TW.redBtn} ${TW.taskAddBtn}">Add</button></div><div class="${TW.taskList}"></div></div></div>`;
         document.body.appendChild(modal);
         const list = modal.querySelector(".task-list");
         const renderTasks = () => {

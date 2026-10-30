@@ -21,8 +21,25 @@ class EmployeeController extends Controller
     /** Role the account gets once it becomes an employee. */
     private const EMPLOYEE_ROLE = 'Employee';
 
-    /** Default employment status for newly added employees (column is NOT NULL, no DB default). */
+    /** Fallback employment status (column is NOT NULL, no DB default). */
     private const DEFAULT_EMPLOYMENT_STATUS = 'regular';
+
+    /**
+     * Allowed role types. The stored value and the label are the same text,
+     * so they match the options in the Role Type select of the view.
+     */
+    private const ROLE_TYPES = [
+        'Administrative Staff',
+        'Teaching Staff',
+        'Maintenance Staff',
+        'Support Staff',
+    ];
+
+    /** Allowed employment statuses: stored value => label. */
+    private const EMPLOYMENT_STATUSES = [
+        'regular'     => 'Regular',
+        'non regular' => 'Non-Regular',
+    ];
 
     /** Directory with search + department + role filters (all done in the database). */
     public function index(Request $request)
@@ -48,7 +65,8 @@ class EmployeeController extends Controller
             // Department filter depends on the values stored in SQL
             ->when($filterDepartments->has((string) $request->department),
                 fn ($q) => $q->where('department', $request->department))
-            ->when(array_key_exists((string) $request->role_type, Employee::ROLE_TYPES),
+            // Role type filter: Administrative / Teaching / Maintenance / Support Staff
+            ->when(in_array((string) $request->role_type, self::ROLE_TYPES, true),
                 fn ($q) => $q->where('role_type', $request->role_type))
             ->orderBy('name')
             ->paginate(12)
@@ -63,14 +81,20 @@ class EmployeeController extends Controller
             ->keyBy('id');
 
         return view('employees', [
-            'employees'         => $employees,
+            'employees'          => $employees,
             // keyed by id so the modal can look an employee up instantly.
             // Galing lang sa na-filter na $employees, kaya hindi lalabas
             // ang data ng naka-login na user sa JS.
-            'cards'             => $employees->getCollection()->map->toCard()->keyBy('id'),
-            'applicants'        => $applicants,
-            'filterDepartments' => $filterDepartments,        // only departments found in SQL
-            'formDepartments'   => $this->departmentOptions(), // standard list + SQL values
+            // employment_status is added here so the modal and the edit form always have it.
+            'cards'              => $employees->getCollection()
+                ->map(fn (Employee $e) => array_merge($e->toCard(), [
+                    'employment_status' => $e->employment_status,
+                ]))
+                ->keyBy('id'),
+            'applicants'         => $applicants,
+            'employmentStatuses' => self::EMPLOYMENT_STATUSES,
+            'filterDepartments'  => $filterDepartments,        // only departments found in SQL
+            'formDepartments'    => $this->departmentOptions(), // standard list + SQL values
         ]);
     }
 
@@ -100,7 +124,7 @@ class EmployeeController extends Controller
         }
 
         // employment_status is NOT NULL in the database
-        $data['employment_status'] = self::DEFAULT_EMPLOYMENT_STATUS;
+        $data['employment_status'] ??= self::DEFAULT_EMPLOYMENT_STATUS;
 
         // Create the employee and switch the role together: both succeed or neither does
         DB::transaction(function () use ($data, $user) {
@@ -156,7 +180,8 @@ class EmployeeController extends Controller
             'name'              => ['required', 'string', 'max:150'],
             'position'          => ['required', 'string', 'max:100'],
             'department'        => ['required', Rule::in($this->departmentOptions()->keys()->all())],
-            'role_type'         => ['required', Rule::in(array_keys(Employee::ROLE_TYPES))],
+            'role_type'         => ['required', Rule::in(self::ROLE_TYPES)],
+            'employment_status' => ['required', Rule::in(array_keys(self::EMPLOYMENT_STATUSES))],
             'email'             => ['required', 'email', 'max:255', Rule::unique('employees', 'email')->ignore($employee)],
             'birthday'          => ['required', 'date', 'before:today'],
             'address'           => ['required', 'string', 'max:255'],

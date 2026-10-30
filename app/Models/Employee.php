@@ -57,7 +57,7 @@ class Employee extends Model
     ];
 
     protected $fillable = [
-        'user_id', 'employee_id', 'name', 'position', 'department', 'role_type',
+        'user_id', 'employee_id', 'zkteco_user_id', 'name', 'position', 'department', 'role_type',
         'email', 'birthday', 'address', 'emergency_name', 'emergency_contact',
 
         // Nasa database pero wala dati sa fillable.

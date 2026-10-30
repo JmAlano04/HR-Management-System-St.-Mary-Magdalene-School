@@ -1,7 +1,7 @@
 {{-- resources/views/leave-requests/employee.blade.php (Employee: leave balances + request leave) --}}
 
       <x-slot name="header">
-        <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-extrabold leading-tight ml-[80px] text-red-700">Leave Request</h1>
+        <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-extrabold leading-tight sm:ml-[10px] md:ml-[20px] lg:ml-[80px] text-red-700">Leave Request</h1>
     </x-slot>
 
     @php
@@ -9,6 +9,7 @@
         $fieldClass = 'w-full rounded-xl border border-[#e8e0e0] bg-[#fffdfd] px-3.5 py-3 text-gray-900 outline-none transition focus:border-[#b22222] focus:ring-4 focus:ring-[#b22222]/10';
         $errClass   = 'text-xs font-semibold text-red-600';
         $unknown    = $balance && $balance['status'] === 'unknown';
+        $nonRegular = $balance && $balance['status'] === 'non-regular';
         $captions   = config('leave.captions');
     @endphp
 
@@ -32,7 +33,8 @@
 
         {{-- ============ Balance cards ============ --}}
         @if ($balance)
-            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {{-- Non-regular: 2 columns. Regular: 2 on sm, 4 on lg. --}}
+            <div class="grid gap-4 sm:grid-cols-2 {{ $nonRegular ? 'lg:grid-cols-2' : 'lg:grid-cols-4' }}">
                 @php
                     $cards = [['Total Leave Balance', $balance['total']['remaining'], 'listed days']];
                     foreach ($balance['types'] as $type => $row) {

@@ -1,7 +1,7 @@
 {{-- resources/views/employee/school-employees.blade.php --}}
 
 <x-slot name="header">
-    <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-extrabold leading-tight ml-[80px] text-red-700">School Employees</h1>
+    <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-extrabold leading-tight sm:ml-[10px] md:ml-[20px] lg:ml-[80px] text-red-700">School Employees</h1>
 </x-slot>
 
     @php
@@ -10,6 +10,15 @@
         // Only departments that actually exist in SQL (no hardcoded extras).
         // Uses the controller's list if it passed one, otherwise reads the database here.
         $filterDepartments = $filterDepartments ?? \App\Models\SchoolEmployee::departmentsInDatabase();
+
+        // Role types: the stored value and the label are the same text.
+        // Uses the controller's list if it passed one.
+        $roleTypes = $roleTypes ?? [
+            'Administrative Staff' => 'Administrative Staff',
+            'Teaching Staff'       => 'Teaching Staff',
+            'Maintenance Staff'    => 'Maintenance Staff',
+            'Support Staff'        => 'Support Staff',
+        ];
     @endphp
 
     <div
@@ -44,11 +53,12 @@
                     </select>
                 </label>
 
+                {{-- Role type filter: Administrative / Teaching / Maintenance / Support Staff --}}
                 <label for="roleFilter" class="flex min-w-[180px] flex-col gap-2 text-sm font-bold text-gray-600">
                     <span>Role Type</span>
                     <select id="roleFilter" name="role_type" @change="$refs.filters.submit()" class="{{ $inputClass }}">
                         <option value="">All Roles</option>
-                        @foreach (\App\Models\SchoolEmployee::ROLE_TYPES as $value => $label)
+                        @foreach ($roleTypes as $value => $label)
                             <option value="{{ $value }}" @selected(request('role_type') === $value)>{{ $label }}</option>
                         @endforeach
                     </select>

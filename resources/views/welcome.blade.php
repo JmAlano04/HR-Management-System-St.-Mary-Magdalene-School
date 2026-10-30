@@ -435,7 +435,9 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.85);
+    background: rgba(0,0,0,0.5);
+    -webkit-backdrop-filter: blur(8px); /* Safari */
+    backdrop-filter: blur(8px);
     z-index: 100;
     justify-content: center;
     align-items: center;
@@ -615,7 +617,9 @@ body {
 .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(17, 17, 17, 0.58);
+    background: rgba(17, 17, 17, 0.4);
+    -webkit-backdrop-filter: blur(8px); /* Safari */
+    backdrop-filter: blur(8px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -973,6 +977,23 @@ body {
     font-size: 12px;
     line-height: 1.4;
     margin: 0;
+}
+
+/* ---------- Shared blurred backdrop for EVERY modal ----------
+   Targets the overlay classes plus the ids of the component-based
+   modals (apply-login, login, facilities, apply, signup), so the blur
+   applies even if a component defines its own overlay styles. */
+.FacilitiesModal,
+.modal-overlay,
+.login-modal,
+#apply-login-modal,
+#apply-modal,
+#signup-modal,
+#registration-modal,
+#login-modal,
+#FacilitiesModal {
+    -webkit-backdrop-filter: blur(8px); /* Safari */
+    backdrop-filter: blur(8px);
 }
 
 /* ---------- Media queries ---------- */

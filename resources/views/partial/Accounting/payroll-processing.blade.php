@@ -56,14 +56,14 @@
                     <p class="mb-1.5 text-[0.72rem] font-extrabold uppercase tracking-[0.08em] text-[#b22222]">Employee register</p>
                     <h2 id="payrollTableTitle" class="text-[1.35rem] font-bold text-gray-900">Payroll Calculation</h2>
                 </div>
-                <nav class="flex items-center gap-2" aria-label="Payroll cutoff period">
-                    <template x-for="c in ['15th', '30th']" :key="c">
-                        <button type="button" @click="setCutoff(c)"
+                <nav class="flex items-center gap-2" aria-label="Payroll pay period">
+                    <template x-for="c in [['15th', '15th Pay Period'], ['30th', '30th Pay Period']]" :key="c[0]">
+                        <button type="button" @click="setCutoff(c[0])"
                             class="min-h-[38px] cursor-pointer rounded-[10px] border px-[18px] text-[0.88rem] font-extrabold transition"
-                            :class="cutoff === c
+                            :class="cutoff === c[0]
                                 ? 'border-[#b22222] bg-[#b22222] text-white shadow-[0_10px_18px_rgba(178,34,34,0.18)]'
                                 : 'border-transparent bg-transparent text-gray-700 hover:bg-[#d93c3c] hover:text-white'"
-                            :aria-selected="cutoff === c" x-text="c"></button>
+                            :aria-selected="cutoff === c[0]" x-text="c[1]"></button>
                     </template>
                 </nav>
             </div>
@@ -181,7 +181,7 @@
         <div x-show="draft" x-cloak x-transition.opacity @click.self="closeAll()"
             class="fixed inset-0 z-[1200] grid place-items-center bg-[rgba(17,24,39,0.48)] p-3">
             <section role="dialog" aria-modal="true"
-                class="max-h-[calc(100vh-40px)] w-[min(900px,calc(100vw-40px))] overflow-y-auto rounded-[28px] bg-white px-3.5 pb-3.5 pt-2 shadow-[0_20px_50px_rgba(15,23,42,0.08)]">
+               class="max-h-[calc(100vh-40px)] w-[min(900px,calc(100vw-40px))] overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden rounded-[28px] bg-white px-3.5 pb-3.5 pt-2 shadow-[0_20px_50px_rgba(15,23,42,0.08)]">
                 <div class="mb-2 flex justify-end">
                     <button type="button" @click="closeAll()" aria-label="Close"
                         class="h-9 w-9 cursor-pointer rounded-[10px] text-lg text-gray-400 hover:bg-[#fef2f2] hover:text-[#b22222]">
@@ -203,8 +203,14 @@
                             </select>
                         </div>
 
-                        <div class="grid grid-cols-2 border-y border-[#ecebea] sm:grid-cols-4">
-                            <template x-for="(m, k) in [['Cutoff', cutoff], ['Days worked', draft.daysWorked], ['Hours worked', draft.hoursWorked], ['Late (mins)', draft.lateMinutes]]" :key="k">
+                        <div class="grid grid-cols-2 border-y border-[#ecebea] sm:grid-cols-5">
+                            <template x-for="(m, k) in [
+                                ['Pay period', cutoff],
+                                ['Days worked', draft.daysWorked],
+                                ['Hours worked', draft.hoursWorked],
+                                ['Late (mins)', draft.lateMinutes],
+                                ['Monthly wage (daily x 26)', money(preview.monthlyWage)]
+                            ]" :key="k">
                                 <div class="grid justify-items-center gap-[3px] px-1.5 py-2.5 text-center" :class="k > 0 ? 'sm:border-l sm:border-[#ecebea]' : ''">
                                     <span class="text-[0.68rem] font-extrabold uppercase text-gray-500" x-text="m[0]"></span>
                                     <strong class="text-[0.95rem]" x-text="m[1]"></strong>
@@ -227,7 +233,7 @@
                             <section class="min-w-0 border-t border-[#ecebea] p-3 sm:border-l">
                                 <h3 class="mb-2.5 text-[0.78rem] uppercase tracking-[0.08em] text-[#b22222]">Deductions</h3>
 
-                                {{-- Read-only (computed automatically) --}}
+                                {{-- Read-only (computed automatically; SSS, PhilHealth, HDMF, PERAA/CEAP on the 30th only) --}}
                                 <template x-for="r in computedFields" :key="r[1]">
                                     <div class="{{ $row }}">
                                         <span x-text="r[0]"></span>
@@ -252,7 +258,7 @@
 
                                 <p x-show="Number(draft.deductions.cashAdvance) > CASH_ADVANCE_CAP"
                                     class="mt-1 text-[0.72rem] font-semibold text-gray-500"
-                                    x-text="'Only ' + money(CASH_ADVANCE_CAP) + ' of the cash advance is deducted this cutoff.'"></p>
+                                    x-text="'Only ' + money(CASH_ADVANCE_CAP) + ' of the cash advance is deducted this pay period.'"></p>
 
                                 <div class="mt-2 flex min-h-[30px] items-center justify-between gap-3 text-[0.85rem] font-extrabold text-gray-900"><span>Total deductions</span><strong class="min-w-[120px] text-center text-[#b22222]" x-text="'- ' + money(preview.totalDeductions)"></strong></div>
                             </section>
@@ -282,11 +288,12 @@
     <script>
         function payrollProcessing(cfg) {
             const SCHEDULED_WORKDAYS = 22;
+            const MONTHLY_DAYS = 26;             // monthly wage = daily wage x 26
             const LATE_PER_MINUTE = 1.80;
             const MALASAKITAN = 50;
             const HONORARIUM = 1924.31;          // administrative role only
-            const CASH_ADVANCE_CAP = 2000;       // max deduction per cutoff
-            // 30th cutoff only. Base = daily wage x scheduled workdays
+            const CASH_ADVANCE_CAP = 2000;       // max deduction per pay period
+            // 30th pay period only. Base = monthly wage (daily wage x 26)
             const RATES = { sss: 0.05, hdmf: 0.02, philhealth: 0.025, peraaCeap: 0.04 };
 
             return {
@@ -326,14 +333,15 @@
                 // [label, key, only30] computed automatically, read-only
                 computedFields: [
                     ['MALASAKITAN', 'fixed50', false], ['Late', 'late', false], ['Absences', 'absences', false],
-                    ['SSS (5%)', 'sss', true], ['PhilHealth (2.5%)', 'philhealth', true],
-                    ['HDMF (2%)', 'hdmf', true], ['PERAA/CEAP (4%)', 'peraaCeap', true],
+                    ['SSS', 'sss', true], ['PhilHealth', 'philhealth', true],
+                    ['HDMF', 'hdmf', true], ['PERAA/CEAP', 'peraaCeap', true],
                 ],
 
-                // [label, key] editable deductions
+                // [label, key] editable deductions (loans are deducted on the 30th pay period only)
                 dedFields: [
-                    ['SSS LOAN', 'sssLoan'], ['PERAA/CEAP LOAN', 'peraaCeapLoan'], ['HDMF LOAN', 'hdmfLoan'],
-                    ['Cash advance balance (max \u20B12,000 per cutoff)', 'cashAdvance'],
+                    ['SSS Loan', 'sssLoan'], ['PhilHealth Loan', 'philhealthLoan'],
+                    ['PERAA/CEAP Loan', 'peraaCeapLoan'], ['HDMF Loan', 'hdmfLoan'],
+                    ['Cash advance balance (max \u20B12,000 per pay period)', 'cashAdvance'],
                 ],
 
                 money(v) {
@@ -361,25 +369,26 @@
                     const d = e.deductions || {};
                     const g = (k) => Math.max(0, Number(d[k]) || 0);
                     const is30 = this.cutoff === '30th';
-                    const monthly = wage * SCHEDULED_WORKDAYS;
+                    const monthly = wage * MONTHLY_DAYS;
                     const c = (k) => is30 ? monthly * RATES[k] : 0;
 
                     const deductions = {
                         fixed50: MALASAKITAN, late: lateDed, absences,
                         sss: c('sss'), philhealth: c('philhealth'), hdmf: c('hdmf'), peraaCeap: c('peraaCeap'),
                         sssLoan: is30 ? g('sssLoan') : 0,
+                        philhealthLoan: is30 ? g('philhealthLoan') : 0,
                         peraaCeapLoan: is30 ? g('peraaCeapLoan') : 0,
                         hdmfLoan: is30 ? g('hdmfLoan') : 0,
                         cashAdvance: Math.min(CASH_ADVANCE_CAP, g('cashAdvance')),
                     };
                     const totalDeductions = Object.values(deductions).reduce((a, b) => a + b, 0);
 
-                    return { step, basicPay, honorarium, grossPay, deductions, totalDeductions, netPay: grossPay - totalDeductions };
+                    return { step, monthlyWage: monthly, basicPay, honorarium, grossPay, deductions, totalDeductions, netPay: grossPay - totalDeductions };
                 },
 
                 get preview() { return this.draft ? this.calc(this.draft) : null; },
 
-                // loans: 30th only. Cash advance: both cutoffs.
+                // loans: 30th only. Cash advance: both pay periods.
                 isActive(field) { return this.cutoff === '30th' || field === 'cashAdvance'; },
 
                 // ---- table inputs: days / hours / late stay consistent with each other ----
@@ -483,6 +492,7 @@
                         hours_worked: Number(e.hoursWorked) || 0,
                         late_minutes: Number(e.lateMinutes) || 0,
                         sss_loan: Number(e.deductions.sssLoan) || 0,
+                        philhealth_loan: Number(e.deductions.philhealthLoan) || 0,
                         peraa_ceap_loan: Number(e.deductions.peraaCeapLoan) || 0,
                         hdmf_loan: Number(e.deductions.hdmfLoan) || 0,
                         cash_advance: Number(e.deductions.cashAdvance) || 0,
@@ -517,7 +527,7 @@
                     }
                 },
 
-                // ---- switching month / cutoff reloads the page for that payroll run ----
+                // ---- switching month / pay period reloads the page for that payroll run ----
                 async go() {
                     if (!(await this.flushSave())) return;
                     window.location.href = cfg.pageUrl + '?period=' + encodeURIComponent(this.period) + '&cutoff=' + this.cutoff;
@@ -530,7 +540,7 @@
 
                 async transfer(event) {
                     if (this.selected.length === 0) return;
-                    if (!confirm('Transfer ' + this.selected.length + ' selected payslip(s) (' + this.cutoff + ' cutoff, ' + this.period + ') to Salary Monitoring?')) return;
+                    if (!confirm('Transfer ' + this.selected.length + ' selected payslip(s) (' + this.cutoff + ' pay period, ' + this.period + ') to Salary Monitoring?')) return;
                     if (!(await this.flushSave())) { alert('Your changes could not be saved, so nothing was transferred.'); return; }
                     event.target.submit();
                 },

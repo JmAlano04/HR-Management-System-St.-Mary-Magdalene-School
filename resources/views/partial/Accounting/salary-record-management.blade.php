@@ -101,7 +101,7 @@
         <div x-show="slip" x-cloak x-transition.opacity @click.self="slipId = null"
             class="fixed inset-0 z-[60] grid place-items-center bg-[rgba(17,24,39,0.48)] p-5">
             <div role="dialog" aria-modal="true" aria-labelledby="historyModalTitle"
-                class="relative max-h-[calc(100vh-48px)] w-[min(900px,calc(100vw-40px))] overflow-y-auto rounded-[18px] bg-white pt-[5px] shadow-[0_18px_40px_rgba(15,23,42,0.08)]">
+                class="relative max-h-[calc(100vh-48px)] w-[min(900px,calc(100vw-40px))] overflow-y-auto [scrollbar-width:none] rounded-[18px] bg-white pt-[5px] shadow-[0_18px_40px_rgba(15,23,42,0.08)]">
 
                 <button type="button" @click="slipId = null" aria-label="Close employee details"
                     class="absolute right-4 top-3 grid h-[34px] w-[34px] cursor-pointer place-items-center rounded-[10px] text-[1.3rem] text-[#7a7a7a] transition hover:bg-[#b22222]/10 hover:text-[#b22222]">

@@ -121,7 +121,7 @@
         <div x-show="slip" x-cloak x-transition.opacity @click.self="viewId = null"
             class="fixed inset-0 z-[60] grid place-items-center bg-[rgba(17,24,39,0.48)] p-5">
             <section role="dialog" aria-modal="true"
-                class="relative max-h-[calc(100vh-24px)] w-[min(900px,calc(100vw-32px))] overflow-y-auto rounded-[22px] bg-white px-3 pb-3 pt-[34px] shadow-[0_20px_50px_rgba(15,23,42,0.08)]">
+                class="relative max-h-[calc(100vh-24px)] w-[min(900px,calc(100vw-32px))] overflow-y-auto [scrollbar-width:none] rounded-[22px] bg-white px-3 pb-3 pt-[34px] shadow-[0_20px_50px_rgba(15,23,42,0.08)]">
                 <button type="button" @click="viewId = null" aria-label="Close payslip"
                     class="absolute right-[18px] top-4 grid h-[38px] w-[38px] cursor-pointer place-items-center rounded-xl bg-gray-100 text-gray-900 transition hover:bg-gray-200">
                     <i class="fa-solid fa-xmark" aria-hidden="true"></i>

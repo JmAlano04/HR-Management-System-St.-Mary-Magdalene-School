@@ -15,12 +15,13 @@ use Illuminate\Support\Facades\DB;
 class PayrollProcessingController extends Controller
 {
     private const SCHEDULED_WORKDAYS = 22;
+    private const MONTHLY_DAYS       = 26;        // monthly wage = daily wage x 26
     private const LATE_PER_MINUTE    = 1.80;
-    private const MALASAKITAN        = 50.00;     // every 15th and 30th
+    private const MALASAKITAN        = 50.00;     // every 15th and 30th pay period
     private const HONORARIUM         = 1924.31;   // administrative role only
-    private const CASH_ADVANCE_CAP   = 2000.00;   // max deduction per cutoff
+    private const CASH_ADVANCE_CAP   = 2000.00;   // max deduction per pay period
 
-    /** Contribution rates, deducted on the 30th cutoff only. Base = daily wage x 22. */
+    /** Contribution rates, deducted on the 30th pay period only. Base = monthly wage (daily wage x 26). */
     private const RATES = [
         'sss'        => 0.05,
         'hdmf'       => 0.02,
@@ -29,7 +30,7 @@ class PayrollProcessingController extends Controller
     ];
 
     /** Deduction columns of payroll_records that Accounting still enters manually. */
-    private const DED = ['sss_loan', 'peraa_ceap_loan', 'hdmf_loan', 'cash_advance'];
+    private const DED = ['sss_loan', 'philhealth_loan', 'peraa_ceap_loan', 'hdmf_loan', 'cash_advance'];
 
     /** Columns that are auto-computed; stored as 0 in payroll_records. */
     private const AUTO = ['sss', 'philhealth', 'peraa_ceap', 'hdmf'];
@@ -40,7 +41,7 @@ class PayrollProcessingController extends Controller
         1457.68, 1530.56, 1607.09, 1687.45, 1771.82, 1860.41, 1953.43, 2051.10, 2153.66, 2261.34,
     ];
 
-    /** Accounting only: payroll calculation for one month + cutoff. */
+    /** Accounting only: payroll calculation for one month + pay period. */
     public function index(Request $request)
     {
         $this->authorizeAccounting();
@@ -60,10 +61,11 @@ class PayrollProcessingController extends Controller
             'lateMinutes'    => (float) $x['in']['late_minutes'],
             'honorarium'     => $this->isAdministrative($x['employee']) ? self::HONORARIUM : 0.0,
             'deductions'     => [
-                'sssLoan'       => (float) $x['in']['sss_loan'],
-                'peraaCeapLoan' => (float) $x['in']['peraa_ceap_loan'],
-                'hdmfLoan'      => (float) $x['in']['hdmf_loan'],
-                'cashAdvance'   => (float) $x['in']['cash_advance'],   // outstanding balance
+                'sssLoan'        => (float) $x['in']['sss_loan'],
+                'philhealthLoan' => (float) $x['in']['philhealth_loan'],
+                'peraaCeapLoan'  => (float) $x['in']['peraa_ceap_loan'],
+                'hdmfLoan'       => (float) $x['in']['hdmf_loan'],
+                'cashAdvance'    => (float) $x['in']['cash_advance'],   // outstanding balance
             ],
         ])->values();
 
@@ -90,6 +92,7 @@ class PayrollProcessingController extends Controller
             'rows.*.hours_worked'     => ['required', 'numeric', 'min:0', 'max:744'],
             'rows.*.late_minutes'     => ['required', 'numeric', 'min:0', 'max:99999'],
             'rows.*.sss_loan'         => ['nullable', 'numeric', 'min:0', 'max:99999999'],
+            'rows.*.philhealth_loan'  => ['nullable', 'numeric', 'min:0', 'max:99999999'],
             'rows.*.peraa_ceap_loan'  => ['nullable', 'numeric', 'min:0', 'max:99999999'],
             'rows.*.hdmf_loan'        => ['nullable', 'numeric', 'min:0', 'max:99999999'],
             'rows.*.cash_advance'     => ['nullable', 'numeric', 'min:0', 'max:99999999'],
@@ -219,6 +222,7 @@ class PayrollProcessingController extends Controller
                         'sss'                => $b['sss'],
                         'sss_loan'           => $b['sss_loan'],
                         'philhealth'         => $b['philhealth'],
+                        'philhealth_loan'    => $b['philhealth_loan'],
                         'peraa_ceap'         => $b['peraa_ceap'],
                         'peraa_ceap_loan'    => $b['peraa_ceap_loan'],
                         'hdmf'               => $b['hdmf'],
@@ -244,7 +248,7 @@ class PayrollProcessingController extends Controller
             }
         });
 
-        $msg = "Transferred {$sent} payslip" . ($sent === 1 ? '' : 's') . " ({$cutoff} cutoff, {$period}) to Salary Monitoring.";
+        $msg = "Transferred {$sent} payslip" . ($sent === 1 ? '' : 's') . " ({$cutoff} pay period, {$period}) to Salary Monitoring.";
         if ($skipped) {
             $msg .= " {$skipped} already released and were left unchanged.";
         }
@@ -275,11 +279,12 @@ class PayrollProcessingController extends Controller
 
     /**
      * Payroll rules:
+     *  - monthly wage: daily wage x 26
      *  - late: 1.80 / minute
-     *  - MALASAKITAN: 50 on every cutoff
-     *  - SSS 5%, HDMF 2%, PhilHealth 2.5%, PERAA/CEAP 4%: 30th cutoff only (base = daily wage x 22)
-     *  - loans: 30th cutoff only (the >30k every-cutoff rule needs loan_requests data, see TODO)
-     *  - cash advance: max 2,000 per cutoff, on both cutoffs
+     *  - MALASAKITAN: 50 on every pay period
+     *  - SSS 5%, HDMF 2%, PhilHealth 2.5%, PERAA/CEAP 4%: 30th pay period only (base = monthly wage)
+     *  - loans (SSS, PhilHealth, PERAA/CEAP, HDMF): manual input, deducted on the 30th pay period only
+     *  - cash advance: max 2,000 per pay period, on both pay periods
      *  - honorarium: fixed 1,924.31, administrative role only
      */
     private function compute(array $r, array $steps, string $cutoff, bool $isAdmin): array
@@ -304,8 +309,8 @@ class PayrollProcessingController extends Controller
         $g      = fn (string $k) => max(0, (float) ($r[$k] ?? 0));
         $only30 = $cutoff === '30th';
 
-        $monthlyBasic = $wage * self::SCHEDULED_WORKDAYS;
-        $contrib      = fn (string $k) => $only30 ? $monthlyBasic * self::RATES[$k] : 0;
+        $monthlyWage = $wage * self::MONTHLY_DAYS;
+        $contrib     = fn (string $k) => $only30 ? $monthlyWage * self::RATES[$k] : 0;
 
         // TODO: loans above 30,000 are deducted on the 15th too (paid within 10 months,
         // one request per year). Needs the principal from loan_requests.
@@ -318,9 +323,10 @@ class PayrollProcessingController extends Controller
             'hdmf'            => $contrib('hdmf'),
             'peraa_ceap'      => $contrib('peraa_ceap'),
             'sss_loan'        => $only30 ? $g('sss_loan') : 0,
+            'philhealth_loan' => $only30 ? $g('philhealth_loan') : 0,
             'peraa_ceap_loan' => $only30 ? $g('peraa_ceap_loan') : 0,
             'hdmf_loan'       => $only30 ? $g('hdmf_loan') : 0,
-            // cash_advance holds the outstanding balance; deduct up to the cap each cutoff
+            // cash_advance holds the outstanding balance; deduct up to the cap each pay period
             'cash_advance'    => min(self::CASH_ADVANCE_CAP, $g('cash_advance')),
         ];
         $breakdown = array_map(fn ($v) => round($v, 2), $breakdown);
@@ -328,6 +334,7 @@ class PayrollProcessingController extends Controller
 
         return [
             'step'            => ['name' => $step['name'], 'dailyWage' => $wage],
+            'monthlyWage'     => round($monthlyWage, 2),
             'days'            => $days,
             'hours'           => $hours,
             'lateMinutes'     => $effective,

@@ -3,8 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Banner;
-use App\Models\DashboardTask;
-use App\Models\Employee;
+use App\Models\DashboardTask;use App\Models\Employee;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

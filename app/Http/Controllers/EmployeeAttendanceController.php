@@ -62,7 +62,7 @@ class EmployeeAttendanceController extends Controller
 
         // Show the page even if no employee record is linked.
         if (! $employee) {
-            return view('employee.attendance', $data);
+            return view('employees', $data);
         }
 
         // Schedule for the selected month (auto-adjusted in May).

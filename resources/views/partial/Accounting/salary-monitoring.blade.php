@@ -2,7 +2,7 @@
 
 
     <x-slot name="title">
-        Salary Monitoring
+       Accounting Salary Monitoring
     </x-slot>
 
     <x-slot name="header">

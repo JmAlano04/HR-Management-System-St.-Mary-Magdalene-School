@@ -3,7 +3,17 @@
     'taskKey'   => 'dashboardTasks',
     'images'    => ['promote1', 'promote2', 'promote3'],
 ])
+ @auth
+    <x-slot name="title">
+     
+        @if (auth()->user()->hasRole('Accounting'))
+            Accounting Dashboard
+       
+        @endif
+    </x-slot>
 
+  
+@endauth
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
 <div class="admin-dashboard pb-12 ml-4">

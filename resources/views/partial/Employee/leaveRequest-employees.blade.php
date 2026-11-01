@@ -1,5 +1,11 @@
 {{-- resources/views/leave-requests/employee.blade.php (Employee: leave balances + request leave) --}}
-
+  @auth
+    <x-slot name="title">
+        @if (auth()->user()->hasRole('Employee'))
+            Employee Leave Request
+       @endif
+    </x-slot>
+    @endauth
       <x-slot name="header">
         <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-extrabold leading-tight sm:ml-[10px] md:ml-[20px] lg:ml-[80px] text-red-700">Leave Request</h1>
     </x-slot>

@@ -1,18 +1,32 @@
 {{-- resources/views/employees/index.blade.php --}}
 
     {{-- Browser tab title --}}
-     @auth
-    @if (auth()->user()->hasRole('Admin'))
-        <x-slot name="title">
-            Employee Management
-        </x-slot>
-    @elseif (auth()->user()->hasRole('HR'))
-        <x-slot name="title">
-             Employee Monitoring 
-        </x-slot>
-    @endif
+   
+   @auth
+    <x-slot name="title">
+        @if (auth()->user()->hasRole('Admin'))
+            Admin Empoyee Management
+        @elseif (auth()->user()->hasRole('HR'))
+            HR Empoyee Management
+        @elseif (auth()->user()->hasRole('Accounting'))
+            Accounting Empoyee Management
+        @elseif (auth()->user()->hasRole('Employee'))
+            Employee Empoyee Management
+        @elseif (auth()->user()->hasRole('Applicant'))
+            Applicant Dashboard
+        @else
+            Dashboard
+        @endif
+    </x-slot>
+
+  
 @endauth
 
+
+{{-- Page heading (shown in the layout's top bar) --}}
+    <x-slot name="header">
+        <h1 class="ml-20 text-2xl font-extrabold leading-none tracking-tight text-[#b22222] sm:text-4xl">Employee Management</h1>
+    </x-slot>
     @php
         $inputClass = 'w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-3 text-[15px] text-gray-900 transition focus:border-[#b22222] focus:outline-none focus:ring-4 focus:ring-red-700/10';
         $labelClass = 'mb-1.5 block text-sm font-bold text-gray-600';
@@ -23,7 +37,7 @@
 
         // Keep what the user typed if validation failed, so the form can reopen
         $old = collect(old())->only([
-            'user_id', 'employee_id', 'name', 'position', 'department', 'role_type', 'employment_status', 'email',
+            'user_id', 'employee_id', 'name', 'position', 'department', 'role_type', 'employment_status', 'step_no', 'email',
             'birthday', 'address', 'emergency_name', 'emergency_contact',
         ])->all();
 
@@ -42,6 +56,12 @@
             'non regular' => 'Non-Regular',
         ];
 
+        // Payroll steps from the payroll_steps table: step_no => label
+        $payrollSteps = $payrollSteps ?? collect();
+
+        // Default step for the Add form (first step in the table)
+        $defaultStepNo = (string) ($defaultStepNo ?? $payrollSteps->keys()->first() ?? '');
+
         // Standard departments, merged with whatever is already stored in SQL.
         // The "+" operator keeps the left-hand keys, so there are no duplicates.
         $standardDepartments = [
@@ -57,28 +77,28 @@
     <div
         class="px-4 pb-12 pt-2 sm:px-6 lg:px-10"
         x-data="employeeDirectory(@js([
-            'employees'  => $cards,
-            'applicants' => $applicants,
-            'statuses'   => $employmentStatuses,
-            'old'        => $old,
-            'reopen'     => $errors->any(),
-            'editingId'  => old('_editing_id'),
-            'storeUrl'   => route('employees.store'),
-            'updateUrl'  => route('employees.update', '__ID__'),
-            'destroyUrl' => route('employees.destroy', '__ID__'),
+            'employees'   => $cards,
+            'applicants'  => $applicants,
+            'statuses'    => $employmentStatuses,
+            'defaultStep' => $defaultStepNo,
+            'old'         => $old,
+            'reopen'      => $errors->any(),
+            'editingId'   => old('_editing_id'),
+            'storeUrl'    => route('employees.store'),
+            'updateUrl'   => route('employees.update', '__ID__'),
+            'destroyUrl'  => route('employees.destroy', '__ID__'),
         ]))"
         @keydown.escape.window="closeAll()"
     >
 
-        {{-- Page header --}}
-        <div class="mb-6 flex flex-wrap items-center justify-end gap-4">
-            @if ($canManage)
-                <button type="button" @click="openCreate()"
-                    class="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-[#b22222] px-5 py-3 font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#8b1a1a] hover:shadow-[0_6px_20px_rgba(178,34,34,0.4)]">
-                    <i class="fa-solid fa-user-plus"></i> Add Employee
-                </button>
-            @endif
-        </div>
+        {{-- Floating Add Employee button (employees page only) --}}
+        @if ($canManage && request()->routeIs('employees.index'))
+            <button type="button" @click="openCreate()"
+                x-show="!formOpen && !detail" x-transition.opacity
+                class="fixed bottom-6 right-6 z-50 inline-flex cursor-pointer items-center gap-2 rounded-lg bg-[#b22222] px-4 py-3 font-bold text-white shadow-[0_6px_20px_rgba(178,34,34,0.4)] transition hover:-translate-y-0.5 hover:bg-[#8b1a1a] hover:shadow-[0_8px_24px_rgba(178,34,34,0.5)]">
+                <i class="fa-solid fa-user-plus"></i> Add Employee
+            </button>
+        @endif
 
         {{-- Flash message --}}
         @if (session('success'))
@@ -165,7 +185,7 @@
         <div x-show="detail" x-cloak x-transition.opacity
             @click.self="detailId = null"
             class="fixed inset-0 z-[60] grid place-items-center bg-[rgba(3,7,18,0.5)] p-4">
-            <div role="dialog" aria-modal="true" class="relative max-h-[90vh] w-full max-w-[500px] overflow-y-auto rounded-[14px] bg-white px-7 pb-7 pt-9 text-center shadow-[0_20px_50px_rgba(15,23,42,0.14)]">
+            <div role="dialog" aria-modal="true" class="relative max-h-[90vh] w-full max-w-[500px] overflow-y-auto [scrollbar-width:none] rounded-[14px] bg-white px-7 pb-7 pt-9 text-center shadow-[0_20px_50px_rgba(15,23,42,0.14)]">
                 <button type="button" @click="detailId = null" aria-label="Close"
                     class="absolute right-3 top-2 cursor-pointer text-3xl leading-none text-gray-500 hover:text-gray-800">&times;</button>
 
@@ -185,6 +205,7 @@
                             <p><strong>Department:</strong> <span x-text="detail.department_label || detail.department"></span></p>
                             <p><strong>Role Type:</strong> <span x-text="detail.role_type"></span></p>
                             <p><strong>Employment Status:</strong> <span x-text="statusLabel(detail.employment_status)"></span></p>
+                            <p><strong>Step:</strong> <span x-text="detail.step_label || '—'"></span></p>
                             <p><strong>Email:</strong> <span x-text="detail.email"></span></p>
                             <p><strong>Birthday:</strong> <span x-text="detail.birthday_label"></span></p>
                             <p><strong>Address:</strong> <span x-text="detail.address"></span></p>
@@ -192,21 +213,21 @@
                         </div>
 
                         @if ($canManage)
-                        <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
-                            <button type="button" @click="openEdit()"
-                                class="cursor-pointer rounded-lg bg-[#b22222] px-6 py-2.5 font-bold text-white transition hover:bg-[#8b1a1a]">
-                                <i class="fa-solid fa-pen-to-square mr-1"></i> Edit
-                            </button>
-
-                            <form method="POST" :action="deleteAction()" onsubmit="return confirm('Delete this employee? This cannot be undone.')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit"
-                                    class="w-full cursor-pointer rounded-lg border border-[#b22222] bg-white px-6 py-2.5 font-bold text-[#b22222] transition hover:bg-red-50">
-                                    <i class="fa-solid fa-trash mr-1"></i> Delete
+                            <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+                                <button type="button" @click="openEdit()"
+                                    class="cursor-pointer rounded-lg bg-[#b22222] px-6 py-2.5 font-bold text-white transition hover:bg-[#8b1a1a]">
+                                    <i class="fa-solid fa-pen-to-square mr-1"></i> Edit
                                 </button>
-                            </form>
-                        </div>
+
+                                <form method="POST" :action="deleteAction()" onsubmit="return confirm('Delete this employee? This cannot be undone.')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit"
+                                        class="w-full cursor-pointer rounded-lg border border-[#b22222] bg-white px-6 py-2.5 font-bold text-[#b22222] transition hover:bg-red-50">
+                                        <i class="fa-solid fa-trash mr-1"></i> Delete
+                                    </button>
+                                </form>
+                            </div>
                         @endif
                     </div>
                 </template>
@@ -216,7 +237,7 @@
         {{-- ============ Add / Edit modal ============ --}}
         <div x-show="formOpen" x-cloak x-transition.opacity
             class="fixed inset-0 z-[60] grid place-items-center bg-[rgba(3,7,18,0.5)] p-4">
-            <div role="dialog" aria-modal="true" class="relative max-h-[92vh] w-full max-w-[640px] overflow-y-auto rounded-[14px] bg-white p-6 shadow-[0_20px_50px_rgba(15,23,42,0.14)] sm:p-8">
+            <div role="dialog" aria-modal="true" class="relative max-h-[92vh] w-full max-w-[640px] overflow-y-auto [scrollbar-width:none] rounded-[14px] bg-white p-6 shadow-[0_20px_50px_rgba(15,23,42,0.14)] sm:p-8">
                 <button type="button" @click="formOpen = false" aria-label="Close"
                     class="absolute right-3 top-2 cursor-pointer text-3xl leading-none text-gray-500 hover:text-gray-800">&times;</button>
 
@@ -312,16 +333,29 @@
                             <p class="{{ $errClass }}">{{ $errors->first('employment_status') }}</p>
                         </div>
                         <div>
+                            <label for="f_step_no" class="{{ $labelClass }}">Step <span class="text-red-600">*</span></label>
+                            {{-- Options come from the payroll_steps table. Saved on both Add and Edit. --}}
+                            <select id="f_step_no" name="step_no" x-model="form.step_no" required class="{{ $inputClass }}">
+                                <option value="" disabled hidden>Select step</option>
+                                @foreach ($payrollSteps as $stepNo => $stepLabel)
+                                    <option value="{{ $stepNo }}">{{ $stepLabel }}</option>
+                                @endforeach
+                            </select>
+                            <p class="{{ $errClass }}">{{ $errors->first('step_no') }}</p>
+                        </div>
+                    </div>
+
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <div>
                             <label for="f_birthday" class="{{ $labelClass }}">Birthday <span class="text-red-600">*</span></label>
                             <input id="f_birthday" type="date" name="birthday" x-model="form.birthday" max="{{ now()->subDay()->toDateString() }}" required class="{{ $inputClass }}">
                             <p class="{{ $errClass }}">{{ $errors->first('birthday') }}</p>
                         </div>
-                    </div>
-
-                    <div>
-                        <label for="f_address" class="{{ $labelClass }}">Address <span class="text-red-600">*</span></label>
-                        <input id="f_address" name="address" x-model="form.address" placeholder="House no., street, city, province" required class="{{ $inputClass }}">
-                        <p class="{{ $errClass }}">{{ $errors->first('address') }}</p>
+                        <div>
+                            <label for="f_address" class="{{ $labelClass }}">Address <span class="text-red-600">*</span></label>
+                            <input id="f_address" name="address" x-model="form.address" placeholder="House no., street, city, province" required class="{{ $inputClass }}">
+                            <p class="{{ $errClass }}">{{ $errors->first('address') }}</p>
+                        </div>
                     </div>
 
                     <div class="grid gap-4 sm:grid-cols-2">
@@ -358,10 +392,13 @@
 
     <script>
         function employeeDirectory(cfg) {
+            const defaultStep = String(cfg.defaultStep ?? '');
+
             const blank = () => ({
                 user_id: '',
                 employee_id: '', name: '', position: '', department: '', role_type: '',
                 employment_status: 'regular',
+                step_no: defaultStep,
                 email: '', birthday: '', address: '', emergency_name: '', emergency_contact: '',
             });
 
@@ -387,6 +424,7 @@
                     if (cfg.reopen) {
                         this.editingId = cfg.editingId || null;
                         this.form = Object.assign(blank(), cfg.old);
+                        this.form.step_no = String(this.form.step_no ?? defaultStep);
                         this.formOpen = true;
                     }
                 },
@@ -425,6 +463,8 @@
                         employee_id: e.employee_id, name: e.name, position: e.position,
                         department: e.department, role_type: e.role_type,
                         employment_status: e.employment_status || 'regular',
+                        // Use the employee's saved step (needs 'step_no' in the card data)
+                        step_no: String(e.step_no ?? defaultStep),
                         email: e.email,
                         birthday: e.birthday, address: e.address,
                         emergency_name: e.emergency_name, emergency_contact: e.emergency_contact,

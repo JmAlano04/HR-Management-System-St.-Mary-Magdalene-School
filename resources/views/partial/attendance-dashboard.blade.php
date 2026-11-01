@@ -1,19 +1,25 @@
 {{-- resources/views/admin/attendance-monitoring/index.blade.php --}}
- @auth
-    @if (auth()->user()->hasRole('Admin'))
-        <x-slot name="title">
-            Admin Attendance Management
-        </x-slot>
-    @elseif (auth()->user()->hasRole('HR'))
-        <x-slot name="title">
-             Attendance Management 
-        </x-slot>
 
-        <x-slot name="header">
-            <h1 class="text-2xl font-extrabold leading-none  ml-20 tracking-tight text-[#b22222] sm:text-4xl">Attendance Management</h1>
-        </x-slot>
-   @endif
+     @auth
+    <x-slot name="title">
+        @if (auth()->user()->hasRole('Admin'))
+            Admin Attendance Management
+        @elseif (auth()->user()->hasRole('HR'))
+            HR Attendance Management
+        @elseif (auth()->user()->hasRole('Accounting'))
+            Accounting Attendance Management
+        @elseif (auth()->user()->hasRole('Employee'))
+            Employee Attendance Management
+        @elseif (auth()->user()->hasRole('Applicant'))
+            Applicant Dashboard
+        @else
+            Dashboard
+        @endif
+    </x-slot>
+
+  
 @endauth
+
 
     @php
 
@@ -37,7 +43,7 @@
     @endphp
 
 
-<form
+{{-- <form
     method="POST"
     action="{{ route('zkteco.sync') }}"
 >
@@ -49,7 +55,7 @@
     >
         Sync Biometric Attendance
     </button>
-</form>
+</form> --}}
     <div
         class="px-4 pb-12 sm:px-6 lg:px-10"
         x-data="attendanceTable(@js(['pageIds' => $pageIds]))"

@@ -3,7 +3,7 @@
 
     {{-- Browser tab title --}}
     <x-slot name="title">
-        Salary Record Management
+       Accounting Salary Record Management
     </x-slot>
 
     {{-- Page heading (shown in the layout's top bar) --}}

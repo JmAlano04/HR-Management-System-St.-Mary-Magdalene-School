@@ -1,5 +1,13 @@
 {{-- resources/views/time-corrections/employee.blade.php (Employee: submit a correction request) --}}
-      <x-slot name="header">
+      @auth
+    <x-slot name="title">
+        @if (auth()->user()->hasRole('Employee'))
+            Employee Time Correction Request
+       @endif
+    </x-slot>
+    @endauth
+
+<x-slot name="header">
         <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-extrabold leading-tight sm:ml-[10px] md:ml-[20px] lg:ml-[80px] text-red-700">Time Correction Request</h1>
     </x-slot>
     @php

@@ -7,15 +7,25 @@
 @endphp
 
 <x-app-layout>
-
+    
 
     {{-- Page heading --}}
-    <x-slot name="header">
+     @auth
+     @if (auth()->user()->hasRole('Admin'))
+      <x-slot name="header">
         <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl  font-extrabold leading-tight ml-[80px]  text-red-700">
             {{ __('Attendance Monitoring') }}
         </h2>
     </x-slot>
 
+    @elseif(auth()->user()->hasRole('HR'))
+    <x-slot name="header">
+        <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl  font-extrabold leading-tight ml-[80px]  text-red-700">
+            {{ __('Attendance Management') }}
+        </h2>
+    </x-slot>
+    @endif
+    @endauth
     <div class="pb-12  ml-4 -mt-8">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="overflow-hidden shadow-sm sm:rounded-lg">

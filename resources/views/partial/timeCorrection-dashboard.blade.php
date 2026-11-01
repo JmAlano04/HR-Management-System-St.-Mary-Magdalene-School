@@ -2,9 +2,25 @@
 
 
     {{-- Browser tab title --}}
+      {{-- Browser tab title --}}
+    @auth
     <x-slot name="title">
-        Time Correction Management
+        @if (auth()->user()->hasRole('Admin'))
+            Admin Time Correction Management
+        @elseif (auth()->user()->hasRole('HR'))
+            HR Time Correction Management
+        @elseif (auth()->user()->hasRole('Accounting'))
+            Accounting Time Correction Management
+        @elseif (auth()->user()->hasRole('Employee'))
+            Employee Time Correction Management
+        @elseif (auth()->user()->hasRole('Applicant'))
+            Applicant Time Correction Management
+        @else
+            Dashboard
+        @endif
     </x-slot>
+@endauth
+
 
     {{-- Page heading (shown in the layout's top bar) --}}
     <x-slot name="header">

@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\Auth;
 
 class PayrollController extends Controller
 {
+    /** Monthly wage = daily wage x 26 working days. */
+    private const WORKING_DAYS_PER_MONTH = 26;
+
     /**
      * Admin, HR, and Accounting can view payroll.
      * HR sees the HR approval stage; everyone else sees the Admin stage.
@@ -51,7 +54,7 @@ class PayrollController extends Controller
         };
 
         $payslips = Payslip::sentToAdmin()
-            ->with('employee')
+            ->with(['employee', 'response'])
             ->orderByDesc('transfer_date')
             ->orderBy('id')
             ->paginate(10)
@@ -61,7 +64,7 @@ class PayrollController extends Controller
         return view('payroll', [
             'payslips'   => $payslips,
             'cards'      => $payslips->getCollection()
-                ->map->toCard()
+                ->map(fn (Payslip $slip) => $this->card($slip))
                 ->keyBy('id'),
             'summary'    => $summary,
             'statusText' => $statusText,
@@ -151,6 +154,40 @@ class PayrollController extends Controller
             'success',
             $count . ' ' . ($count === 1 ? 'payslip' : 'payslips') . ' approved.'
         );
+    }
+
+    /**
+     * Data for the payslip modal: the model's own card plus
+     * the monthly wage, the pay period label and the PhilHealth loan.
+     */
+    private function card(Payslip $slip): array
+    {
+        $card = $slip->toCard();
+
+        // Monthly wage = daily wage x 26
+        $card['monthly_wage'] = round((float) $slip->daily_wage * self::WORKING_DAYS_PER_MONTH, 2);
+
+        // "15th" -> "15th Pay Period", "30th" -> "30th Pay Period"
+        $card['cutoff_label'] = $this->payPeriodLabel($slip->cutoff);
+
+        // Employee's answer for THIS payslip (controls the Download button in the modal)
+        $card['employee_status'] = ! $slip->isReleased()
+            ? 'Not released'
+            : ($slip->response?->status ?? 'Pending');
+
+        // PhilHealth loan: read safely so the page still works before the column exists
+        $card['deductions'] = array_merge($card['deductions'] ?? [], [
+            'philhealth_loan' => (float) ($slip->getAttributes()['philhealth_loan'] ?? 0),
+        ]);
+
+        return $card;
+    }
+
+    private function payPeriodLabel(?string $cutoff): string
+    {
+        $cutoff = trim((string) $cutoff);
+
+        return $cutoff === '' ? '-' : $cutoff . ' Pay Period';
     }
 
     /**

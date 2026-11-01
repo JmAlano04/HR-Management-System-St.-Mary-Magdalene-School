@@ -25,7 +25,13 @@
     <x-slot name="header">
         <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-extrabold leading-tight sm:ml-[10px] md:ml-[20px] lg:ml-[80px] text-red-700">Documents</h1>
     </x-slot>
-
+ @auth
+    <x-slot name="title">
+        @if (auth()->user()->hasRole('Employee'))
+            Employee Documents
+       @endif
+    </x-slot>
+    @endauth
     <div
         class="mx-auto max-w-[1920px] px-4 pb-12 pt-6 sm:px-8 lg:px-12"
         x-data="employeeDocuments(@js([

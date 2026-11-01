@@ -18,13 +18,13 @@
 
         <div class="flex flex-wrap gap-2">
             <button type="button" @click="managingJobs = true"
-                class="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-white px-[18px] py-2.5 text-sm font-semibold text-gray-800 transition hover:bg-gray-50">
+                class="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-[#dc2626] px-[18px] py-2.5 text-sm font-semibold text-white shadow-[0_2px_6px_rgba(220,38,38,0.2)] transition hover:bg-[#b91c1c]">
                 <i class="fas fa-list" aria-hidden="true"></i> Job Openings
             </button>
-            <button type="button" @click="addingJob = true"
+            {{-- <button type="button" @click="addingJob = true"
                 class="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-[#dc2626] px-[18px] py-2.5 text-sm font-semibold text-white shadow-[0_2px_6px_rgba(220,38,38,0.2)] transition hover:bg-[#b91c1c]">
                 <i class="fas fa-plus-circle" aria-hidden="true"></i> Add Job Opening
-            </button>
+            </button> --}}
         </div>
     </div>
 

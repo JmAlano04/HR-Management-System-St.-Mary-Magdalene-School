@@ -1,5 +1,13 @@
 {{-- resources/views/employee/attendance.blade.php --}}
+  @auth
+    <x-slot name="title">
+        @if (auth()->user()->hasRole('Employee'))
+            Employee Attendance
+       @endif
+    </x-slot>
 
+  
+@endauth
     <x-slot name="header">
         <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-extrabold leading-tight sm:ml-[10px] md:ml-[20px] lg:ml-[80px] text-red-700">Attendance</h1>
     </x-slot>

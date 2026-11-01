@@ -2,9 +2,23 @@
 {{-- NOTE: if your layout component is not <x-app-layout>, change the opening/closing tag below. --}}
 
     {{-- Browser tab title --}}
+    @auth
     <x-slot name="title">
-        Payroll Dashboard
+        @if (auth()->user()->hasRole('Admin'))
+            Admin Payroll Management
+        @elseif (auth()->user()->hasRole('HR'))
+            HR Payroll Management
+        @elseif (auth()->user()->hasRole('Accounting'))
+            Accounting Payroll Management
+        @elseif (auth()->user()->hasRole('Employee'))
+            Employee Payroll Management
+        @elseif (auth()->user()->hasRole('Applicant'))
+            Applicant Dashboard
+        @else
+            Dashboard
+        @endif
     </x-slot>
+@endauth
 
     {{-- Page heading (shown in the layout's top bar) --}}
     <x-slot name="header">
@@ -21,6 +35,9 @@
         };
 
         $peso = fn ($n) => '₱' . number_format((float) $n, 2);
+
+        // Row look inside the payslip modal
+        $row = 'flex min-h-[30px] items-center justify-between gap-3 border-b border-[#ecebea] text-[0.85rem] text-gray-500';
 
         $allReviewed = $summary['total'] > 0 && $summary['pending'] === 0;
 
@@ -122,8 +139,8 @@
                                 <strong class="text-[1.05rem] text-gray-900">{{ $peso($slip->net_pay) }}</strong>
                             </div>
                             <div class="flex flex-col gap-1">
-                                <span class="text-[0.72rem] uppercase tracking-[0.08em] text-gray-500">Cutoff</span>
-                                <strong class="text-[1.05rem] text-gray-900">{{ $slip->cutoff }}</strong>
+                                <span class="text-[0.72rem] uppercase tracking-[0.08em] text-gray-500">Pay period</span>
+                                <strong class="text-[1.05rem] text-gray-900">{{ $slip->cutoff }} Pay Period</strong>
                             </div>
                         </div>
 
@@ -184,94 +201,84 @@
 
         {{-- ============ Payslip modal ============ --}}
         <div x-show="slip" x-cloak x-transition.opacity @click.self="viewId = null"
-            class="fixed inset-0 z-[60] grid place-items-center bg-[rgba(15,23,42,0.5)] p-5">
+            class="fixed inset-0 z-[1200] grid place-items-center bg-[rgba(17,24,39,0.48)] p-3">
             <section role="dialog" aria-modal="true" aria-labelledby="payrollPayslipTitle"
-                class="relative max-h-[calc(100vh-24px)] w-[min(900px,calc(100vw-32px))] overflow-y-auto rounded-[22px] bg-white px-3 pb-3 pt-[34px] shadow-[0_20px_50px_rgba(15,23,42,0.08)]">
-
-                <button type="button" @click="viewId = null" aria-label="Close payslip"
-                    class="absolute right-[18px] top-4 grid h-[38px] w-[38px] cursor-pointer place-items-center rounded-xl bg-gray-100 text-gray-900 transition hover:bg-gray-200">
-                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-                </button>
+                class="max-h-[calc(100vh-40px)] w-[min(900px,calc(100vw-40px))] overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden rounded-[28px] bg-white px-3.5 pb-3.5 pt-2 shadow-[0_20px_50px_rgba(15,23,42,0.08)]">
+                <div class="mb-2 flex justify-end">
+                    <button type="button" @click="viewId = null" aria-label="Close payslip"
+                        class="h-9 w-9 cursor-pointer rounded-[10px] text-lg text-gray-400 hover:bg-[#fef2f2] hover:text-[#b22222]">
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                    </button>
+                </div>
 
                 <template x-if="slip">
-                    <div class="grid gap-[18px] p-2 text-gray-900 sm:p-4">
-
+                    <div class="bg-white">
                         {{-- Header --}}
-                        <header class="flex flex-col items-center gap-1 border-b border-gray-200 pb-2.5 text-center">
-                            <strong id="payrollPayslipTitle" class="text-2xl" x-text="slip.employee_name"></strong>
-                            <span class="text-gray-500" x-text="'ID: ' + slip.employee_number"></span>
-                            <small class="text-gray-500" x-text="slip.department + ' | ' + slip.position + ' | ' + slip.step_name"></small>
-                        </header>
-
-                        {{-- Attendance summary --}}
-                        <div class="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-gray-200 bg-gray-200 sm:grid-cols-4">
-                            <div class="flex flex-col items-center justify-center gap-1.5 bg-gray-50 px-2.5 py-3 text-center">
-                                <span class="text-[0.72rem] font-bold uppercase tracking-[0.05em] text-gray-500">Days worked</span>
-                                <strong class="text-xl" x-text="Number(slip.days_worked)"></strong>
-                            </div>
-                            <div class="flex flex-col items-center justify-center gap-1.5 bg-gray-50 px-2.5 py-3 text-center">
-                                <span class="text-[0.72rem] font-bold uppercase tracking-[0.05em] text-gray-500">Hours worked</span>
-                                <strong class="text-xl" x-text="Number(slip.hours_worked)"></strong>
-                            </div>
-                            <div class="flex flex-col items-center justify-center gap-1.5 bg-gray-50 px-2.5 py-3 text-center">
-                                <span class="text-[0.72rem] font-bold uppercase tracking-[0.05em] text-gray-500">Late (mins)</span>
-                                <strong class="text-xl" x-text="slip.late_minutes"></strong>
-                            </div>
-                            <div class="flex flex-col items-center justify-center gap-1.5 bg-gray-50 px-2.5 py-3 text-center">
-                                <span class="text-[0.72rem] font-bold uppercase tracking-[0.05em] text-gray-500">Cutoff</span>
-                                <strong class="text-xl" x-text="slip.cutoff"></strong>
-                            </div>
+                        <div class="flex flex-col items-center gap-0.5 px-[18px] pb-[18px] pt-2.5 text-center">
+                            <strong id="payrollPayslipTitle" class="text-[clamp(1.5rem,2vw,2.25rem)] font-extrabold leading-tight text-gray-900" x-text="slip.employee_name"></strong>
+                            <span class="text-[0.88rem] text-gray-800" x-text="'ID: ' + slip.employee_number"></span>
+                            <span class="text-[0.88rem] text-gray-500" x-text="slip.department + ' | ' + slip.position + ' | ' + slip.step_name"></span>
                         </div>
 
-                        {{-- Earnings + deductions --}}
-                        <div class="grid overflow-hidden rounded-[14px] border border-gray-200 sm:grid-cols-2">
-                            <section class="min-w-0 content-start p-[18px]">
-                                <h3 class="mb-1 text-[0.95rem] font-bold uppercase tracking-[0.04em] text-[#b22222]">Earnings</h3>
-                                <div class="flex items-center justify-between gap-2.5 rounded-[10px] bg-gray-50 px-3 py-2.5"><span class="text-[0.8rem] text-gray-500">Basic salary</span><strong class="text-[0.95rem]" x-text="money(slip.basic_pay)"></strong></div>
-                                <div class="mt-1 flex items-center justify-between gap-2.5 rounded-[10px] bg-gray-50 px-3 py-2.5"><span class="text-[0.8rem] text-gray-500">Daily rate</span><strong class="text-[0.95rem]" x-text="money(slip.daily_wage)"></strong></div>
-                                <div class="mt-1 flex items-center justify-between gap-2.5 rounded-[10px] bg-gray-50 px-3 py-2.5"><span class="text-[0.8rem] text-gray-500">Honorarium</span><strong class="text-[0.95rem]" x-text="money(slip.honorarium)"></strong></div>
-                                <div class="mt-1.5 flex items-center justify-between gap-2.5 border-t border-gray-200 pt-2.5">
-                                    <span class="text-[0.8rem] font-extrabold text-gray-500">Gross earnings</span>
-                                    <strong class="text-[0.95rem] font-extrabold text-[#b22222]" x-text="money(slip.gross_pay)"></strong>
+                        {{-- Pay period / attendance / monthly wage --}}
+                        <div class="grid grid-cols-2 border-y border-[#ecebea] sm:grid-cols-5">
+                            <template x-for="(m, k) in [
+                                ['Pay period', slip.cutoff_label],
+                                ['Days worked', Number(slip.days_worked)],
+                                ['Hours worked', Number(slip.hours_worked)],
+                                ['Late (mins)', slip.late_minutes],
+                                ['Monthly wage', money(slip.monthly_wage)]
+                            ]" :key="k">
+                                <div class="grid justify-items-center gap-[3px] px-1.5 py-2.5 text-center" :class="k > 0 ? 'sm:border-l sm:border-[#ecebea]' : ''">
+                                    <span class="text-[0.68rem] font-extrabold uppercase text-gray-500" x-text="m[0]"></span>
+                                    <strong class="text-[0.95rem]" x-text="m[1]"></strong>
                                 </div>
+                            </template>
+                        </div>
+
+                        <div class="grid sm:grid-cols-2">
+                            {{-- Earnings --}}
+                            <section class="min-w-0 border-t border-[#ecebea] p-3">
+                                <h3 class="mb-2.5 text-[0.78rem] uppercase tracking-[0.08em] text-[#b22222]">Earnings</h3>
+                                <div class="{{ $row }}"><span>Basic salary</span><strong class="min-w-[120px] text-center text-gray-900" x-text="money(slip.basic_pay)"></strong></div>
+                                <div class="{{ $row }}"><span>Daily rate</span><strong class="min-w-[120px] text-center text-gray-900" x-text="money(slip.daily_wage)"></strong></div>
+                                <div class="{{ $row }}"><span>Honorarium</span><strong class="min-w-[120px] text-center text-gray-900" x-text="Number(slip.honorarium) > 0 ? money(slip.honorarium) : '-'"></strong></div>
+                                <div class="mt-2 flex min-h-[30px] items-center justify-between gap-3 text-[0.85rem] font-extrabold text-gray-900"><span>Gross earnings</span><strong class="min-w-[120px] text-center text-[#b22222]" x-text="money(slip.gross_pay)"></strong></div>
                             </section>
 
-                            <section class="min-w-0 content-start border-t border-gray-200 p-[18px] sm:border-l sm:border-t-0">
-                                <h3 class="mb-1 text-[0.95rem] font-bold uppercase tracking-[0.04em] text-[#b22222]">Deductions</h3>
-                                <template x-for="row in deductionRows" :key="row[1]">
-                                    <div class="mt-1 flex items-center justify-between gap-2.5 rounded-[10px] bg-gray-50 px-3 py-2.5">
-                                        <span class="text-[0.8rem] text-gray-500" x-text="row[0]"></span>
-                                        <strong class="text-[0.95rem]" x-text="money(slip.deductions[row[1]])"></strong>
+                            {{-- Deductions (SSS, PhilHealth, HDMF, PERAA/CEAP and loans are 30th pay period only) --}}
+                            <section class="min-w-0 border-t border-[#ecebea] p-3 sm:border-l">
+                                <h3 class="mb-2.5 text-[0.78rem] uppercase tracking-[0.08em] text-[#b22222]">Deductions</h3>
+                                <template x-for="r in deductionRows" :key="r[1]">
+                                    <div class="{{ $row }}">
+                                        <span x-text="r[0]"></span>
+                                        <span class="min-w-[120px] text-center font-bold text-gray-900"
+                                            x-text="(r[2] && slip.cutoff !== '30th') ? '-' : money(slip.deductions[r[1]])"></span>
                                     </div>
                                 </template>
-                                <div class="mt-1.5 flex items-center justify-between gap-2.5 border-t border-gray-200 pt-2.5">
-                                    <span class="text-[0.8rem] font-extrabold text-gray-500">Total deductions</span>
-                                    <strong class="text-[0.95rem] font-extrabold text-[#b22222]" x-text="money(slip.total_deductions)"></strong>
-                                </div>
+                                <div class="mt-2 flex min-h-[30px] items-center justify-between gap-3 text-[0.85rem] font-extrabold text-gray-900"><span>Total deductions</span><strong class="min-w-[120px] text-center text-[#b22222]" x-text="'- ' + money(slip.total_deductions)"></strong></div>
                             </section>
                         </div>
 
                         {{-- Net pay --}}
-                        <div class="flex items-center justify-between rounded-xl border-t-2 border-[#b22222] bg-[#fef2f2] px-5 py-4 font-extrabold text-[#991b1b]">
+                        <div class="flex items-center justify-between gap-3 border-t-2 border-[#b22222] bg-[#fef2f2] px-5 py-[18px] font-black tracking-[0.08em] text-[#b22222]">
                             <span>NET PAY</span>
-                            <strong class="text-[1.55rem]" x-text="money(slip.net_pay)"></strong>
+                            <strong class="text-[1.25rem] tracking-normal" x-text="money(slip.net_pay)"></strong>
                         </div>
-
-                        {{-- Download --}}
-                        @if ($empState === 'Approved')
-                            <div class="flex justify-end">
-                            <a :href="downloadUrl.replace('__ID__', slip.id)"
-                                class="inline-flex cursor-pointer items-center gap-2 rounded-[10px] border border-[#b22222] bg-[#b22222] px-4 py-[10px] text-[0.85rem] font-bold text-white transition hover:-translate-y-px">
-                                <i class="fa-solid fa-download" aria-hidden="true"></i> Download payslip (PDF)
-                            </a>
-                        </div>
-                        @elseif ($empState === 'Pending' || 'Rejected')
-                            <div>
-                                
-                            </div>
-                        @endif
                     </div>
                 </template>
+
+                <div class="mt-3 flex items-center justify-between gap-2.5">
+                   
+
+                    {{-- Download only once the employee approved THIS payslip --}}
+                    <template x-if="slip && slip.employee_status === 'Approved'">
+                        <a :href="downloadUrl.replace('__ID__', slip.id)"
+                            class="inline-flex flex-end cursor-pointer items-center gap-2 rounded-[10px] border border-[#b22222] bg-[#b22222] px-4 py-[10px] text-[0.85rem] font-bold text-white transition hover:-translate-y-px">
+                            <i class="fa-solid fa-download" aria-hidden="true"></i> Download payslip (PDF)
+                        </a>
+                    </template>
+                </div>
             </section>
         </div>
 
@@ -313,19 +320,20 @@
                 reason: cfg.reopen ? cfg.reason : '',
                 downloadUrl: cfg.downloadUrl,
 
-                // [label, key in slip.deductions]
+                // [label, key in slip.deductions, only on the 30th pay period]
                 deductionRows: [
-                    ['MALASAKITAN', 'malasakitan'],
-                    ['Late', 'late'],
-                    ['Absences', 'absences'],
-                    ['SSS', 'sss'],
-                    ['SSS LOAN', 'sss_loan'],
-                    ['PhilHealth', 'philhealth'],
-                    ['PERAA/CEAP', 'peraa_ceap'],
-                    ['PERAA/CEAP LOAN', 'peraa_ceap_loan'],
-                    ['HDMF', 'hdmf'],
-                    ['HDMF LOAN', 'hdmf_loan'],
-                    ['Cash advance', 'cash_advance'],
+                    ['MALASAKITAN', 'malasakitan', false],
+                    ['Late', 'late', false],
+                    ['Absences', 'absences', false],
+                    ['SSS', 'sss', true],
+                    ['PhilHealth', 'philhealth', true],
+                    ['HDMF', 'hdmf', true],
+                    ['PERAA/CEAP', 'peraa_ceap', true],
+                    ['SSS Loan', 'sss_loan', true],
+                    ['PhilHealth Loan', 'philhealth_loan', true],
+                    ['PERAA/CEAP Loan', 'peraa_ceap_loan', true],
+                    ['HDMF Loan', 'hdmf_loan', true],
+                    ['Cash advance', 'cash_advance', false],
                 ],
 
                 get slip() {

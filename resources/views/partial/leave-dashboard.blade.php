@@ -1,9 +1,23 @@
 {{-- resources/views/admin/leave-management/index.blade.php --}}
 
     {{-- Browser tab title --}}
+    @auth
     <x-slot name="title">
-        Leave Management
+        @if (auth()->user()->hasRole('Admin'))
+            Admin Leave Management
+        @elseif (auth()->user()->hasRole('HR'))
+            HR Leave Management
+        @elseif (auth()->user()->hasRole('Accounting'))
+            Accounting Leave Management
+        @elseif (auth()->user()->hasRole('Employee'))
+            Employee Leave Management
+        @elseif (auth()->user()->hasRole('Applicant'))
+            Applicant Leave Management
+        @else
+            Dashboard
+        @endif
     </x-slot>
+@endauth
 
     {{-- Page heading (shown in the layout's top bar) --}}
     <x-slot name="header">

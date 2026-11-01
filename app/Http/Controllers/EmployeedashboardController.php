@@ -3,7 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Banner;
-use App\Models\DashboardTask;use App\Models\Employee;
+use App\Models\DashboardTask;
+use App\Models\Employee;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,6 +15,7 @@ class EmployeeDashboardController extends Controller
     /** Dashboard page (called from DashboardController for the Employee role). */
     public function index()
     {
+        // Must be the view file resources/views/dashboard/employee.blade.php
         return view('dashboard', [
             'slides'    => $this->slides(),
             'today'     => now()->toDateString(),
@@ -99,6 +101,7 @@ class EmployeeDashboardController extends Controller
         $today = now()->startOfDay();
 
         return Employee::query()
+            ->whereNotNull('birthday')
             ->get(['name', 'position', 'birthday'])
             ->map(function (Employee $e) use ($today) {
                 // Feb 29 in a non-leap year falls back to Feb 28

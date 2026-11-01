@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Employee;
+use App\Models\PayrollStep;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -23,6 +24,9 @@ class EmployeeController extends Controller
 
     /** Fallback employment status (column is NOT NULL, no DB default). */
     private const DEFAULT_EMPLOYMENT_STATUS = 'regular';
+
+    /** Fallback payroll step (Step 1). */
+    private const DEFAULT_STEP_NO = 1;
 
     /**
      * Allowed role types. The stored value and the label are the same text,
@@ -72,6 +76,12 @@ class EmployeeController extends Controller
             ->paginate(12)
             ->withQueryString();
 
+        // payroll_steps: step_no => "Step 1 — ₱550.00 / day"
+        $payrollSteps = $this->payrollSteps();
+
+        // Raw rows for the "Payroll Steps" manager modal
+        $stepRows = PayrollStep::ordered()->get();
+
         // Applicants who can still be turned into an employee
         // (Applicant role + no employee record yet), keyed by id for the form dropdown
         $applicants = User::role(self::APPLICANT_ROLE)
@@ -82,18 +92,17 @@ class EmployeeController extends Controller
 
         return view('employees', [
             'employees'          => $employees,
-            // keyed by id so the modal can look an employee up instantly.
-            // Galing lang sa na-filter na $employees, kaya hindi lalabas
-            // ang data ng naka-login na user sa JS.
-            // employment_status is added here so the modal and the edit form always have it.
             'cards'              => $employees->getCollection()
                 ->map(fn (Employee $e) => array_merge($e->toCard(), [
                     'employment_status' => $e->employment_status,
+                    'step_label'        => $payrollSteps->get($e->step_no),
                 ]))
                 ->keyBy('id'),
             'applicants'         => $applicants,
             'employmentStatuses' => self::EMPLOYMENT_STATUSES,
-            'filterDepartments'  => $filterDepartments,        // only departments found in SQL
+            'payrollSteps'       => $payrollSteps,
+            'stepRows'           => $stepRows,
+            'filterDepartments'  => $filterDepartments,         // only departments found in SQL
             'formDepartments'    => $this->departmentOptions(), // standard list + SQL values
         ]);
     }
@@ -123,8 +132,9 @@ class EmployeeController extends Controller
             $data['employee_id'] = $this->generateEmployeeId();
         }
 
-        // employment_status is NOT NULL in the database
+        // These columns are NOT NULL in the database
         $data['employment_status'] ??= self::DEFAULT_EMPLOYMENT_STATUS;
+        $data['step_no']             = (int) ($data['step_no'] ?? self::DEFAULT_STEP_NO);
 
         // Create the employee and switch the role together: both succeed or neither does
         DB::transaction(function () use ($data, $user) {
@@ -148,6 +158,9 @@ class EmployeeController extends Controller
         if (blank($data['employee_id'] ?? null)) {
             $data['employee_id'] = $employee->employee_id;
         }
+
+        // Save the Step chosen in the form
+        $data['step_no'] = (int) $data['step_no'];
 
         $employee->update($data);
 
@@ -182,12 +195,28 @@ class EmployeeController extends Controller
             'department'        => ['required', Rule::in($this->departmentOptions()->keys()->all())],
             'role_type'         => ['required', Rule::in(self::ROLE_TYPES)],
             'employment_status' => ['required', Rule::in(array_keys(self::EMPLOYMENT_STATUSES))],
+            'step_no'           => ['required', 'integer', Rule::exists('payroll_steps', 'step_no')],
             'email'             => ['required', 'email', 'max:255', Rule::unique('employees', 'email')->ignore($employee)],
             'birthday'          => ['required', 'date', 'before:today'],
             'address'           => ['required', 'string', 'max:255'],
             'emergency_name'    => ['required', 'string', 'max:150'],
             'emergency_contact' => ['required', 'string', 'max:20', 'regex:/^[0-9+\-\s()]{7,20}$/'],
         ];
+    }
+
+    /**
+     * Payroll steps from the payroll_steps table (PayrollStep model).
+     * Returns [step_no => "Step 1 — ₱550.00 / day"].
+     */
+    private function payrollSteps(): Collection
+    {
+        PayrollStep::ensureDefaults(); // creates Step 1..30 only if the table is empty
+
+        return PayrollStep::ordered()
+            ->get()
+            ->mapWithKeys(fn (PayrollStep $s) => [
+                $s->step_no => $s->name . ' — ₱' . number_format($s->daily_wage, 2) . ' / day',
+            ]);
     }
 
     /**

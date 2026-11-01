@@ -2,9 +2,23 @@
 {{-- Expects: $applications (paginator), $cards (object keyed by id), $stats, $search, $status --}}
 
     {{-- Browser tab title --}}
+    @auth
     <x-slot name="title">
-        Onboarding Dashboard
+        @if (auth()->user()->hasRole('Admin'))
+            Admin Onboarding Management
+        @elseif (auth()->user()->hasRole('HR'))
+            HR Onboarding Management
+        @elseif (auth()->user()->hasRole('Accounting'))
+            Accounting Onboarding Management
+        @elseif (auth()->user()->hasRole('Employee'))
+            Employee Onboarding Management
+        @elseif (auth()->user()->hasRole('Applicant'))
+            Applicant Dashboard
+        @else
+            Dashboard
+        @endif
     </x-slot>
+@endauth
 
     {{-- Page heading (shown in the layout's top bar) --}}
     <x-slot name="header">

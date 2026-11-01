@@ -1,9 +1,25 @@
 {{-- resources/views/hr/attendance/index.blade.php --}}
 
     {{-- Browser tab title --}}
+   @auth
     <x-slot name="title">
-      Attendance Management
+        @if (auth()->user()->hasRole('Admin'))
+            Admin Attendance Management
+        @elseif (auth()->user()->hasRole('HR'))
+            HR Attendance Management
+        @elseif (auth()->user()->hasRole('Accounting'))
+            Accounting Attendance Management
+        @elseif (auth()->user()->hasRole('Employee'))
+            Employee Attendance Management
+        @elseif (auth()->user()->hasRole('Applicant'))
+            Applicant Dashboard
+        @else
+            Dashboard
+        @endif
     </x-slot>
+
+  
+@endauth
 
     @php
         $inputClass = 'w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-3 text-[15px] text-gray-900 transition focus:border-[#b22222] focus:outline-none focus:ring-4 focus:ring-red-700/10';

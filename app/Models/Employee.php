@@ -59,10 +59,12 @@ class Employee extends Model
     protected $fillable = [
         'user_id', 'employee_id', 'zkteco_user_id', 'name', 'position', 'department', 'role_type',
         'email', 'birthday', 'address', 'emergency_name', 'emergency_contact',
+      
+        
 
         // Nasa database pero wala dati sa fillable.
         // Ang employment_status ay NOT NULL at walang default sa database.
-        'nickname', 'employment_status',
+        'nickname', 'employment_status',  'step_no',
 
         // My Account
         'gender', 'civil_status', 'phone', 'education',

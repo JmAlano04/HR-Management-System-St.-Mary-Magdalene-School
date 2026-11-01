@@ -1,7 +1,7 @@
 {{-- resources/views/payroll-processing/index.blade.php --}}
 
     <x-slot name="title">
-        Payroll Processing
+       Accounting Payroll Processing
     </x-slot>
 
     <x-slot name="header">
@@ -104,9 +104,9 @@
                                     </div>
                                 </td>
                                 <td class="px-4 py-4 text-gray-600" x-text="e.position || e.department || '-'"></td>
-                                <td class="px-4 py-4"><input type="number" min="0" max="31" step="1" class="{{ $input }}" :value="e.daysWorked" @input="setDays(e, $event.target.value, $event.target)"></td>
-                                <td class="px-4 py-4"><input type="number" min="0" max="248" step="1" class="{{ $input }}" :value="e.hoursWorked" @input="setHours(e, $event.target.value, $event.target)"></td>
-                                <td class="px-4 py-4"><input type="number" min="0" step="1" class="{{ $input }}" :value="e.lateMinutes" @input="setLate(e, $event.target.value, $event.target)"></td>
+                                <td class="px-4 py-4"><input type="number" min="0" max="31" step="1" disabled class="{{ $input }}" :value="e.daysWorked" @input="setDays(e, $event.target.value, $event.target)"></td>
+                                <td class="px-4 py-4"><input type="number" min="0" max="248" step="1" disabled class="{{ $input }}" :value="e.hoursWorked" @input="setHours(e, $event.target.value, $event.target)"></td>
+                                <td class="px-4 py-4"><input type="number" min="0" step="1" disabled class="{{ $input }}" :value="e.lateMinutes" @input="setLate(e, $event.target.value, $event.target)"></td>
                                 <td class="whitespace-nowrap px-4 py-4 font-bold" x-text="money(calc(e).basicPay)"></td>
                                 <td class="whitespace-nowrap px-4 py-4 font-bold" x-text="money(calc(e).totalDeductions)"></td>
                                 <td class="whitespace-nowrap px-4 py-4 font-bold text-[#b22222]" x-text="money(calc(e).netPay)"></td>
@@ -209,7 +209,7 @@
                                 ['Days worked', draft.daysWorked],
                                 ['Hours worked', draft.hoursWorked],
                                 ['Late (mins)', draft.lateMinutes],
-                                ['Monthly wage (daily x 26)', money(preview.monthlyWage)]
+                                ['Monthly wage', money(preview.monthlyWage)]
                             ]" :key="k">
                                 <div class="grid justify-items-center gap-[3px] px-1.5 py-2.5 text-center" :class="k > 0 ? 'sm:border-l sm:border-[#ecebea]' : ''">
                                     <span class="text-[0.68rem] font-extrabold uppercase text-gray-500" x-text="m[0]"></span>

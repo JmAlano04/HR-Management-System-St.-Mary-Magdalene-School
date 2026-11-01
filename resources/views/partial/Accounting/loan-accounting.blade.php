@@ -1,7 +1,7 @@
 {{-- resources/views/accounting-loans/index.blade.php --}}
 
     <x-slot name="title">
-        Financial Loan Management
+       Accounting Financial Loan Management
     </x-slot>
 
     <x-slot name="header">

@@ -1,5 +1,14 @@
 {{-- resources/views/employee/school-employees.blade.php --}}
+  @auth
+    <x-slot name="title">
+        @if (auth()->user()->hasRole('Employee'))
+            Employee School Employees
+     
+        @endif
+    </x-slot>
 
+  
+@endauth
 <x-slot name="header">
     <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-extrabold leading-tight sm:ml-[10px] md:ml-[20px] lg:ml-[80px] text-red-700">School Employees</h1>
 </x-slot>
@@ -120,6 +129,7 @@
                             <p><strong>Position:</strong> <span x-text="detail.position"></span></p>
                             <p><strong>Department:</strong> <span x-text="detail.department_label"></span></p>
                             <p><strong>Role Type:</strong> <span x-text="detail.role_label"></span></p>
+                            <p><strong>Step:</strong> <span x-text="detail.step_label || '—'"></span></p>
                             <p><strong>Email:</strong> <span x-text="detail.email"></span></p>
                             <p><strong>Birthday:</strong> <span x-text="detail.birthday_label"></span></p>
                             <p><strong>Emergency Contact:</strong> <span x-text="detail.emergency_contact"></span></p>

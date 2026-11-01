@@ -2,8 +2,26 @@
 
     {{-- Browser tab title --}}
     <x-slot name="title">
-        Document Management
+      
     </x-slot>
+ @auth
+    <x-slot name="title">
+        @if (auth()->user()->hasRole('Admin'))
+            Admin Document Management
+        @elseif (auth()->user()->hasRole('HR'))
+            HR Document Management
+        @elseif (auth()->user()->hasRole('Accounting'))
+            Accounting Document Management
+        @elseif (auth()->user()->hasRole('Employee'))
+            Employee Document Management
+        @elseif (auth()->user()->hasRole('Applicant'))
+            Applicant Dashboard
+        @else
+            Dashboard
+        @endif
+    </x-slot>
+@endauth
+    
 
 
     @php

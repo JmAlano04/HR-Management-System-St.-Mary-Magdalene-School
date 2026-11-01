@@ -1,10 +1,23 @@
 {{-- resources/views/admin/offboarding-management/index.blade.php --}}
 
     {{-- Browser tab title --}}
+     @auth
     <x-slot name="title">
-        Offboarding Dashboard
+        @if (auth()->user()->hasRole('Admin'))
+            Admin Offboarding Management
+        @elseif (auth()->user()->hasRole('HR'))
+            HR Offboarding Management
+        @elseif (auth()->user()->hasRole('Accounting'))
+            Accounting Offboarding Management
+        @elseif (auth()->user()->hasRole('Employee'))
+            Employee Offboarding Management
+        @elseif (auth()->user()->hasRole('Applicant'))
+            Applicant Dashboard
+        @else
+            Dashboard
+        @endif
     </x-slot>
-
+@endauth
     {{-- Page heading (shown in the layout's top bar) --}}
     <x-slot name="header">
         <h1 class="text-2xl font-extrabold leading-none  ml-20 tracking-tight text-[#b22222] sm:text-4xl">Offboarding Management</h1>

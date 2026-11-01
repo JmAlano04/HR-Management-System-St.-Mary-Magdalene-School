@@ -1,4 +1,21 @@
 {{-- Needs: $loans, $awaitingAdmin, $tab, $month (from LoanController@index) --}}
+  @auth
+    <x-slot name="title">
+        @if (auth()->user()->hasRole('Admin'))
+            Admin Financial Loan Management
+        @elseif (auth()->user()->hasRole('HR'))
+            HR Financial Loan Management
+        @elseif (auth()->user()->hasRole('Accounting'))
+            Accounting Financial Loan Management
+        @elseif (auth()->user()->hasRole('Employee'))
+            Employee Financial Loan Management
+        @elseif (auth()->user()->hasRole('Applicant'))
+            Applicant Dashboard
+        @else
+            Dashboard
+        @endif
+    </x-slot>
+@endauth
 @php
     $badge = [
         'locked'   => 'bg-gray-100 text-gray-600',

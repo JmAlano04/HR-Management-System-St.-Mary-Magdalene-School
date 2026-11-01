@@ -1,8 +1,23 @@
 {{-- resources/views/reports/index.blade.php --}}
 
+
+      @auth
     <x-slot name="title">
-        Reports
+        @if (auth()->user()->hasRole('Admin'))
+            Admin Reports
+        @elseif (auth()->user()->hasRole('HR'))
+            HR Reports
+        @elseif (auth()->user()->hasRole('Accounting'))
+            Accounting Reports
+        @elseif (auth()->user()->hasRole('Employee'))
+            Employee Reports
+        @elseif (auth()->user()->hasRole('Applicant'))
+            Applicant Reports
+        @else
+            Dashboard
+        @endif
     </x-slot>
+@endauth
 
     <x-slot name="header">
         <h1 class="text-2xl font-extrabold leading-none ml-[80px] tracking-tight text-[#b22222] sm:text-4xl">Reports</h1>

@@ -1,10 +1,33 @@
 @php
     $peso = fn ($v) => '₱' . number_format((float) $v, 2);
-    $labels = [
-        'malasakitan' => 'MALASAKITAN', 'late' => 'Late', 'absences' => 'Absences', 'sss' => 'SSS',
-        'sss_loan' => 'SSS Loan', 'philhealth' => 'PhilHealth', 'peraa_ceap' => 'PERAA/CEAP',
-        'peraa_ceap_loan' => 'PERAA/CEAP Loan', 'hdmf' => 'HDMF', 'hdmf_loan' => 'HDMF Loan',
-        'cash_advance' => 'Cash advance',
+
+    // Monthly wage = daily wage x 26
+    $monthlyWage = (float) $card['daily_wage'] * 26;
+
+    // "15th" -> "15th Pay Period", "30th" -> "30th Pay Period"
+    $cutoff      = trim((string) ($card['cutoff'] ?? $payslip->cutoff));
+    $payPeriod   = $cutoff === '' ? '-' : $cutoff . ' Pay Period';
+    $is30        = $cutoff === '30th';
+
+    // PhilHealth loan: read safely so the PDF still works before the column exists
+    $deds = $card['deductions'] ?? [];
+    $deds['philhealth_loan'] = $deds['philhealth_loan']
+        ?? ($payslip->getAttributes()['philhealth_loan'] ?? 0);
+
+    // [label, key, only on the 30th pay period]
+    $deductionRows = [
+        ['MALASAKITAN',     'malasakitan',     false],
+        ['Late',            'late',            false],
+        ['Absences',        'absences',        false],
+        ['SSS',             'sss',             true],
+        ['PhilHealth',      'philhealth',      true],
+        ['HDMF',            'hdmf',            true],
+        ['PERAA/CEAP',      'peraa_ceap',      true],
+        ['SSS Loan',        'sss_loan',        true],
+        ['PhilHealth Loan', 'philhealth_loan', true],
+        ['PERAA/CEAP Loan', 'peraa_ceap_loan', true],
+        ['HDMF Loan',       'hdmf_loan',       true],
+        ['Cash advance',    'cash_advance',    false],
     ];
 @endphp
 <!DOCTYPE html>
@@ -47,11 +70,12 @@
 
     <table class="meta">
         <tr>
-            <td><span class="muted">Pay period</span><br><strong>{{ $card['cutoff'] }}</strong></td>
+            <td><span class="muted">Pay period</span><br><strong>{{ $payPeriod }}</strong></td>
             <td><span class="muted">Transfer date</span><br><strong>{{ $payslip->transfer_date?->format('M d, Y') ?? '-' }}</strong></td>
             <td><span class="muted">Days worked</span><br><strong>{{ $card['days_worked'] }}</strong></td>
             <td><span class="muted">Hours worked</span><br><strong>{{ $card['hours_worked'] }}</strong></td>
             <td><span class="muted">Late (mins)</span><br><strong>{{ $card['late_minutes'] }}</strong></td>
+            <td><span class="muted">Monthly wage</span><br><strong>{{ $peso($monthlyWage) }}</strong></td>
         </tr>
     </table>
 
@@ -62,17 +86,21 @@
                 <table>
                     <tr class="row"><td>Basic salary</td><td>{{ $peso($card['basic_pay']) }}</td></tr>
                     <tr class="row"><td>Daily rate</td><td>{{ $peso($card['daily_wage']) }}</td></tr>
-                    <tr class="row"><td>Honorarium</td><td>{{ $peso($card['honorarium']) }}</td></tr>
+                    <tr class="row"><td>Honorarium</td><td>{{ (float) $card['honorarium'] > 0 ? $peso($card['honorarium']) : '-' }}</td></tr>
                     <tr class="total"><td>Gross earnings</td><td style="text-align:right">{{ $peso($card['gross_pay']) }}</td></tr>
                 </table>
             </td>
             <td class="col">
                 <h3>Deductions</h3>
                 <table>
-                    @foreach ($card['deductions'] as $key => $amount)
-                        <tr class="row"><td>{{ $labels[$key] ?? $key }}</td><td>{{ $peso($amount) }}</td></tr>
+                    {{-- SSS, PhilHealth, HDMF, PERAA/CEAP and the loans are deducted on the 30th pay period only --}}
+                    @foreach ($deductionRows as [$label, $key, $only30])
+                        <tr class="row">
+                            <td>{{ $label }}</td>
+                            <td>{{ ($only30 && ! $is30) ? '-' : $peso($deds[$key] ?? 0) }}</td>
+                        </tr>
                     @endforeach
-                    <tr class="total"><td>Total deductions</td><td style="text-align:right">{{ $peso($card['total_deductions']) }}</td></tr>
+                    <tr class="total"><td>Total deductions</td><td style="text-align:right">- {{ $peso($card['total_deductions']) }}</td></tr>
                 </table>
             </td>
         </tr>

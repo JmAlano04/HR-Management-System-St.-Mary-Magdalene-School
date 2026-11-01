@@ -2,7 +2,13 @@
     <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-extrabold leading-tight sm:ml-[10px] md:ml-[20px] lg:ml-[80px] text-red-700">Payslip</h1>
 </x-slot>
 
-
+@auth
+    <x-slot name="title">
+        @if (auth()->user()->hasRole('Employee'))
+            Employee Payslip
+       @endif
+    </x-slot>
+    @endauth
 <div class="px-4 pb-12 sm:px-6 lg:px-10"
      x-data="{
         months: @js($months),

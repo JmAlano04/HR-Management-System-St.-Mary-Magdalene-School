@@ -256,7 +256,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('/payslips', [PayslipController::class, 'index'])->name('payslips.index');
         Route::get('/payslips/{payslip}/download', [PayslipController::class, 'download'])->name('payslips.download');
-
+        Route::patch('/archive',     [PayrollController::class, 'archive'])->name('payroll.archive');
+        Route::patch('/restore',     [PayrollController::class, 'restore'])->name('payroll.restore');
         // Employee Documents
         Route::get('/document-employee', [
             EmployeeDocumentController::class,

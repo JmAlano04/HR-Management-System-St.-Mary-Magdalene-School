@@ -14,12 +14,13 @@ use Illuminate\Validation\Rule;
 class EmployeeAttendanceController extends Controller
 {
     /**
-     * Display the logged-in employee's attendance for a selected month.
-     * Rows are shaped like the HR attendance table (see AttendanceController::present()).
+     * Show ONLY the logged-in user's own attendance for a selected month.
+     *
+     * Ownership chain:
+     *   users.id -> employees.user_id -> attendance_records.employee_id (= employees.id)
      */
     public function index(Request $request)
     {
-        // Ensure the user is authenticated.
         $user = $request->user();
 
         abort_unless($user, 401, 'Please log in to continue.');
@@ -30,13 +31,12 @@ class EmployeeAttendanceController extends Controller
             'status' => ['nullable', Rule::in(AttendanceRecord::STATUSES)],
         ]);
 
-        // Get the selected month.
         $month = Carbon::createFromFormat(
             '!Y-m',
             $filters['month'] ?? now()->format('Y-m')
         )->startOfMonth();
 
-        // Find the employee linked to the logged-in user.
+        // The employee that belongs to the logged-in account (never from the request).
         $employee = SchoolEmployee::query()
             ->where('user_id', $user->id)
             ->first();
@@ -60,18 +60,16 @@ class EmployeeAttendanceController extends Controller
             ],
         ];
 
-        // Show the page even if no employee record is linked.
+        // Account has no employee record -> show the page with the "not linked" message.
         if (! $employee) {
-            return view('employees', $data);
+            return view('employee.attendance', $data);
         }
 
-        // Schedule for the selected month (auto-adjusted in May).
-        // NOTE: change `position` if your role column has a different name.
         $roleColumn = $employee->position;
 
         $data['schedule'] = AttendanceSchedule::for($roleColumn, $month);
 
-        // Retrieve attendance records for the selected month.
+        // Only this employee's, non-archived records inside the selected month.
         $base = AttendanceRecord::query()
             ->where('employee_id', $employee->id)
             ->where('archived', false)
@@ -86,7 +84,6 @@ class EmployeeAttendanceController extends Controller
             ->groupBy('status')
             ->pluck('total', 'status');
 
-        // Monthly summary.
         $data['summary'] = [
             'present'  => (int) ($counts['Present'] ?? 0),
             'late'     => (int) ($counts['Late'] ?? 0),
@@ -95,7 +92,7 @@ class EmployeeAttendanceController extends Controller
             'hours'    => (float) (clone $base)->sum('hours_worked'),
         ];
 
-        // Same for every row (the logged-in employee), like the HR table columns.
+        // Same for every row (the logged-in employee).
         $employeeCode    = $employee->employee_id;
         $employeeName    = $employee->name;
         $roleType        = SchoolEmployee::ROLE_TYPES[$employee->role_type]
@@ -103,7 +100,7 @@ class EmployeeAttendanceController extends Controller
         $departmentLabel = SchoolEmployee::DEPARTMENTS[$employee->department]
             ?? Str::headline((string) $employee->department);
 
-        // Apply the optional status filter, paginate, and shape each row for the table.
+        // Optional status filter, paginate, and shape each row for the table.
         $data['records'] = (clone $base)
             ->when(
                 ! empty($filters['status']),

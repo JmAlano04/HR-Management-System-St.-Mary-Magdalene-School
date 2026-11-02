@@ -24,6 +24,7 @@
             'pageUrl'     => route('payroll-accounting.index'),
             'period'      => $period,
             'cutoff'      => $cutoff,
+            'cutoffs'     => $cutoffs,
             'csrf'        => csrf_token(),
         ]))"
         @keydown.escape.window="closeAll()"
@@ -55,15 +56,20 @@
                 <div>
                     <p class="mb-1.5 text-[0.72rem] font-extrabold uppercase tracking-[0.08em] text-[#b22222]">Employee register</p>
                     <h2 id="payrollTableTitle" class="text-[1.35rem] font-bold text-gray-900">Payroll Calculation</h2>
+                    <p class="mt-1 text-[0.8rem] font-semibold text-gray-500"
+                        x-text="cutoffs[cutoff].day + ' Cutoff: ' + cutoffs[cutoff].range"></p>
                 </div>
                 <nav class="flex items-center gap-2" aria-label="Payroll pay period">
                     <template x-for="c in [['15th', '15th Pay Period'], ['30th', '30th Pay Period']]" :key="c[0]">
                         <button type="button" @click="setCutoff(c[0])"
-                            class="min-h-[38px] cursor-pointer rounded-[10px] border px-[18px] text-[0.88rem] font-extrabold transition"
+                            class="min-h-[38px] cursor-pointer rounded-[10px] border px-[18px] text-[0.88rem] font-extrabold leading-tight transition"
                             :class="cutoff === c[0]
                                 ? 'border-[#b22222] bg-[#b22222] text-white shadow-[0_10px_18px_rgba(178,34,34,0.18)]'
                                 : 'border-transparent bg-transparent text-gray-700 hover:bg-[#d93c3c] hover:text-white'"
-                            :aria-selected="cutoff === c[0]" x-text="c[1]"></button>
+                            :aria-selected="cutoff === c[0]">
+                            <span x-text="c[1]"></span>
+                            <span class="block text-[0.68rem] font-semibold opacity-80" x-text="cutoffs[c[0]].day + ' Cutoff'"></span>
+                        </button>
                     </template>
                 </nav>
             </div>
@@ -191,16 +197,11 @@
 
                 <template x-if="draft">
                     <div class="bg-white">
+                        {{-- Step is fixed: it comes from the saved payslip record and cannot be changed here --}}
                         <div class="flex flex-col items-center gap-0.5 px-[18px] pb-[18px] pt-2.5 text-center">
                             <strong class="text-[clamp(1.5rem,2vw,2.25rem)] font-extrabold leading-tight text-gray-900" x-text="draft.name"></strong>
                             <span class="text-[0.88rem] text-gray-800" x-text="'ID: ' + draft.employeeNumber"></span>
                             <span class="text-[0.88rem] text-gray-500" x-text="draft.department + ' | ' + draft.position + ' | ' + preview.step.name"></span>
-                            <select x-model.number="draft.step" aria-label="Payroll step"
-                                class="mt-1 min-h-[28px] w-[110px] rounded-lg border border-[#ecebea] bg-white px-1.5 text-[0.82rem]">
-                                <template x-for="(s, i) in steps" :key="i">
-                                    <option :value="i + 1" x-text="s.name" :selected="draft.step === i + 1"></option>
-                                </template>
-                            </select>
                         </div>
 
                         <div class="grid grid-cols-2 border-y border-[#ecebea] sm:grid-cols-5">
@@ -293,14 +294,16 @@
             const MALASAKITAN = 50;
             const HONORARIUM = 1924.31;          // administrative role only
             const CASH_ADVANCE_CAP = 2000;       // max deduction per pay period
+            const HDMF = 200;                    // fixed amount, every pay period
             // 30th pay period only. Base = monthly wage (daily wage x 26)
-            const RATES = { sss: 0.05, hdmf: 0.02, philhealth: 0.025, peraaCeap: 0.04 };
+            const RATES = { sss: 0.05, philhealth: 0.025, peraaCeap: 0.04 };
 
             return {
                 CASH_ADVANCE_CAP,
                 employees: cfg.employees,
                 steps: cfg.steps,
-                cutoff: cfg.cutoff,
+                cutoff: cfg.cutoff,          // pay period key: '15th' | '30th'
+                cutoffs: cfg.cutoffs,        // { '15th': {day, range}, '30th': {day, range} }
                 period: cfg.period,
 
                 saveState: 'idle',   // idle | saving | saved | error
@@ -334,7 +337,7 @@
                 computedFields: [
                     ['MALASAKITAN', 'fixed50', false], ['Late', 'late', false], ['Absences', 'absences', false],
                     ['SSS', 'sss', true], ['PhilHealth', 'philhealth', true],
-                    ['HDMF', 'hdmf', true], ['PERAA/CEAP', 'peraaCeap', true],
+                    ['HDMF', 'hdmf', false], ['PERAA/CEAP', 'peraaCeap', true],
                 ],
 
                 // [label, key] editable deductions (loans are deducted on the 30th pay period only)
@@ -374,7 +377,7 @@
 
                     const deductions = {
                         fixed50: MALASAKITAN, late: lateDed, absences,
-                        sss: c('sss'), philhealth: c('philhealth'), hdmf: c('hdmf'), peraaCeap: c('peraaCeap'),
+                        sss: c('sss'), philhealth: c('philhealth'), hdmf: HDMF, peraaCeap: c('peraaCeap'),
                         sssLoan: is30 ? g('sssLoan') : 0,
                         philhealthLoan: is30 ? g('philhealthLoan') : 0,
                         peraaCeapLoan: is30 ? g('peraaCeapLoan') : 0,
@@ -431,7 +434,7 @@
                 saveDetails() {
                     if (this.activeIndex === null) return;
                     const e = this.employees[this.activeIndex];
-                    e.step = Math.max(1, Number(this.draft.step) || 1);
+                    // The step is fixed (from the payslip record), so it is never changed here.
                     e.deductions = { ...this.draft.deductions };
                     this.queueSave();
                     this.closeAll();
@@ -540,7 +543,7 @@
 
                 async transfer(event) {
                     if (this.selected.length === 0) return;
-                    if (!confirm('Transfer ' + this.selected.length + ' selected payslip(s) (' + this.cutoff + ' pay period, ' + this.period + ') to Salary Monitoring?')) return;
+                    if (!confirm('Transfer ' + this.selected.length + ' selected payslip(s) (' + this.cutoff + ' pay period, ' + this.cutoffs[this.cutoff].day + ' cutoff, ' + this.period + ') to Salary Monitoring?')) return;
                     if (!(await this.flushSave())) { alert('Your changes could not be saved, so nothing was transferred.'); return; }
                     event.target.submit();
                 },

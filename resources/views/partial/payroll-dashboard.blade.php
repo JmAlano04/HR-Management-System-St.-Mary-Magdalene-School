@@ -41,11 +41,17 @@
 
         $allReviewed = $summary['total'] > 0 && $summary['pending'] === 0;
 
+        // Active queue or archived list (?view=archived)
+        $isArchivedView = ($view ?? 'active') === 'archived';
+
         // Role-aware labels: HR sees "Accounting to HR Approval", everyone else the Admin version
         $isHR          = auth()->check() && auth()->user()->hasRole('HR');
         $stage         = $isHR ? \App\Models\Payslip::STAGE_HR : \App\Models\Payslip::STAGE_ADMIN;
         $stageLabel    = $isHR ? 'Accounting to HR Approval' : 'Accounting to Admin Approval';
         $approvalLabel = $isHR ? 'Pending HR Review' : 'Pending Admin Review';
+
+        // Only Admin and HR can approve, reject, archive and restore
+        $canReview = auth()->check() && auth()->user()->hasAnyRole(['Admin', 'HR']);
     @endphp
 
     <div
@@ -77,7 +83,7 @@
                     <form method="POST" action="{{ route('payroll.approve-all') }}">
                         @csrf
                         @method('PATCH')
-                        <button type="submit" @disabled($summary['total'] === 0 || $allReviewed)
+                        <button type="submit" @disabled($isArchivedView || $summary['total'] === 0 || $allReviewed)
                             class="cursor-pointer rounded-xl bg-[#b22222] px-4 py-[11px] font-bold text-white transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0">
                             {{ $allReviewed ? 'Reviewed' : 'Approve all' }}
                         </button>
@@ -97,7 +103,7 @@
                 </div>
             @endif
 
-            {{-- Summary cards --}}
+            {{-- Summary cards (active queue only) --}}
             <div class="mb-[22px] grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 @foreach ([
                     ['Total Payslips', $summary['total'],    'border-[#eef1f4] bg-[#f9fafb]'],
@@ -111,6 +117,21 @@
                     </article>
                 @endforeach
             </div>
+
+            {{-- Active / Archived tabs --}}
+            <nav class="mb-4 flex items-center gap-2" aria-label="Payroll queue view">
+                @foreach ([['active', 'Active', $summary['total']], ['archived', 'Archived', $archivedCount ?? 0]] as [$key, $tabLabel, $tabCount])
+                    <a href="{{ request()->fullUrlWithQuery(['view' => $key, 'page' => null]) }}"
+                        class="inline-flex min-h-[38px] items-center gap-2 rounded-[10px] border px-[18px] text-[0.88rem] font-extrabold transition
+                            {{ ($isArchivedView ? 'archived' : 'active') === $key
+                                ? 'border-[#b22222] bg-[#b22222] text-white shadow-[0_10px_18px_rgba(178,34,34,0.18)]'
+                                : 'border-transparent bg-transparent text-gray-700 hover:bg-[#d93c3c] hover:text-white' }}"
+                        @if (($isArchivedView ? 'archived' : 'active') === $key) aria-current="page" @endif>
+                        {{ $tabLabel }}
+                        <span class="rounded-full bg-black/10 px-2 py-0.5 text-[0.72rem]">{{ $tabCount }}</span>
+                    </a>
+                @endforeach
+            </nav>
 
             {{-- Payslip rows --}}
             <div class="grid gap-4" aria-live="polite">
@@ -160,36 +181,73 @@
                                     @if ($empState === 'Rejected' && $slip->response?->reason) title="{{ $slip->response->reason }}" @endif>
                                     Employee: {{ $empState }}
                                 </span>
+                                @if ($isArchivedView && $slip->archived_at)
+                                    <span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-[7px] text-xs font-bold text-gray-600">
+                                        Archived {{ $slip->archived_at->format('M d, Y') }}
+                                    </span>
+                                @endif
                             </div>
 
                             {{-- Row actions --}}
                             <div class="flex w-full flex-wrap items-center gap-2.5 lg:w-auto">
-                                @if ($myStatus === 'approved')
-                                    <button type="button" disabled
-                                        class="cursor-not-allowed rounded-[10px] border border-[#15803d] bg-[#15803d] px-3 py-[9px] text-[0.8rem] font-bold text-white opacity-70">Approved</button>
-                                @elseif ($myStatus === 'rejected')
-                                    <button type="button" disabled
-                                        class="cursor-not-allowed rounded-[10px] border border-[#b91c1c] bg-[#b91c1c] px-3 py-[9px] text-[0.8rem] font-bold text-white opacity-70">Rejected</button>
-                                @else
-                                    <form method="POST" action="{{ route('payroll.approve') }}">
-                                        @csrf
-                                        @method('PATCH')
-                                        <input type="hidden" name="payslip_id" value="{{ $slip->id }}">
-                                        <button type="submit"
-                                            class="cursor-pointer rounded-[10px] border border-[#15803d] bg-[#15803d] px-3 py-[9px] text-[0.8rem] font-bold text-white transition hover:-translate-y-px">Approve</button>
-                                    </form>
-                                    <button type="button" @click="openReject({{ $slip->id }})"
-                                        class="cursor-pointer rounded-[10px] border border-[#b91c1c] bg-[#b91c1c] px-3 py-[9px] text-[0.8rem] font-bold text-white transition hover:-translate-y-px">Reject</button>
-                                @endif
+                                @unless ($isArchivedView)
+                                    @if ($myStatus === 'approved')
+                                        <button type="button" disabled
+                                            class="cursor-not-allowed rounded-[10px] border border-[#15803d] bg-[#15803d] px-3 py-[9px] text-[0.8rem] font-bold text-white opacity-70">Approved</button>
+                                    @elseif ($myStatus === 'rejected')
+                                        <button type="button" disabled
+                                            class="cursor-not-allowed rounded-[10px] border border-[#b91c1c] bg-[#b91c1c] px-3 py-[9px] text-[0.8rem] font-bold text-white opacity-70">Rejected</button>
+                                    @else
+                                        <form method="POST" action="{{ route('payroll.approve') }}">
+                                            @csrf
+                                            @method('PATCH')
+                                            <input type="hidden" name="payslip_id" value="{{ $slip->id }}">
+                                            <button type="submit"
+                                                class="cursor-pointer rounded-[10px] border border-[#15803d] bg-[#15803d] px-3 py-[9px] text-[0.8rem] font-bold text-white transition hover:-translate-y-px">Approve</button>
+                                        </form>
+                                        <button type="button" @click="openReject({{ $slip->id }})"
+                                            class="cursor-pointer rounded-[10px] border border-[#b91c1c] bg-[#b91c1c] px-3 py-[9px] text-[0.8rem] font-bold text-white transition hover:-translate-y-px">Reject</button>
+                                    @endif
+                                @endunless
 
                                 <button type="button" @click="viewId = {{ $slip->id }}"
                                     class="cursor-pointer rounded-[10px] border border-[#b22222] bg-transparent px-3 py-[9px] text-[0.8rem] font-bold text-[#b22222] transition hover:-translate-y-px">View payslip</button>
+
+                                {{-- Archive (reviewed payslips only) / Restore --}}
+                                @if ($canReview)
+                                    @if ($isArchivedView)
+                                        <form method="POST" action="{{ route('payroll.restore') }}">
+                                            @csrf
+                                            @method('PATCH')
+                                            <input type="hidden" name="payslip_id" value="{{ $slip->id }}">
+                                            <button type="submit"
+                                                class="inline-flex cursor-pointer items-center gap-1.5 rounded-[10px] border border-gray-400 bg-transparent px-3 py-[9px] text-[0.8rem] font-bold text-gray-700 transition hover:-translate-y-px hover:bg-gray-100">
+                                                <i class="fa-solid fa-box-open" aria-hidden="true"></i> Restore
+                                            </button>
+                                        </form>
+                                    @elseif ($myStatus !== 'pending')
+                                        <form method="POST" action="{{ route('payroll.archive') }}"
+                                            @submit="if (!confirm('Archive this payslip? You can restore it from the Archived tab.')) $event.preventDefault()">
+                                            @csrf
+                                            @method('PATCH')
+                                            <input type="hidden" name="payslip_id" value="{{ $slip->id }}">
+                                            <button type="submit"
+                                                class="inline-flex cursor-pointer items-center gap-1.5 rounded-[10px] border border-gray-400 bg-transparent px-3 py-[9px] text-[0.8rem] font-bold text-gray-700 transition hover:-translate-y-px hover:bg-gray-100">
+                                                <i class="fa-solid fa-box-archive" aria-hidden="true"></i> Archive
+                                            </button>
+                                        </form>
+                                    @endif
+                                @endif
                             </div>
                         </div>
                     </article>
                 @empty
                     <div class="rounded-[18px] border border-dashed border-gray-900 bg-white px-5 py-8 text-center font-semibold text-gray-500">
-                        No payroll submissions have been transferred from Accounting yet.
+                        @if ($isArchivedView)
+                            No archived payslips.
+                        @else
+                            No payroll submissions have been transferred from Accounting yet.
+                        @endif
                     </div>
                 @endforelse
             </div>
@@ -246,7 +304,7 @@
                                 <div class="mt-2 flex min-h-[30px] items-center justify-between gap-3 text-[0.85rem] font-extrabold text-gray-900"><span>Gross earnings</span><strong class="min-w-[120px] text-center text-[#b22222]" x-text="money(slip.gross_pay)"></strong></div>
                             </section>
 
-                            {{-- Deductions (SSS, PhilHealth, HDMF, PERAA/CEAP and loans are 30th pay period only) --}}
+                            {{-- Deductions (SSS, PhilHealth, PERAA/CEAP and loans are 30th pay period only; HDMF is a fixed 200 on every pay period) --}}
                             <section class="min-w-0 border-t border-[#ecebea] p-3 sm:border-l">
                                 <h3 class="mb-2.5 text-[0.78rem] uppercase tracking-[0.08em] text-[#b22222]">Deductions</h3>
                                 <template x-for="r in deductionRows" :key="r[1]">
@@ -321,13 +379,14 @@
                 downloadUrl: cfg.downloadUrl,
 
                 // [label, key in slip.deductions, only on the 30th pay period]
+                // HDMF is a fixed 200 and is shown on every pay period.
                 deductionRows: [
                     ['MALASAKITAN', 'malasakitan', false],
                     ['Late', 'late', false],
                     ['Absences', 'absences', false],
                     ['SSS', 'sss', true],
                     ['PhilHealth', 'philhealth', true],
-                    ['HDMF', 'hdmf', true],
+                    ['HDMF', 'hdmf', false],
                     ['PERAA/CEAP', 'peraa_ceap', true],
                     ['SSS Loan', 'sss_loan', true],
                     ['PhilHealth Loan', 'philhealth_loan', true],

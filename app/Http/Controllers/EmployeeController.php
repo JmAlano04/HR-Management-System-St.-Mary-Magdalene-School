@@ -215,7 +215,7 @@ class EmployeeController extends Controller
         return PayrollStep::ordered()
             ->get()
             ->mapWithKeys(fn (PayrollStep $s) => [
-                $s->step_no => $s->name . ' — ₱' . number_format($s->daily_wage, 2) . ' / day',
+                $s->step_no => $s->name,
             ]);
     }
 

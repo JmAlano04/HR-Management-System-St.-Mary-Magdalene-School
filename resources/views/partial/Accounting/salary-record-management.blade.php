@@ -118,26 +118,18 @@
                                 <span x-text="'ID: ' + slip.employee_number"></span>
                                 <span class="before:mr-3 before:text-[#7f7f7f] before:content-['|']" x-text="slip.department + ' | ' + slip.position + ' | ' + slip.step_name"></span>
                             </div>
+                            <div class="mt-1.5 text-[0.8rem] font-semibold text-[#6b6b6b]"
+                                x-text="slip.period + ' | ' + slip.cutoff_label + (slip.cutoff_day ? ' | ' + slip.cutoff_day + ' Cutoff' : '')"></div>
                         </div>
 
                         {{-- Attendance summary --}}
-                        <div class="grid grid-cols-2 border-y border-[#d1d1d1] sm:grid-cols-4">
-                            <div class="grid gap-2 border-r border-[#d1d1d1] py-2 text-center">
-                                <span class="text-[0.7rem] font-black uppercase tracking-[0.1em] text-[#5a5a5a]">Days worked</span>
-                                <strong class="text-[clamp(1rem,1.3vw,1.55rem)] font-bold tracking-tight text-[#1f1f1f]" x-text="Number(slip.days_worked)"></strong>
-                            </div>
-                            <div class="grid gap-2 border-r-0 border-[#d1d1d1] py-2 text-center sm:border-r">
-                                <span class="text-[0.7rem] font-black uppercase tracking-[0.1em] text-[#5a5a5a]">Hours worked</span>
-                                <strong class="text-[clamp(1rem,1.3vw,1.55rem)] font-bold tracking-tight text-[#1f1f1f]" x-text="Number(slip.hours_worked)"></strong>
-                            </div>
-                            <div class="grid gap-2 border-r border-t border-[#d1d1d1] py-2 text-center sm:border-t-0">
-                                <span class="text-[0.7rem] font-black uppercase tracking-[0.1em] text-[#5a5a5a]">Late (mins)</span>
-                                <strong class="text-[clamp(1rem,1.3vw,1.55rem)] font-bold tracking-tight text-[#1f1f1f]" x-text="slip.late_minutes"></strong>
-                            </div>
-                            <div class="grid gap-2 border-t border-[#d1d1d1] py-2 text-center sm:border-t-0">
-                                <span class="text-[0.7rem] font-black uppercase tracking-[0.1em] text-[#5a5a5a]">Cutoff</span>
-                                <strong class="text-[clamp(1rem,1.3vw,1.55rem)] font-bold tracking-tight text-[#1f1f1f]" x-text="slip.cutoff"></strong>
-                            </div>
+                        <div class="grid grid-cols-2 border-y border-[#d1d1d1] sm:grid-cols-5">
+                            <template x-for="(m, k) in summaryRows" :key="m[0]">
+                                <div class="grid gap-2 py-2 text-center" :class="k > 0 ? 'sm:border-l sm:border-[#d1d1d1]' : ''">
+                                    <span class="text-[0.7rem] font-black uppercase tracking-[0.1em] text-[#5a5a5a]" x-text="m[0]"></span>
+                                    <strong class="text-[clamp(1rem,1.3vw,1.55rem)] font-bold tracking-tight text-[#1f1f1f]" x-text="m[1]"></strong>
+                                </div>
+                            </template>
                         </div>
 
                         {{-- Earnings + deductions --}}
@@ -148,7 +140,7 @@
                                     <template x-for="(row, i) in earningRows" :key="row[0]">
                                         <div class="grid min-h-[30px] grid-cols-[1fr_auto] items-center gap-3 border-t border-[#d1d1d1] px-1.5 py-[5px] text-[0.8rem] first:border-t-0">
                                             <span class="font-medium text-[#3d3d3d]" x-text="row[0]"></span>
-                                            <strong class="text-[0.9rem]" :class="i === earningRows.length - 1 ? 'font-black text-[#b22222]' : 'font-bold text-[#1b1b1b]'" x-text="money(row[1])"></strong>
+                                            <strong class="text-[0.9rem]" :class="i === earningRows.length - 1 ? 'font-black text-[#b22222]' : 'font-bold text-[#1b1b1b]'" x-text="row[1]"></strong>
                                         </div>
                                     </template>
                                 </div>
@@ -160,7 +152,7 @@
                                     <template x-for="(row, i) in deductionRows" :key="row[0]">
                                         <div class="grid min-h-[30px] grid-cols-[1fr_auto] items-center gap-3 border-t border-[#d1d1d1] px-1.5 py-[5px] text-[0.8rem] first:border-t-0">
                                             <span class="font-medium text-[#3d3d3d]" x-text="row[0]"></span>
-                                            <strong class="text-[0.9rem]" :class="i === deductionRows.length - 1 ? 'font-black text-[#b22222]' : 'font-bold text-[#1b1b1b]'" x-text="money(row[1])"></strong>
+                                            <strong class="text-[0.9rem]" :class="i === deductionRows.length - 1 ? 'font-black text-[#b22222]' : 'font-bold text-[#1b1b1b]'" x-text="row[1]"></strong>
                                         </div>
                                     </template>
                                 </div>
@@ -185,6 +177,19 @@
                 monthKey: null,   // which month folder is open
                 slipId: null,     // which payslip is shown in the modal
 
+                // Deducted on the 30th pay period only (shown as "-" on the 15th, like Payroll Processing)
+                only30: ['sss', 'philhealth', 'peraa_ceap', 'sss_loan', 'philhealth_loan', 'peraa_ceap_loan', 'hdmf_loan'],
+
+                // Same order as the Payroll Processing payslip: automatic items first, then loans / cash advance
+                deductionKeys: [
+                    ['MALASAKITAN', 'malasakitan'], ['Late', 'late'], ['Absences', 'absences'],
+                    ['SSS', 'sss'], ['PhilHealth', 'philhealth'],
+                    ['HDMF', 'hdmf'], ['PERAA/CEAP', 'peraa_ceap'],
+                    ['SSS Loan', 'sss_loan'], ['PhilHealth Loan', 'philhealth_loan'],
+                    ['PERAA/CEAP Loan', 'peraa_ceap_loan'], ['HDMF Loan', 'hdmf_loan'],
+                    ['Cash advance', 'cash_advance'],
+                ],
+
                 get month() {
                     return this.months.find((m) => m.key === this.monthKey) || null;
                 },
@@ -198,34 +203,41 @@
                     return null;
                 },
 
+                get summaryRows() {
+                    const s = this.slip;
+                    return s ? [
+                        ['Pay period', s.cutoff],
+                        ['Days worked', Number(s.days_worked)],
+                        ['Hours worked', Number(s.hours_worked)],
+                        ['Late (mins)', s.late_minutes],
+                        ['Monthly wage', this.money(s.monthly_wage)],
+                    ] : [];
+                },
+
                 get earningRows() {
                     const s = this.slip;
                     return s ? [
-                        ['Basic salary', s.basic_pay],
-                        ['Daily rate', s.daily_wage],
-                        ['Honorarium', s.honorarium],
-                        ['Gross earnings', s.gross_pay],
+                        ['Basic salary', this.money(s.basic_pay)],
+                        ['Daily rate', this.money(s.daily_wage)],
+                        ['Honorarium', Number(s.honorarium) > 0 ? this.money(s.honorarium) : '-'],
+                        ['Gross earnings', this.money(s.gross_pay)],
                     ] : [];
                 },
 
                 get deductionRows() {
                     const s = this.slip;
                     if (!s) return [];
-                    const d = s.deductions;
                     return [
-                        ['MALASAKITAN', d.malasakitan],
-                        ['Late', d.late],
-                        ['Absences', d.absences],
-                        ['SSS', d.sss],
-                        ['SSS LOAN', d.sss_loan],
-                        ['PhilHealth', d.philhealth],
-                        ['PERAA/CEAP', d.peraa_ceap],
-                        ['PERAA/CEAP LOAN', d.peraa_ceap_loan],
-                        ['HDMF', d.hdmf],
-                        ['HDMF LOAN', d.hdmf_loan],
-                        ['Cash advance', d.cash_advance],
-                        ['Total deductions', s.total_deductions],
+                        ...this.deductionKeys.map(([label, key]) => [label, this.deductionText(key)]),
+                        ['Total deductions', '- ' + this.money(s.total_deductions)],
                     ];
+                },
+
+                deductionText(key) {
+                    const s = this.slip;
+                    if (!s) return '';
+                    if (this.only30.includes(key) && s.cutoff !== '30th') return '-';
+                    return this.money(s.deductions[key]);
                 },
 
                 money(value) {

@@ -82,6 +82,21 @@ class LoanRequest extends Model
 
     /* ---------- Scopes ---------- */
 
+    // HR still pending
+    // [ADDED]
+    public function scopeAwaitingHr(Builder $query): Builder
+    {
+        return $query->where('hr_status', 'pending');
+    }
+
+    // HR approved, Accounting still pending
+    // [ADDED]
+    public function scopeAwaitingAccounting(Builder $query): Builder
+    {
+        return $query->where('hr_status', 'approved')
+            ->where('accounting_status', 'pending');
+    }
+
     // HR and Accounting both approved, Admin still pending
     public function scopeAwaitingAdmin(Builder $query): Builder
     {
@@ -133,7 +148,7 @@ class LoanRequest extends Model
 
     /* ---------- Staff-side review helpers ---------- */
 
-    // Which approval stage this user acts on: 'admin' | 'hr' | null
+    // Which approval stage this user acts on: 'admin' | 'hr' | 'accounting' | null
     public static function stageForUser($user): ?string
     {
         if (! $user) {
@@ -145,6 +160,10 @@ class LoanRequest extends Model
         if ($user->hasRole('HR')) {
             return 'hr';
         }
+        // [ADDED] Accounting decides the middle stage
+        if ($user->hasRole('Accounting')) {
+            return 'accounting';
+        }
 
         return null;
     }
@@ -153,9 +172,11 @@ class LoanRequest extends Model
     public function canReviewAs(?string $stage): bool
     {
         return match ($stage) {
-            'hr'    => $this->hr_status === 'pending',
-            'admin' => $this->can_review,   // HR + Accounting approved, Admin pending
-            default => false,
+            'hr'         => $this->hr_status === 'pending',
+            // [ADDED] HR approved, Accounting still pending
+            'accounting' => $this->can_accounting_review,
+            'admin'      => $this->can_review,   // HR + Accounting approved, Admin pending
+            default      => false,
         };
     }
 
@@ -167,6 +188,12 @@ class LoanRequest extends Model
         return $this->hr_status === 'approved'
             && $this->accounting_status === 'approved'
             && $this->admin_status === 'pending';
+    }
+
+    // [ADDED] Accounting can decide: HR approved, Accounting still pending
+    public function getCanAccountingReviewAttribute(): bool
+    {
+        return $this->hr_status === 'approved' && $this->accounting_status === 'pending';
     }
 
     // Only finished requests can be archived (nothing still pending)
@@ -193,6 +220,21 @@ class LoanRequest extends Model
             'approved' => 'Approved by Admin',
             'rejected' => 'Rejected by Admin',
             default    => 'Awaiting Admin review',
+        };
+    }
+
+    // [ADDED] "Overall status" row of the Accounting details dialog
+    public function getOverallStatusAttribute(): string
+    {
+        return match (true) {
+            $this->hr_status === 'rejected'         => 'Rejected by HR',
+            $this->accounting_status === 'rejected' => 'Rejected by Accounting',
+            $this->admin_status === 'rejected'      => 'Rejected by Admin',
+            $this->admin_status === 'approved'      => 'Approved',
+            $this->hr_status !== 'approved'         => 'Awaiting HR',
+            $this->accounting_status !== 'approved' => 'Awaiting Accounting',
+            $this->admin_status !== 'approved'      => 'Awaiting Admin',
+            default                                 => 'Pending',
         };
     }
 
@@ -250,11 +292,58 @@ class LoanRequest extends Model
         };
     }
 
+    /**
+     * [ADDED] The three decision chips on each Accounting card: HR / Accounting / Admin.
+     * Returns [['label' => 'HR', 'status' => 'approved', 'text' => 'Approved'], ...]
+     * "locked" / "blocked" stages are shown as "Waiting".
+     */
+    public function stageChips(): array
+    {
+        $chips = [];
+
+        foreach (['hr' => 'HR', 'accounting' => 'Accounting', 'admin' => 'Admin'] as $stage => $label) {
+            $status = $this->effectiveStatus($stage) ?: 'pending';
+
+            $chips[] = [
+                'label'  => $label,
+                'status' => $status,
+                'text'   => in_array($status, ['locked', 'blocked'], true) ? 'Waiting' : ucfirst($status),
+            ];
+        }
+
+        return $chips;
+    }
+
     // Loan amount minus payslip repayments (use ->withSum('repayments','amount') to avoid N+1)
     public function outstandingBalance(): float
     {
         $repaid = $this->repayments_sum_amount ?? $this->repayments()->sum('amount');
 
         return max(0, round((float) $this->amount - (float) $repaid, 2));
+    }
+
+    /* ---------- [ADDED] Used by LoanBalanceService ---------- */
+
+    // When the loan became active (orders repayments oldest-first)
+    public function approvedAt()
+    {
+        return $this->admin_reviewed_at
+            ?? $this->accounting_reviewed_at
+            ?? $this->hr_reviewed_at
+            ?? $this->requested_at;
+    }
+
+    // Matching payslip deduction column, or null when the type isn't tracked on payslips
+    public function payslipDeductionColumn(): ?string
+    {
+        $type = preg_replace('/[^a-z]/', '', strtolower((string) $this->loan_type));
+
+        return match ($type) {
+            'sss'                    => 'sss_loan',
+            'hmdf', 'hdmf'           => 'hdmf_loan',
+            'peraaceap', 'peeaaceap' => 'peraa_ceap_loan',
+            'cashadvance'            => 'cash_advance',
+            default                  => null,   // PhilHealth: no loan column in `payslips`
+        };
     }
 }

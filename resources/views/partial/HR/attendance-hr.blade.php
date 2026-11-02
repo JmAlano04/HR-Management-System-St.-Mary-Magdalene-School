@@ -108,16 +108,30 @@
                             @change="$refs.filters.submit()" class="{{ $inputClass }}">
                     </label>
                 @endunless
+                
+{{-- Department filter: standard + database departments --}}
+<label for="departmentFilter" class="{{ $labelClass }} min-w-[180px]">
+    <span>Department</span>
 
-                <label for="departmentFilter" class="{{ $labelClass }} min-w-[180px]">
-                    <span>Department</span>
-                    <select id="departmentFilter" name="department" @change="$refs.filters.submit()" class="{{ $inputClass }}">
-                        <option value="">All Departments</option>
-                        @foreach (\App\Models\SchoolEmployee::DEPARTMENTS as $value => $label)
-                            <option value="{{ $value }}" @selected(request('department') === $value)>{{ $label }}</option>
-                        @endforeach
-                    </select>
-                </label>
+    <select
+        id="departmentFilter"
+        name="department"
+        @change="$refs.filters.submit()"
+        class="{{ $inputClass }}"
+    >
+        <option value="">All Department</option>
+
+        @foreach ($departments as $value => $label)
+            <option
+                value="{{ $value }}"
+                @selected(request('department') === $value)
+            >
+                {{ $label }}
+            </option>
+        @endforeach
+    </select>
+</label>
+
 
                 <label for="statusFilter" class="{{ $labelClass }} min-w-[180px]">
                     <span>Status</span>

@@ -29,7 +29,7 @@ class Payslip extends Model
         'sent_to_admin_at',
         'admin_status', 'admin_rejection_reason', 'admin_reviewed_at', 'admin_reviewed_by',
         'hr_status', 'hr_rejection_reason', 'hr_reviewed_at', 'hr_reviewed_by',
-        'released_at',
+        'released_at', 'archived_at',
     ];
 
     protected function casts(): array
@@ -40,6 +40,7 @@ class Payslip extends Model
             'admin_reviewed_at'  => 'datetime',
             'hr_reviewed_at'     => 'datetime',
             'released_at'        => 'datetime',
+            'archived_at'        => 'datetime',
             'days_worked'        => 'float',
             'hours_worked'       => 'float',
             'late_minutes'       => 'integer',
@@ -91,6 +92,18 @@ class Payslip extends Model
     public function scopeReleased(Builder $query): Builder
     {
         return $query->whereNotNull('released_at');
+    }
+
+    /** Not archived: the normal approval queue. */
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->whereNull('archived_at');
+    }
+
+    /** Archived by Admin or HR. */
+    public function scopeArchived(Builder $query): Builder
+    {
+        return $query->whereNotNull('archived_at');
     }
 
     public function scopeForEmployee(Builder $query, int $employeeId): Builder
@@ -165,6 +178,11 @@ class Payslip extends Model
     public function isReleased(): bool
     {
         return $this->released_at !== null;
+    }
+
+    public function isArchived(): bool
+    {
+        return $this->archived_at !== null;
     }
 
     /** Release to the employee. Only allowed once Admin and HR both approved. */

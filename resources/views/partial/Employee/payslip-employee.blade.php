@@ -72,7 +72,7 @@
                 </div>
             @else
                 {{-- Month folders --}}
-                <div x-show="!month" class="grid gap-3 sm:grid-cols-2">
+                <div x-show="!month" class="grid gap-3 sm:grid-cols-1">
                     <template x-for="m in months" :key="m.key">
                         <button type="button" @click="month = m.key"
                             class="flex cursor-pointer items-center gap-3 rounded-[14px] border border-[#ecebea] bg-gray-50 px-4 py-3.5 text-left transition hover:border-[#b22222] hover:bg-[#fef2f2]">
@@ -107,7 +107,7 @@
                                         <i class="fa-solid fa-file-invoice-dollar" aria-hidden="true"></i>
                                     </span>
                                     <span class="grid min-w-0 flex-1">
-                                        <strong class="text-sm text-gray-900" x-text="p.cutoff + ' Pay Period'"></strong>
+                                        <strong class="text-sm text-gray-900" x-text="p.period_label"></strong>
                                         <small class="text-xs text-gray-500" x-text="'Net pay ' + peso(p.net_pay)"></small>
                                     </span>
                                     <span class="rounded-md px-2.5 py-1 text-[0.78rem] font-bold" :class="badge(p.status)" x-text="p.status"></span>
@@ -126,7 +126,7 @@
         <div class="absolute inset-0 bg-[rgba(17,24,39,0.55)]" @click="slip = null"></div>
 
         <section role="dialog" aria-modal="true" aria-labelledby="payslipTitle"
-            class="relative my-auto w-full max-w-[640px] rounded-[20px] bg-white p-[26px] shadow-[0_30px_80px_rgba(15,23,42,0.25)]">
+            class="relative my-auto w-full max-w-[680px] rounded-[20px] bg-white p-[26px] shadow-[0_30px_80px_rgba(15,23,42,0.25)]">
             <button type="button" @click="slip = null" aria-label="Close payslip"
                 class="absolute right-4 top-4 h-9 w-9 cursor-pointer rounded-full bg-gray-100 text-2xl leading-none text-gray-900 transition hover:bg-gray-200">&times;</button>
 
@@ -139,8 +139,9 @@
                             x-text="slip.employee.department + ' | ' + slip.employee.position + ' | ' + (slip.step_name || '—')"></small>
                     </header>
 
-                    <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                        <div class="grid rounded-md border border-gray-200 bg-gray-50 px-3 py-2"><span class="text-xs text-gray-500">Pay period</span><strong class="text-sm" x-text="slip.cutoff"></strong></div>
+                    <div class="grid grid-cols-2 gap-2 sm:grid-cols-5">
+                        <div class="grid rounded-md border border-gray-200 bg-gray-50 px-3 py-2"><span class="text-xs text-gray-500">Pay period</span><strong class="text-sm" x-text="slip.period_label"></strong></div>
+                        <div class="grid rounded-md border border-gray-200 bg-gray-50 px-3 py-2"><span class="text-xs text-gray-500">Monthly wage</span><strong class="text-sm" x-text="peso(slip.monthly_wage)"></strong></div>
                         <div class="grid rounded-md border border-gray-200 bg-gray-50 px-3 py-2"><span class="text-xs text-gray-500">Days worked</span><strong class="text-sm" x-text="slip.days"></strong></div>
                         <div class="grid rounded-md border border-gray-200 bg-gray-50 px-3 py-2"><span class="text-xs text-gray-500">Hours worked</span><strong class="text-sm" x-text="slip.hours"></strong></div>
                         <div class="grid rounded-md border border-gray-200 bg-gray-50 px-3 py-2"><span class="text-xs text-gray-500">Late (mins)</span><strong class="text-sm" x-text="slip.late_min"></strong></div>

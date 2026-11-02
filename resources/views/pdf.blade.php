@@ -9,19 +9,24 @@
     $payPeriod   = $cutoff === '' ? '-' : $cutoff . ' Pay Period';
     $is30        = $cutoff === '30th';
 
+    // Honorarium (administrative role only, fixed P1,924.31):
+    // use the card value, then fall back to the saved payslip column
+    $honorarium = (float) ($card['honorarium'] ?? $payslip->honorarium ?? 0);
+
     // PhilHealth loan: read safely so the PDF still works before the column exists
     $deds = $card['deductions'] ?? [];
     $deds['philhealth_loan'] = $deds['philhealth_loan']
         ?? ($payslip->getAttributes()['philhealth_loan'] ?? 0);
 
     // [label, key, only on the 30th pay period]
+    // HDMF is a fixed 200 and is shown on every pay period.
     $deductionRows = [
         ['MALASAKITAN',     'malasakitan',     false],
         ['Late',            'late',            false],
         ['Absences',        'absences',        false],
         ['SSS',             'sss',             true],
         ['PhilHealth',      'philhealth',      true],
-        ['HDMF',            'hdmf',            true],
+        ['HDMF',            'hdmf',            false],
         ['PERAA/CEAP',      'peraa_ceap',      true],
         ['SSS Loan',        'sss_loan',        true],
         ['PhilHealth Loan', 'philhealth_loan', true],
@@ -86,14 +91,14 @@
                 <table>
                     <tr class="row"><td>Basic salary</td><td>{{ $peso($card['basic_pay']) }}</td></tr>
                     <tr class="row"><td>Daily rate</td><td>{{ $peso($card['daily_wage']) }}</td></tr>
-                    <tr class="row"><td>Honorarium</td><td>{{ (float) $card['honorarium'] > 0 ? $peso($card['honorarium']) : '-' }}</td></tr>
+                    <tr class="row"><td>Honorarium</td><td>{{ $honorarium > 0 ? $peso($honorarium) : '-' }}</td></tr>
                     <tr class="total"><td>Gross earnings</td><td style="text-align:right">{{ $peso($card['gross_pay']) }}</td></tr>
                 </table>
             </td>
             <td class="col">
                 <h3>Deductions</h3>
                 <table>
-                    {{-- SSS, PhilHealth, HDMF, PERAA/CEAP and the loans are deducted on the 30th pay period only --}}
+                    {{-- SSS, PhilHealth, PERAA/CEAP and the loans are deducted on the 30th pay period only. HDMF (fixed 200) is deducted every pay period. --}}
                     @foreach ($deductionRows as [$label, $key, $only30])
                         <tr class="row">
                             <td>{{ $label }}</td>

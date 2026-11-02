@@ -1,19 +1,14 @@
 {{-- resources/views/employee/attendance.blade.php --}}
-  @auth
-    <x-slot name="title">
-        @if (auth()->user()->hasRole('Employee'))
-            Employee Attendance
-       @endif
-    </x-slot>
+{{-- Change <x-app-layout> to whatever layout component you actually use. --}}
 
-  
-@endauth
+    <x-slot name="title">Employee Attendance</x-slot>
+
     <x-slot name="header">
         <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-extrabold leading-tight sm:ml-[10px] md:ml-[20px] lg:ml-[80px] text-red-700">Attendance</h1>
     </x-slot>
 
     @php
-        // Status badges: same look as the HR attendance table
+        // Status badges
         $badge = fn (string $status) => match (strtolower($status)) {
             'present'  => 'bg-[#ecfdf5] text-[#065f46]',
             'absent'   => 'bg-[#fee2e2] text-[#b22222]',
@@ -30,20 +25,19 @@
 
         $archiveMonth = now()->subMonthNoOverflow()->format('Y-m');
 
-        // Stat cards follow the old page: late days still count as days worked, half days count 0.5
+        // Late days still count as days worked, half days count 0.5
         $daysWorked   = $summary['present'] + $summary['late'] + ($summary['half_day'] * 0.5);
         $attendedDays = $summary['present'] + $summary['late'] + $summary['half_day'];
         $avgHours     = $attendedDays > 0 ? $summary['hours'] / $attendedDays : 0;
 
         $stats = [
-            ['Days Present',  rtrim(rtrim(number_format($daysWorked, 1), '0'), '.')],
-            ['Days Late',     $summary['late']],
-            ['Days Absent',   $summary['absent']],
-            ['Half Days',     $summary['half_day']],
+            ['Days Present',   rtrim(rtrim(number_format($daysWorked, 1), '0'), '.')],
+            ['Days Late',      $summary['late']],
+            ['Days Absent',    $summary['absent']],
+            ['Half Days',      $summary['half_day']],
             ['Avg. Hours/Day', number_format($avgHours, 2)],
         ];
 
-        // Table headings: same columns as the HR attendance table
         $columns = ['Employee ID', 'Employee Type', 'Department', 'Date', 'Time In', 'Time Out', 'Hours Worked', 'Status'];
     @endphp
 
@@ -59,7 +53,7 @@
             <section aria-label="Employee Attendance Overview" class="grid gap-[22px]">
 
                 {{-- Summary metrics --}}
-                <div class="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 min-[1100px]:grid-cols-5 min-[720px]:grid-cols-3" aria-label="Attendance summary metrics">
+                <div class="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 min-[720px]:grid-cols-3 min-[1100px]:grid-cols-5" aria-label="Attendance summary metrics">
                     @foreach ($stats as [$label, $value])
                         <article class="flex min-h-[122px] flex-col justify-center rounded-2xl border border-gray-900/[0.03] bg-white/80 px-[18px] pb-3.5 pt-[18px] shadow-[0_2px_8px_rgba(15,23,42,0.03)]">
                             <div class="mb-2 text-[0.96rem] font-semibold leading-tight text-gray-700">{{ $label }}</div>
@@ -68,7 +62,7 @@
                     @endforeach
                 </div>
 
-                {{-- Work schedule (auto-adjusts to 8:00 AM - 4:00 PM in May) --}}
+                {{-- Work schedule --}}
                 @if ($schedule)
                     <div class="flex flex-wrap items-center gap-x-8 gap-y-3 rounded-2xl border border-gray-900/[0.03] bg-white/80 px-[22px] py-4 shadow-[0_2px_8px_rgba(15,23,42,0.03)]" aria-label="Work schedule">
                         <div class="flex items-center gap-2 font-bold text-gray-900">
@@ -158,7 +152,7 @@
                         @endif
                     </form>
 
-                    {{-- Table (same design as the HR attendance table) --}}
+                    {{-- Table --}}
                     <div class="px-[22px] pb-5">
                         <div class="overflow-x-auto rounded-xl border border-[#f3f4f6] bg-white">
                             <table id="attendanceTable" class="w-full min-w-[820px] border-collapse">
@@ -187,7 +181,9 @@
                                         </tr>
                                     @empty
                                         <tr data-empty>
-                                            <td colspan="8" class="px-4 py-[26px] text-center text-gray-400">No records found</td>
+                                            <td colspan="8" class="px-4 py-[26px] text-center text-gray-400">
+                                                No records found for {{ $month->format('F Y') }}
+                                            </td>
                                         </tr>
                                     @endforelse
                                 </tbody>
@@ -205,7 +201,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script>
-        // Same idea as exportAttendanceToExcel() in the old page: exports the rows currently shown
+        // Exports the rows currently shown to Excel
         document.getElementById('exportBtn')?.addEventListener('click', (event) => {
             const table = document.getElementById('attendanceTable');
             if (!table || table.querySelector('tr[data-empty]')) return;

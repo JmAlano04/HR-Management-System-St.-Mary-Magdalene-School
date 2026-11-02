@@ -1,12 +1,15 @@
 {{-- resources/views/leave-requests/employee.blade.php (Employee: leave balances + request leave) --}}
-  @auth
-    <x-slot name="title">
-        @if (auth()->user()->hasRole('Employee'))
-            Employee Leave Request
-       @endif
-    </x-slot>
+{{-- NOTE: if your layout component is not <x-app-layout>, change the opening/closing tag. --}}
+
+    @auth
+        <x-slot name="title">
+            @if (auth()->user()->hasRole('Employee'))
+                Employee Leave Request
+            @endif
+        </x-slot>
     @endauth
-      <x-slot name="header">
+
+    <x-slot name="header">
         <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-extrabold leading-tight sm:ml-[10px] md:ml-[20px] lg:ml-[80px] text-red-700">Leave Request</h1>
     </x-slot>
 
@@ -30,7 +33,6 @@
         ]))"
         @keydown.escape.window="detail = null; requestOpen = false">
 
-   
         @unless ($employee)
             <div class="mb-5 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
                 Your account is not linked to an employee record yet, so you cannot file a request. Please contact HR.
@@ -149,7 +151,8 @@
             <div class="w-full max-w-[560px] rounded-2xl bg-white p-6 shadow-2xl" role="dialog" aria-modal="true" aria-labelledby="requestLeaveModalTitle">
                 <h2 id="requestLeaveModalTitle" class="mb-4 text-xl font-extrabold text-[#231f20]">Request Leave</h2>
 
-                <form method="POST" action="{{ route('leave-requests.store') }}" class="grid gap-4">
+                <form method="POST" action="{{ route('leave-requests.store') }}" class="grid gap-4"
+                    @submit="if (! canSubmit || submitting) { $event.preventDefault(); return; } submitting = true">
                     @csrf
 
                     <label class="grid gap-2">
@@ -194,7 +197,11 @@
 
                     <div class="flex justify-end gap-3 pt-1">
                         <button type="button" @click="requestOpen = false" class="cursor-pointer rounded-[10px] bg-gray-100 px-5 py-2.5 font-bold text-gray-700 hover:bg-gray-200">Cancel</button>
-                        <button type="submit" class="cursor-pointer rounded-[10px] bg-[#b22222] px-5 py-2.5 font-bold text-white hover:bg-[#8f1c1c]">Submit</button>
+                        <button type="submit" :disabled="! canSubmit || submitting"
+                            class="cursor-pointer rounded-[10px] bg-[#b22222] px-5 py-2.5 font-bold text-white hover:bg-[#8f1c1c] disabled:cursor-not-allowed disabled:opacity-60">
+                            <span x-show="! submitting">Submit</span>
+                            <span x-show="submitting" x-cloak>Submitting...</span>
+                        </button>
                     </div>
                 </form>
             </div>
@@ -212,19 +219,20 @@
                 type: cfg.type,
                 start: cfg.start,
                 end: cfg.end,
+                submitting: false,
 
                 get visible() {
                     return this.requests.filter(r => this.tab === 'archive' ? r.archived : ! r.archived);
                 },
 
-                // Inclusive calendar days (same as the original script)
+                // Inclusive calendar days
                 get days() {
                     if (! this.start || ! this.end) return 0;
                     const diff = (new Date(this.end + 'T00:00:00') - new Date(this.start + 'T00:00:00')) / 86400000;
                     return diff >= 0 ? Math.floor(diff) + 1 : 0;
                 },
 
-                // Live hint only. The server validates the balance again.
+                // Live hint. The server validates the balance again.
                 get feedback() {
                     if (! this.type) return { text: '', error: false };
                     const left = this.remaining[this.type];
@@ -234,6 +242,11 @@
                         return { text: `You have ${left} day${left === 1 ? '' : 's'} remaining, but selected ${this.days} days.`, error: true };
                     }
                     return { text: `${left} day${left === 1 ? '' : 's'} remaining for this leave type.`, error: false };
+                },
+
+                // Submit is enabled only when the type and dates are valid
+                get canSubmit() {
+                    return !! this.type && this.days > 0 && ! this.feedback.error;
                 },
 
                 badge(status) {

@@ -60,8 +60,10 @@
                 ] as [$label, $count, $note])
                     <article class="rounded-[18px] border border-[#f3e0e0] bg-white px-6 py-[22px] shadow-[0_8px_20px_rgba(15,23,42,0.06)]">
                         <p class="mb-2 text-[0.85rem] uppercase tracking-[0.08em] text-gray-900"><strong>{{ $label }}</strong></p>
-                        <h2 class="text-[2.3rem] font-extrabold leading-tight text-gray-900">{{ $count }}</h2>
+                       
                         <p class="mt-2.5 text-[0.95rem] text-gray-900">{{ $note }}</p>
+
+                        <h2 class="text-[2.3rem] font-extrabold leading-tight text-gray-900">{{ $count }}</h2>
                     </article>
                 @endforeach
             </div>

@@ -55,7 +55,7 @@
                 {{-- Summary metrics --}}
                 <div class="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 min-[720px]:grid-cols-3 min-[1100px]:grid-cols-5" aria-label="Attendance summary metrics">
                     @foreach ($stats as [$label, $value])
-                        <article class="flex min-h-[122px] flex-col justify-center rounded-2xl border border-gray-900/[0.03] bg-white/80 px-[18px] pb-3.5 pt-[18px] shadow-[0_2px_8px_rgba(15,23,42,0.03)]">
+                        <article class="flex min-h-[122px] flex-col justify-center rounded-2xl border border-[#f0dada] bg-white px-[18px] pb-3.5 pt-[18px] shadow-[0_2px_8px_rgba(15,23,42,0.03)]">
                             <div class="mb-2 text-[0.96rem] font-semibold leading-tight text-gray-700">{{ $label }}</div>
                             <div class="text-[clamp(2.3rem,2vw,3.2rem)] font-extrabold leading-none tracking-[-0.06em] text-gray-900">{{ $value }}</div>
                         </article>

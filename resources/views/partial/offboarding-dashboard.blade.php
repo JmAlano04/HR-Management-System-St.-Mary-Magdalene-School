@@ -41,11 +41,10 @@
         <section aria-label="Offboarding approvals" class="mt-2 grid max-w-[1100px] gap-4 sm:grid-cols-2">
             @foreach ($statCards as [$icon, $value, $label])
                 <article class="grid grid-cols-[auto_1fr] items-center gap-x-3.5 gap-y-1 rounded-[18px] border border-[#f0dada] bg-white px-5 py-[18px] shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
-                    <div class="row-span-2 grid h-[42px] w-[42px] place-items-center rounded-lg bg-[#fef2f2] text-[#b22222]">
-                        <i class="fa-solid {{ $icon }}" aria-hidden="true"></i>
-                    </div>
+                   <div class="text-sm text-gray-500">{{ $label }}</div>
+                   <br>
                     <div class="text-2xl font-extrabold text-gray-900">{{ $value }}</div>
-                    <div class="text-sm text-gray-500">{{ $label }}</div>
+                    
                 </article>
             @endforeach
         </section>

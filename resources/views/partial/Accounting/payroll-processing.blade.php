@@ -109,7 +109,7 @@
                                         <span class="text-[0.72rem] font-semibold text-gray-500" x-text="e.employeeNumber"></span>
                                     </div>
                                 </td>
-                                <td class="px-4 py-4 text-gray-600" x-text="e.position || e.department || '-'"></td>
+                                <td class="px-4 py-4 text-gray-600" x-text="e.position || e.role_type || '-'"></td>
                                 <td class="px-4 py-4"><input type="number" min="0" max="31" step="1" disabled class="{{ $input }}" :value="e.daysWorked" @input="setDays(e, $event.target.value, $event.target)"></td>
                                 <td class="px-4 py-4"><input type="number" min="0" max="248" step="1" disabled class="{{ $input }}" :value="e.hoursWorked" @input="setHours(e, $event.target.value, $event.target)"></td>
                                 <td class="px-4 py-4"><input type="number" min="0" step="1" disabled class="{{ $input }}" :value="e.lateMinutes" @input="setLate(e, $event.target.value, $event.target)"></td>

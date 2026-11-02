@@ -545,7 +545,7 @@ class PayrollProcessingController extends Controller
                 return true;
             }
         }
-        if ($isAdmin(Employee::DEPARTMENTS[$e->department] ?? null)) {
+        if ($isAdmin(Employee::DEPARTMENTS[$e->role_type] ?? null)) {
             return true;
         }
 

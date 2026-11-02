@@ -52,7 +52,7 @@
 
                 @foreach ($cards as [$label, $value, $caption])
                     <article class="flex min-h-[132px] flex-col justify-center gap-1 rounded-[18px] border px-4 py-[18px]
-                        {{ $value === 0 ? 'border-[#b22222]/30 bg-[#fef2f2]' : 'border-gray-900/10 bg-white/70' }}">
+                        {{ $value === 0 ? 'border-[#b22222]/30 bg-[#fef2f2]' : 'border-[#f0dada] bg-white' }}">
                         <span class="text-[0.9rem] font-semibold text-gray-600">{{ $label }}</span>
                         <span class="text-[2.4rem] font-extrabold leading-none {{ $value === 0 ? 'text-[#991b1b]' : 'text-[#111827]' }}">{{ $value }}</span>
                         <small class="text-[0.82rem] {{ $value === 0 ? 'text-[#991b1b]' : 'text-gray-500' }}">{{ $caption }}</small>

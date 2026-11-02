@@ -74,13 +74,14 @@
                 <div class="mb-[22px] grid gap-[18px] md:grid-cols-3" aria-label="Attendance totals for the selected month">
                     @foreach ([
                         ['DAYS WORKED',   $hr['counts']['worked'], 'text-[#151c2b]'],
-                        ['LATE ARRIVALS', $hr['counts']['late'],   'text-[#d28a1f]'],
-                        ['ABSENCES',      $hr['counts']['absent'], 'text-[#c92e2e]'],
+                        ['LATE ARRIVALS', $hr['counts']['late'],   'text-[#151c2b]'],
+                        ['ABSENCES',      $hr['counts']['absent'], 'text-[#151c2b]'],
                     ] as [$label, $value, $color])
-                        <article class="grid min-h-[150px] content-start gap-2.5 rounded-[28px] border border-[#e5e7ebb8] bg-white px-7 py-[25px] shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+                        <article class="grid min-h-[150px] content-start gap-2.5 rounded-[28px] border border-[#f0dada] bg-white px-7 py-[25px] shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
                             <span class="text-[0.82rem] font-extrabold tracking-[0.075em] text-[#737d8e]">{{ $label }}</span>
-                            <strong class="text-[clamp(2.1rem,3vw,2.65rem)] font-extrabold leading-none tracking-[-0.055em] {{ $color }}">{{ $value }}</strong>
+                          
                             <span class="text-[0.86rem] text-[#8791a1]">{{ $hr['period'] }}</span>
+                              <strong class="text-[clamp(2.1rem,3vw,2.65rem)] font-extrabold leading-none tracking-[-0.055em] {{ $color }}">{{ $value }}</strong>
                         </article>
                     @endforeach
                 </div>
@@ -169,15 +170,17 @@
                 <div class="grid gap-[18px]">
 
                     <div class="grid gap-[18px] md:grid-cols-2">
-                        <article class="grid gap-2 rounded-[22px] border border-[#ecebea] bg-white px-6 py-[22px] shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+                        <article class="grid gap-2 rounded-[22px] border border-[#f0dada] bg-white px-6 py-[22px] shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
                             <span class="text-[0.82rem] font-bold uppercase tracking-[0.08em] text-gray-500">Total Salary Given</span>
+                            <small class="text-[0.8rem] text-gray-500">{{ $acc['hasData'] ? $acc['period'] : 'No data' }}</small>
                             <strong class="text-[clamp(1.8rem,2.3vw,2.5rem)] tracking-[-0.04em] text-gray-900">{{ $peso($acc['salary']) }}</strong>
-                            <small class="text-[0.8rem] text-gray-500">{{ $acc['hasData'] ? $acc['period'] : 'No data' }}</small>
+                            
                         </article>
-                        <article class="grid gap-2 rounded-[22px] border border-[#ecebea] bg-white px-6 py-[22px] shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+                        <article class="grid gap-2 rounded-[22px] border border-[#f0dada] bg-white px-6 py-[22px] shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
                             <span class="text-[0.82rem] font-bold uppercase tracking-[0.08em] text-gray-500">Total Deducted</span>
-                            <strong class="text-[clamp(1.8rem,2.3vw,2.5rem)] tracking-[-0.04em] text-[#b22222]">{{ $peso($acc['deductions']) }}</strong>
                             <small class="text-[0.8rem] text-gray-500">{{ $acc['hasData'] ? $acc['period'] : 'No data' }}</small>
+                            <strong class="text-[clamp(1.8rem,2.3vw,2.5rem)] tracking-[-0.04em] text-[#b22222]">{{ $peso($acc['deductions']) }}</strong>
+                            
                         </article>
                     </div>
 

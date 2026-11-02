@@ -106,18 +106,19 @@
             {{-- Summary cards (active queue only) --}}
             <div class="mb-[22px] grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 @foreach ([
-                    ['Total Payslips', $summary['total'],    'border-[#eef1f4] bg-[#f9fafb]'],
-                    [$approvalLabel,   $summary['pending'],  'border-[#fed7aa] bg-[#fff7ed]'],
-                    ['Approved',       $summary['approved'], 'border-[#a7f3d0] bg-[#ecfdf5]'],
-                    ['Rejected',       $summary['rejected'], 'border-[#fecaca] bg-[#fef2f2]'],
+                    ['Total Payslips', $summary['total'],    'border-[#f0dada] bg-white'],
+                    [$approvalLabel,   $summary['pending'],  'border-[#f0dada] bg-white'],
+                    ['Approved',       $summary['approved'], 'border-[#f0dada] bg-white'],
+                    ['Rejected',       $summary['rejected'], 'border-[#f0dada] bg-white'],
                 ] as [$label, $count, $look])
                     <article class="flex flex-col gap-2 rounded-[18px] border px-5 py-[18px] {{ $look }}">
-                        <span class="text-[0.8rem] font-bold uppercase tracking-[0.06em] text-gray-500">{{ $label }}</span>
+                        <span class="text-[0.8rem] text-gray-500">{{ $label }}</span>
                         <strong class="text-[clamp(1.6rem,2vw,2.3rem)] leading-none text-gray-900">{{ $count }}</strong>
                     </article>
                 @endforeach
             </div>
-
+        
+        
             {{-- Active / Archived tabs --}}
             <nav class="mb-4 flex items-center gap-2" aria-label="Payroll queue view">
                 @foreach ([['active', 'Active', $summary['total']], ['archived', 'Archived', $archivedCount ?? 0]] as [$key, $tabLabel, $tabCount])

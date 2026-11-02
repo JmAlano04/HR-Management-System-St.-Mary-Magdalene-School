@@ -70,7 +70,7 @@
 
                         {{-- Balance by Loan Type --}}
                         @foreach ($balances['byType'] as $type => $amount)
-                            <div class="rounded-2xl border border-gray-100 p-[18px]">
+                            <div class="rounded-2xl border border-[#f0dada] bg-white p-[18px]">
                                 <p class="mb-1 text-sm font-semibold text-gray-500">
                                     {{ $type }}
                                 </p>
@@ -209,7 +209,7 @@
                                                     x-model.number="selected" aria-label="Select this request"
                                                     class="mt-1 size-4 shrink-0 accent-[#b22222]">
                                             @endunless
-                                            <div class="min-w-0">
+                                            <div class="min-w-0 ">
                                                 <div class="flex flex-wrap items-baseline gap-x-3">
                                                     <h3 class="font-extrabold text-gray-900">{{ $loan->loan_type }}</h3>
                                                     <strong class="text-[#b22222]">{{ $peso($loan->amount) }}</strong>

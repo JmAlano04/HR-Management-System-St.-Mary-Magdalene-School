@@ -65,12 +65,15 @@
         <section aria-label="Applicant statistics" class="mt-2 grid max-w-[1100px] gap-4 sm:grid-cols-2 lg:grid-cols-4">
             @foreach ($statCards as [$label, $value, $description])
                 <div class="rounded-[18px] border border-[#f0dada] bg-white px-5 py-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
-                    <strong class="block text-3xl font-extrabold leading-none text-gray-900">{{ $value }}</strong>
+                   
                     <span class="mt-2 block text-sm font-bold text-gray-900">{{ $label }}</span>
                     <span class="mt-1 block text-xs text-gray-400">{{ $description }}</span>
+
+                 <strong class="block text-3xl mt-2 font-extrabold leading-none text-gray-900">{{ $value }}</strong>
                 </div>
             @endforeach
         </section>
+        
 
         @if (auth()->user()->hasRole('HR'))
           

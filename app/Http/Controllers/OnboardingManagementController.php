@@ -1,0 +1,304 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Application;
+use App\Models\JobOpening;
+use App\Services\HrmsNotifier;
+use Carbon\Carbon;
+use Illuminate\Filesystem\FilesystemAdapter;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\View\View;
+
+class OnboardingManagementController extends Controller
+{
+    // Interviews can only be booked inside this window (matches the form hint)
+    private const INTERVIEW_FROM = '08:00';
+
+    private const INTERVIEW_TO = '14:00';
+
+    public function index(Request $request): View
+    {
+        $tab = $request->query('tab') === 'archive' ? 'archive' : 'active';
+
+        // Active -> pending | scheduled | awaiting Admin, Archive -> approved | rejected
+        $allowed = $tab === 'archive' ? ['approved', 'rejected'] : ['pending', 'scheduled', 'admin_review'];
+        $status = $request->query('status', '');
+        $status = in_array($status, $allowed, true) ? $status : '';
+
+        $search = trim((string) $request->query('q', ''));
+
+        // Stat cards (not affected by search/filter)
+        $total = Application::count();
+        $approved = Application::statusKey('approved')->count();
+        $rejected = Application::statusKey('rejected')->count();
+
+        $stats = [
+            'total' => $total,
+            'under_review' => $total - $approved - $rejected,
+            'approved' => $approved,
+            'rejected' => $rejected,
+        ];
+
+        $counts = [
+            'active' => $total - $approved - $rejected,
+            'archive' => $approved + $rejected,
+        ];
+
+        $applicantCounts = Application::query()
+            ->selectRaw('position, COUNT(*) as applicants')
+            ->groupBy('position')
+            ->pluck('applicants', 'position');
+
+        $jobOpenings = JobOpening::query()
+            ->orderBy('title')
+            ->get()
+            ->map(fn (JobOpening $opening) => [
+                'id' => $opening->id,
+                'title' => $opening->title,
+                'applicants' => (int) ($applicantCounts[$opening->title] ?? 0),
+            ]);
+
+        $applications = Application::query()
+            ->archived($tab === 'archive')
+            ->search($search)
+            ->statusKey($status)
+            ->orderByDesc($tab === 'archive' ? 'updated_at' : 'created_at')
+            ->orderByDesc('id')
+            ->paginate(10)
+            ->withQueryString();
+
+        $disk = Storage::disk(Application::DOCUMENT_DISK);
+
+        // Data for the Alpine modal, keyed by application id
+        $cards = $applications->getCollection()->mapWithKeys(fn (Application $a) => [
+            $a->id => [
+                'id' => $a->id,
+                'code' => $a->code,
+                'full_name' => $a->fullname,
+                'position' => $a->position,
+                'job_type' => $a->job_type ?: 'N/A',
+                'email' => $a->email,
+                'phone' => $a->phone ?: 'N/A',
+                'address' => $a->home_address ?: 'N/A',
+                'birth_date' => $a->birth_date?->format('M d, Y') ?? 'N/A',
+                'gender' => $a->gender ?: 'N/A',
+                'civil_status' => $a->civil_status ?: 'N/A',
+                'education' => $a->education ?: 'N/A',
+                'submitted_at' => $a->created_at?->format('M d, Y h:i A') ?? 'N/A',
+
+                // Interview: display values
+                'interview_date' => $a->interview_date?->format('M d, Y') ?? 'Not scheduled',
+                'interview_time' => $a->interview_time ?: 'N/A',
+                'interview_location' => $a->interview_location ?: 'N/A',
+                'interview_note' => $a->interview_note ?? '',
+                'interview_completed' => (bool) $a->interview_completed_at,
+
+                // Interview: raw values that prefill the schedule form
+                'interview_date_value' => $a->interview_date?->toDateString() ?? '',
+                'interview_time_value' => ($a->interview_at && $a->interview_time) ? $a->interview_at->format('H:i') : '',
+
+                'rejection_reason' => $a->rejection_reason,
+                'rejected_by_hr' => $a->status === 'hr_rejected',
+                'status' => $a->workflow_status,
+                'status_key' => $a->status_key,
+                'can_schedule' => $a->can_schedule,
+                'can_hr_decide' => $a->can_hr_decide,
+                'can_admin_decide' => $a->can_admin_decide,
+                'schedule_url' => route('onboarding.schedule', $a),
+                'complete_interview_url' => route('onboarding.interview.complete', $a),
+                'decide_url' => route('onboarding.decide', $a),
+                'documents' => collect(Application::DOCUMENTS)->map(function ($meta, $type) use ($a, $disk) {
+                    $path = $a->documentPath($type);
+                    $exists = $path && $disk->exists($path);
+
+                    return [
+                        'label' => $meta['label'],
+                        'name' => $exists ? $a->documentOriginalName($type) : null,
+                        'url' => $exists ? route('onboarding.document', [$a, $type]) : null,
+                    ];
+                })->values()->all(),
+            ],
+        ]);
+
+        return view('onboarding', compact('applications', 'cards', 'stats', 'counts', 'jobOpenings', 'search', 'status', 'tab'));
+    }
+
+    /**
+     * Set or change the interview schedule (date, time, location, note).
+     * Not allowed once the application is approved/rejected.
+     */
+    public function schedule(Request $request, Application $application): RedirectResponse
+    {
+        if (! $application->can_schedule) {
+            return $this->backToModal($application)->withErrors([
+                'interview_date' => 'This application is no longer open for interview scheduling.',
+            ]);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'interview_date' => ['required', 'date_format:Y-m-d', 'after_or_equal:today'],
+            'interview_time' => ['required', 'date_format:H:i'],
+            'interview_location' => ['nullable', 'string', 'max:255'],
+            'interview_note' => ['nullable', 'string', 'max:1000'],
+        ], [
+            'interview_date.after_or_equal' => 'The interview date cannot be in the past.',
+            'interview_time.date_format' => 'Please enter a valid interview time.',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->backToModal($application)->withErrors($validator);
+        }
+
+        $data = $validator->validated();
+        $at = Carbon::createFromFormat('Y-m-d H:i', $data['interview_date'].' '.$data['interview_time']);
+
+        // Office window: 8:00 AM - 2:00 PM
+        if ($at->format('H:i') < self::INTERVIEW_FROM || $at->format('H:i') > self::INTERVIEW_TO) {
+            return $this->backToModal($application)->withErrors([
+                'interview_time' => 'Interviews can only be scheduled between 8:00 AM and 2:00 PM.',
+            ]);
+        }
+
+        if ($at->isPast()) {
+            return $this->backToModal($application)->withErrors([
+                'interview_time' => 'Please pick a time that has not passed yet.',
+            ]);
+        }
+
+        $wasScheduled = (bool) $application->interview_date;
+
+        $application->update([
+            'interview_date' => $at->toDateString(),
+            'interview_time' => $at->format('g:i A'), // shown as-is on the applicant's Step 3
+            'interview_location' => filled($data['interview_location'] ?? null) ? trim($data['interview_location']) : null,
+            'interview_note' => filled($data['interview_note'] ?? null) ? trim($data['interview_note']) : null,
+            'interview_completed_at' => null,
+        ]);
+        HrmsNotifier::applicantInterviewScheduled($application->fresh(), $wasScheduled);
+
+        return $this->backToModal($application)->with(
+            'success',
+            'Interview '.($wasScheduled ? 'rescheduled' : 'scheduled').' for '.$at->format('F j, Y \a\t g:i A').'.'
+        );
+    }
+
+    public function completeInterview(Application $application): RedirectResponse
+    {
+        if (! $application->can_schedule) {
+            return $this->backToModal($application)->withErrors([
+                'interview' => 'This application is no longer open for interview completion.',
+            ]);
+        }
+
+        if (! $application->interview_at) {
+            return $this->backToModal($application)->withErrors([
+                'interview' => 'Schedule the interview before marking it done.',
+            ]);
+        }
+
+        if ($application->interview_completed_at) {
+            return $this->backToModal($application)->withErrors([
+                'interview' => 'This interview is already marked done.',
+            ]);
+        }
+
+        $application->update(['interview_completed_at' => now()]);
+        HrmsNotifier::applicantInterviewCompleted($application->fresh());
+
+        return $this->backToModal($application)->with('success', 'Interview marked done. The applicant has been updated and a decision can now be recorded.');
+    }
+
+    /** HR decides first; Admin may decide only after HR approval. */
+    public function decide(Request $request, Application $application): RedirectResponse
+    {
+        $data = $request->validate([
+            'decision' => ['required', 'in:approved,rejected'],
+            'reason' => ['nullable', 'required_if:decision,rejected', 'string', 'max:1000'],
+        ], [
+            'reason.required_if' => 'Please enter a reason for rejecting this application.',
+        ]);
+
+        $user = $request->user();
+        $isHr = $user?->hasRole('HR') ?? false;
+        $isAdmin = $user?->hasRole('Admin') ?? false;
+
+        if (! $isHr && ! $isAdmin) {
+            abort(403);
+        }
+
+        if ($isHr && $application->can_hr_decide) {
+            $application->update([
+                'status' => $data['decision'] === 'approved' ? 'hr_approved' : 'hr_rejected',
+                'rejection_reason' => $data['decision'] === 'rejected' ? trim($data['reason']) : null,
+            ]);
+            HrmsNotifier::applicantHrDecided($application->fresh());
+
+            return back()->with(
+                'success',
+                $data['decision'] === 'approved'
+                    ? 'Applicant approved by HR and moved to Admin review.'
+                    : 'Applicant rejected by HR and moved to Archive.'
+            );
+        }
+
+        if ($isAdmin && $application->can_admin_decide) {
+            $application->update([
+                'status' => $data['decision'] === 'approved' ? 'qualified' : 'rejected',
+                'rejection_reason' => $data['decision'] === 'rejected' ? trim($data['reason']) : null,
+            ]);
+            HrmsNotifier::applicantAdminDecided($application->fresh());
+
+            return back()->with('success', 'Application '.$data['decision'].' by Admin and moved to Archive.');
+        }
+
+        if ($application->status === 'hr_rejected') {
+            return $this->backToModal($application)->withErrors([
+                'decision' => 'HR rejected this applicant. Admin review is not available.',
+            ]);
+        }
+
+        $message = $isAdmin
+            ? 'Admin can review this applicant only after HR approval.'
+            : 'This application is not ready for HR review.';
+
+        return $this->backToModal($application)->withErrors(['decision' => $message]);
+    }
+
+    public function destroy(Application $application): RedirectResponse
+    {
+        $disk = Storage::disk(Application::DOCUMENT_DISK);
+
+        foreach (array_keys(Application::DOCUMENTS) as $type) {
+            if ($path = $application->documentPath($type)) {
+                $disk->delete($path);
+            }
+        }
+
+        $application->delete();
+
+        return back()->with('success', 'Applicant deleted.');
+    }
+
+    public function document(Application $application, string $type)
+    {
+        abort_unless(array_key_exists($type, Application::DOCUMENTS), 404);
+
+        $path = $application->documentPath($type);
+        /** @var FilesystemAdapter $disk */
+        $disk = Storage::disk(Application::DOCUMENT_DISK);
+
+        abort_unless($path && $disk->exists($path), 404);
+
+        return $disk->response($path, $application->documentOriginalName($type));
+    }
+
+    // Go back to the list and tell the page to reopen this applicant's modal
+    private function backToModal(Application $application): RedirectResponse
+    {
+        return back()->with('open_application', $application->id);
+    }
+}

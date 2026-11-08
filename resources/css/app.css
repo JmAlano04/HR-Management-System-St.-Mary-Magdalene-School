@@ -1,0 +1,214 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+@utility no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+:where([role="dialog"], .modal-card, .modal-content, .login-modal-content) {
+    scrollbar-color: #cbd5e1 transparent;
+    scrollbar-width: thin;
+}
+
+:where([role="dialog"], .modal-card, .modal-content, .login-modal-content)::-webkit-scrollbar {
+    width: 10px;
+}
+
+:where([role="dialog"], .modal-card, .modal-content, .login-modal-content)::-webkit-scrollbar-track {
+    margin-block: 12px;
+    border-radius: 9999px;
+    background: transparent;
+}
+
+:where([role="dialog"], .modal-card, .modal-content, .login-modal-content)::-webkit-scrollbar-thumb {
+    border: 3px solid transparent;
+    border-radius: 9999px;
+    background: #cbd5e1;
+    background-clip: content-box;
+}
+
+.hrms-alert-dialog {
+    width: min(92vw, 28rem);
+    max-width: none;
+    border: 0;
+    border-radius: 1rem;
+    padding: 0;
+    color: #1f2937;
+    box-shadow: 0 24px 60px rgb(15 23 42 / 25%);
+}
+
+.hrms-alert-dialog::backdrop {
+    background: rgb(15 23 42 / 55%);
+    backdrop-filter: blur(2px);
+}
+
+.hrms-alert-dialog__card {
+    padding: 2rem;
+    text-align: center;
+}
+
+.hrms-alert-dialog__icon {
+    display: grid;
+    width: 3.5rem;
+    height: 3.5rem;
+    margin: 0 auto 1rem;
+    place-items: center;
+    border-radius: 9999px;
+    background: #dcfce7;
+    color: #15803d;
+    font-size: 1.75rem;
+    font-weight: 700;
+}
+
+.hrms-alert-dialog[data-type="error"] .hrms-alert-dialog__icon {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.hrms-alert-dialog__title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.hrms-alert-dialog__message {
+    margin: 0.75rem 0 1.5rem;
+    overflow-wrap: anywhere;
+    white-space: pre-line;
+    font-size: 0.95rem;
+}
+
+.hrms-alert-dialog__close {
+    min-width: 7rem;
+    border: 0;
+    border-radius: 0.5rem;
+    background: #b22222;
+    padding: 0.65rem 1.25rem;
+    color: #fff;
+    font-weight: 700;
+}
+
+.hrms-alert-dialog__close:hover {
+    background: #951717;
+}
+
+.hrms-alert-dialog__close:focus-visible {
+    outline: 2px solid #b22222;
+    outline-offset: 3px;
+}
+
+.hrms-tablist {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    border: 0;
+    background: transparent;
+    padding: 0;
+    box-shadow: none;
+}
+
+.hrms-tablist-nowrap {
+    flex-wrap: nowrap;
+}
+
+.hrms-tab {
+    display: inline-flex;
+    min-height: 42px;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: 1px solid transparent;
+    border-radius: 9999px;
+    background: transparent;
+    padding: 8px 18px;
+    color: #64748b;
+    font-weight: 600;
+    line-height: 1.25;
+    text-decoration: none;
+    transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease;
+}
+
+.hrms-tab:hover:not([aria-selected="true"]):not([aria-current="page"]):not(.active) {
+    border-color: #fecaca;
+    background: #fff5f5;
+    color: #7f1d1d;
+}
+
+.hrms-tab[aria-selected="true"],
+.hrms-tab[aria-current="page"],
+.hrms-tab.active {
+    border-color: #fecaca;
+    background: #fee2e2;
+    color: #7f1d1d;
+}
+
+.hrms-tab:focus-visible {
+    outline: 2px solid #b22222;
+    outline-offset: 2px;
+}
+
+@media (max-width: 1023px) {
+    .app-page-heading > * {
+        margin-left: 0 !important;
+        font-size: clamp(1.1rem, 2.4vw, 1.6rem) !important;
+        line-height: 1.2;
+    }
+
+    .app-content :where(.overflow-x-auto, .overflow-auto) {
+        max-width: 100%;
+        overscroll-behavior-x: contain;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+@media (max-width: 640px) {
+    html {
+        font-size: 15px;
+    }
+
+    .app-page-heading > * {
+        margin-left: 0 !important;
+        font-size: clamp(1.05rem, 4.5vw, 1.4rem) !important;
+        line-height: 1.2;
+    }
+
+    .app-content,
+    .app-content > * {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .app-content :where(img, video, canvas, svg) {
+        max-width: 100%;
+    }
+
+    .app-content :where(input, select, textarea, button) {
+        max-width: 100%;
+    }
+
+}
+
+@media (min-width: 641px) and (max-width: 1023px) {
+    html {
+        font-size: 15.5px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hrms-tab {
+        transition: none;
+    }
+}

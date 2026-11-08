@@ -2,10 +2,15 @@
 
 namespace App\Services;
 
+<<<<<<< HEAD
 use App\Models\Attendance;
 use App\Models\AttendanceRecord;
 use App\Models\Employee;
 use App\Support\AttendanceSchedule;
+=======
+use App\Models\AttendanceRecord;
+use App\Models\Employee;
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -84,11 +89,14 @@ class ZKTecoAttendanceService
                             ->first();
 
                         $wasExisting = (bool) $attendance;
+<<<<<<< HEAD
                         $isNonWorkingDay = $attendance && in_array($attendance->status, [
                             Attendance::PAID_HOLIDAY,
                             Attendance::NON_WORKING_DAY,
                             Attendance::NWD_REVIEW,
                         ], true);
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 
                         if (! $attendance) {
                             $attendance = new AttendanceRecord();
@@ -129,6 +137,7 @@ class ZKTecoAttendanceService
                         $attendance->time_in  = $currentIn;
                         $attendance->time_out = $currentOut;
 
+<<<<<<< HEAD
                         $dateStart = Carbon::parse($date)->startOfDay();
                         $schedule = AttendanceSchedule::forEmployee(
                             $employee->role_type,
@@ -144,6 +153,21 @@ class ZKTecoAttendanceService
                         $attendance->status = $isNonWorkingDay
                             ? Attendance::NWD_REVIEW
                             : $schedule->status($timeIn, $timeOut);
+=======
+                        if ($currentIn && $currentOut) {
+                            $minutes = Carbon::parse("$date $currentIn")
+                                ->diffInMinutes(Carbon::parse("$date $currentOut"), true);
+
+                            $workedMinutes = $minutes > 300 ? $minutes - 60 : $minutes;
+                            $attendance->hours_worked = round(max(0, $workedMinutes) / 60, 2);
+                        }
+
+                        $attendance->status = $this->determineStatus(
+                            $currentIn,
+                            $currentOut,
+                            $attendance->hours_worked !== null ? (float) $attendance->hours_worked : null
+                        );
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 
                         $attendance->archived = $attendance->archived ?? false;
                         $attendance->save();
@@ -165,6 +189,30 @@ class ZKTecoAttendanceService
         return $stats;
     }
 
+<<<<<<< HEAD
+=======
+    private function determineStatus(?string $timeIn, ?string $timeOut, ?float $hoursWorked): string
+    {
+        if (! $timeIn) {
+            return 'Absent';
+        }
+
+        if ($timeIn > '08:00:00') {
+            return 'Late';
+        }
+
+        if (! $timeOut) {
+            return 'Present';
+        }
+
+        if ($hoursWorked !== null && $hoursWorked < 4) {
+            return 'Half Day';
+        }
+
+        return 'Present';
+    }
+
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     private function normalizeTime($value): ?string
     {
         if (empty($value)) {

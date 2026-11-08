@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreTimeCorrectionRequest;
+<<<<<<< HEAD
 use App\Models\AttendanceRecord;
 use App\Models\TimeCorrection;
 use App\Services\HrmsNotifier;
@@ -11,6 +12,12 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+=======
+use App\Models\TimeCorrection;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -23,14 +30,20 @@ class TimeCorrectionController extends Controller
     public function index(Request $request): View
     {
         $employee = $request->user()->employee;
+<<<<<<< HEAD
         $hasSubmittedCorrection = $request->session()->get('time_correction_submitted', false);
 
         $latest = $employee && $hasSubmittedCorrection
+=======
+
+        $latest = $employee
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             ? TimeCorrection::where('employee_id', $employee->id)->latest('id')->first()
             : null;
 
         return view('timeCorrection', [
             'employee' => $employee,
+<<<<<<< HEAD
             'latest' => $latest,
             'today' => now()->toDateString(),
         ]);
@@ -54,6 +67,10 @@ class TimeCorrectionController extends Controller
 
         return response()->json([
             'incorrect_time' => $time ? substr((string) $time, 0, 5) : null,
+=======
+            'latest'   => $latest,
+            'today'    => now()->toDateString(),
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         ]);
     }
 
@@ -61,6 +78,7 @@ class TimeCorrectionController extends Controller
     {
         $data = $request->validated();
 
+<<<<<<< HEAD
         $correction = TimeCorrection::create([
             'employee_id' => $request->user()->employee->id,
             'correction_date' => $data['correction_date'],
@@ -75,6 +93,20 @@ class TimeCorrectionController extends Controller
         HrmsNotifier::timeCorrectionSubmitted($correction);
         $request->session()->put('time_correction_submitted', true);
 
+=======
+        TimeCorrection::create([
+            'employee_id'     => $request->user()->employee->id,
+            'correction_date' => $data['correction_date'],
+            'correction_type' => $data['correction_type'],
+            'incorrect_time'  => $data['incorrect_time'] ?? null,
+            'correct_time'    => $data['correct_time'],
+            'note'            => $data['note'] ?? 'No note provided.', // column is NOT NULL
+            'proof_path'      => $request->file('proof')?->store('time-corrections', 'local'), // private disk
+            'hr_status'       => TimeCorrection::PENDING,
+            'admin_status'    => TimeCorrection::PENDING,
+        ]);
+
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         return redirect()
             ->route('time-corrections.employee.index')
             ->with('success', 'Correction request submitted for HR and Admin review.');
@@ -83,7 +115,11 @@ class TimeCorrectionController extends Controller
     /** Serve the private proof image to its owner, HR, or Admin only. */
     public function proof(Request $request, TimeCorrection $timeCorrection): BinaryFileResponse
     {
+<<<<<<< HEAD
         $user = $request->user();
+=======
+        $user    = $request->user();
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         $isOwner = $user->employee?->id === $timeCorrection->employee_id;
         $isStaff = $user->hasAnyRole(['HR', 'Admin']);
 
@@ -95,4 +131,8 @@ class TimeCorrectionController extends Controller
 
         return response()->file(Storage::disk('local')->path($timeCorrection->proof_path));
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120

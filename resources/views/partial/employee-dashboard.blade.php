@@ -5,6 +5,7 @@
    @auth
     <x-slot name="title">
         @if (auth()->user()->hasRole('Admin'))
+<<<<<<< HEAD
             Admin Employee Monitoring
         @elseif (auth()->user()->hasRole('HR'))
             HR Employee Management
@@ -12,6 +13,15 @@
             Accounting Employee Management
         @elseif (auth()->user()->hasRole('Employee'))
             Employee Employee Management
+=======
+            Admin Empoyee Management
+        @elseif (auth()->user()->hasRole('HR'))
+            HR Empoyee Management
+        @elseif (auth()->user()->hasRole('Accounting'))
+            Accounting Empoyee Management
+        @elseif (auth()->user()->hasRole('Employee'))
+            Employee Empoyee Management
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         @elseif (auth()->user()->hasRole('Applicant'))
             Applicant Dashboard
         @else
@@ -37,25 +47,40 @@
 
         // Keep what the user typed if validation failed, so the form can reopen
         $old = collect(old())->only([
+<<<<<<< HEAD
             'employee_source', 'user_id', 'employee_id', 'first_name', 'middle_name', 'last_name', 'suffix',
             'position', 'department', 'role_type', 'employment_status', 'step_no', 'email', 'gender',
             'birthday', 'address_line', 'address_landmark', 'barangay', 'city_municipality', 'province', 'zip_code',
             'emergency_name', 'emergency_contact',
         ])->all();
 
+=======
+            'user_id', 'employee_id', 'name', 'position', 'department', 'role_type', 'employment_status', 'step_no', 'email',
+            'birthday', 'address', 'emergency_name', 'emergency_contact',
+        ])->all();
+
+        // Role types: the stored value and the label are the same text.
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         $roleTypes = [
             'Administrative Staff' => 'Administrative Staff',
             'Teaching Staff'       => 'Teaching Staff',
             'Maintenance Staff'    => 'Maintenance Staff',
             'Support Staff'        => 'Support Staff',
         ];
+<<<<<<< HEAD
         $filterRoleTypes = collect($filterRoleTypes ?? $roleTypes);
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 
         // Employment status: stored value => label.
         // Uses the controller's list if it passed one.
         $employmentStatuses = $employmentStatuses ?? [
             'regular'     => 'Regular',
+<<<<<<< HEAD
             'non regular' => 'Probationary',
+=======
+            'non regular' => 'Non-Regular',
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         ];
 
         // Payroll steps from the payroll_steps table: step_no => label
@@ -64,8 +89,21 @@
         // Default step for the Add form (first step in the table)
         $defaultStepNo = (string) ($defaultStepNo ?? $payrollSteps->keys()->first() ?? '');
 
+<<<<<<< HEAD
         $filterDepartments = collect($filterDepartments ?? []);
         $formDepartments   = collect($formDepartments ?? []);
+=======
+        // Standard departments, merged with whatever is already stored in SQL.
+        // The "+" operator keeps the left-hand keys, so there are no duplicates.
+        $standardDepartments = [
+            'Elementary'         => 'Elementary',
+            'High School'        => 'High School',
+            'Senior High School' => 'Senior High School',
+        ];
+
+        $filterDepartments = $standardDepartments + collect($filterDepartments ?? [])->all();
+        $formDepartments   = $standardDepartments + collect($formDepartments ?? [])->all();
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     @endphp
 
     <div
@@ -132,13 +170,21 @@
                     <span>Role Type</span>
                     <select id="roleFilter" name="role_type" @change="$refs.filters.submit()" class="{{ $inputClass }}">
                         <option value="">All Roles</option>
+<<<<<<< HEAD
                         @foreach ($filterRoleTypes as $value => $label)
+=======
+                        @foreach ($roleTypes as $value => $label)
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                             <option value="{{ $value }}" @selected(request('role_type') === $value)>{{ $label }}</option>
                         @endforeach
                     </select>
                 </label>
 
+<<<<<<< HEAD
                 @if (request()->filled('search') || request()->filled('department') || request()->filled('role_type'))
+=======
+                @if (request()->hasAny(['search', 'department', 'role_type']))
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                     <a href="{{ route('employees.index') }}"
                         class="rounded-xl border border-gray-200 px-4 py-3 text-sm font-bold text-gray-600 transition hover:bg-gray-50">
                         Clear
@@ -189,18 +235,29 @@
 
                         <h3 class="mt-4 text-lg font-bold" x-text="detail.name"></h3>
 
+<<<<<<< HEAD
                         <div class="mt-2 inline-flex items-center gap-2 rounded-full bg-red-50 px-3 py-1 text-xs font-bold">
                             <span class="text-[#b22222]"
                                 x-text="statusLabel(detail.employment_status)"></span>
                             <span x-show="detail.step_label" aria-hidden="true" class="text-red-200">|</span>
                             <span x-show="detail.step_label" class="text-[#b22222]" x-text="detail.step_label"></span>
                         </div>
+=======
+                        {{-- Employment status badge --}}
+                        <span class="mt-2 inline-block rounded-full bg-red-50 px-3 py-1 text-xs font-bold text-[#b22222]"
+                            x-text="statusLabel(detail.employment_status)"></span>
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 
                         <div class="mt-3 space-y-1.5 text-gray-700">
                             <p><strong>ID:</strong> <span x-text="detail.employee_id"></span></p>
                             <p><strong>Position:</strong> <span x-text="detail.position"></span></p>
                             <p><strong>Department:</strong> <span x-text="detail.department_label || detail.department"></span></p>
                             <p><strong>Role Type:</strong> <span x-text="detail.role_type"></span></p>
+<<<<<<< HEAD
+=======
+                            <p><strong>Employment Status:</strong> <span x-text="statusLabel(detail.employment_status)"></span></p>
+                            <p><strong>Step:</strong> <span x-text="detail.step_label || '—'"></span></p>
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                             <p><strong>Email:</strong> <span x-text="detail.email"></span></p>
                             <p><strong>Birthday:</strong> <span x-text="detail.birthday_label"></span></p>
                             <p><strong>Address:</strong> <span x-text="detail.address"></span></p>
@@ -232,7 +289,11 @@
         {{-- ============ Add / Edit modal ============ --}}
         <div x-show="formOpen" x-cloak x-transition.opacity
             class="fixed inset-0 z-[60] grid place-items-center bg-[rgba(3,7,18,0.5)] p-4">
+<<<<<<< HEAD
             <div role="dialog" aria-modal="true" class="relative max-h-[92vh] w-full max-w-[800px] overflow-y-auto [scrollbar-width:none] rounded-[14px] bg-white p-6 shadow-[0_20px_50px_rgba(15,23,42,0.14)] sm:p-8">
+=======
+            <div role="dialog" aria-modal="true" class="relative max-h-[92vh] w-full max-w-[640px] overflow-y-auto [scrollbar-width:none] rounded-[14px] bg-white p-6 shadow-[0_20px_50px_rgba(15,23,42,0.14)] sm:p-8">
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                 <button type="button" @click="formOpen = false" aria-label="Close"
                     class="absolute right-3 top-2 cursor-pointer text-3xl leading-none text-gray-500 hover:text-gray-800">&times;</button>
 
@@ -242,6 +303,7 @@
                     @csrf
                     <input type="hidden" name="_method" value="PUT" :disabled="!editingId">
                     <input type="hidden" name="_editing_id" :value="editingId ?? ''">
+<<<<<<< HEAD
                     <input type="hidden" name="employee_source" x-model="form.employee_source" :disabled="!!editingId">
 
                     <div x-show="!editingId" class="space-y-4">
@@ -270,6 +332,15 @@
                             :disabled="!!editingId || form.employee_source !== 'applicant'"
                             :required="!editingId && form.employee_source === 'applicant'"
                             class="{{ $inputClass }} cursor-pointer">
+=======
+
+                    {{-- Pick an applicant (Add mode only). Name and email come from the account. --}}
+                    <div x-show="!editingId">
+                        <label for="f_user_id" class="{{ $labelClass }}">Applicant <span class="text-red-600">*</span></label>
+
+                        <select id="f_user_id" name="user_id" x-model="form.user_id" @change="pickApplicant()"
+                            :disabled="!!editingId" :required="!editingId" class="{{ $inputClass }} cursor-pointer">
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                             <option value="" disabled hidden>Select an applicant</option>
                             <template x-for="a in Object.values(applicants)" :key="a.id">
                                 <option :value="a.id" :selected="String(a.id) === String(form.user_id)" x-text="a.name + ' (' + a.email + ')'"></option>
@@ -282,6 +353,7 @@
                         <p class="{{ $errClass }}">{{ $errors->first('user_id') }}</p>
                     </div>
 
+<<<<<<< HEAD
                     <div>
                         <span class="{{ $labelClass }}">Full Name <span class="text-red-600">*</span></span>
                         <div class="grid grid-cols-[1fr_1fr_1fr_0.65fr] gap-2">
@@ -314,13 +386,83 @@
 
                     <div class="grid gap-4 sm:grid-cols-2">
                         <div>
+=======
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <div>
+                            <label for="f_name" class="{{ $labelClass }}">Full Name <span class="text-red-600">*</span></label>
+                            <input id="f_name" name="name" x-model="form.name" placeholder="e.g. Maria Santos" required
+                                :readonly="!editingId" :class="!editingId ? 'cursor-not-allowed !bg-gray-100 text-gray-500' : ''"
+                                class="{{ $inputClass }}">
+                            <p class="{{ $errClass }}">{{ $errors->first('name') }}</p>
+                        </div>
+                        <div>
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                             <label for="f_employee_id" class="{{ $labelClass }}">Employee ID</label>
                             <input id="f_employee_id" name="employee_id" x-model="form.employee_id" placeholder="Leave blank to auto-generate" class="{{ $inputClass }}">
                             <p class="{{ $errClass }}">{{ $errors->first('employee_id') }}</p>
                         </div>
+<<<<<<< HEAD
                         <div>
                             <label for="f_step_no" class="{{ $labelClass }}">Step <span class="text-red-600">*</span></label>
                             {{-- Step names come from payroll_steps; wage amounts are managed separately. --}}
+=======
+                    </div>
+
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <div>
+                            <label for="f_position" class="{{ $labelClass }}">Position <span class="text-red-600">*</span></label>
+                            <input id="f_position" name="position" x-model="form.position" placeholder="e.g. Mathematics Teacher" required class="{{ $inputClass }}">
+                            <p class="{{ $errClass }}">{{ $errors->first('position') }}</p>
+                        </div>
+                        <div>
+                            <label for="f_email" class="{{ $labelClass }}">Email <span class="text-red-600">*</span></label>
+                            <input id="f_email" type="email" name="email" x-model="form.email" placeholder="name@smms.edu.ph" required
+                                :readonly="!editingId" :class="!editingId ? 'cursor-not-allowed !bg-gray-100 text-gray-500' : ''"
+                                class="{{ $inputClass }}">
+                            <p class="{{ $errClass }}">{{ $errors->first('email') }}</p>
+                        </div>
+                    </div>
+
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <div>
+                            <label for="f_department" class="{{ $labelClass }}">Department <span class="text-red-600">*</span></label>
+                            {{-- Options = Elementary / High School / Senior High School + any value already stored in SQL --}}
+                            <select id="f_department" name="department" x-model="form.department" required class="{{ $inputClass }}">
+                                <option value="" disabled hidden>Select department</option>
+                                @foreach ($formDepartments as $value => $label)
+                                    <option value="{{ $value }}">{{ $label }}</option>
+                                @endforeach
+                            </select>
+                            <p class="{{ $errClass }}">{{ $errors->first('department') }}</p>
+                        </div>
+                        <div>
+                            <label for="f_role_type" class="{{ $labelClass }}">Role Type <span class="text-red-600">*</span></label>
+                            {{-- Options = Administrative / Teaching / Maintenance / Support Staff --}}
+                            <select id="f_role_type" name="role_type" x-model="form.role_type" required class="{{ $inputClass }}">
+                                <option value="" disabled hidden>Select role type</option>
+                                @foreach ($roleTypes as $value => $label)
+                                    <option value="{{ $value }}">{{ $label }}</option>
+                                @endforeach
+                            </select>
+                            <p class="{{ $errClass }}">{{ $errors->first('role_type') }}</p>
+                        </div>
+                    </div>
+
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <div>
+                            <label for="f_employment_status" class="{{ $labelClass }}">Employment Status <span class="text-red-600">*</span></label>
+                            <select id="f_employment_status" name="employment_status" x-model="form.employment_status" required class="{{ $inputClass }}">
+                                <option value="" disabled hidden>Select employment status</option>
+                                @foreach ($employmentStatuses as $value => $label)
+                                    <option value="{{ $value }}">{{ $label }}</option>
+                                @endforeach
+                            </select>
+                            <p class="{{ $errClass }}">{{ $errors->first('employment_status') }}</p>
+                        </div>
+                        <div>
+                            <label for="f_step_no" class="{{ $labelClass }}">Step <span class="text-red-600">*</span></label>
+                            {{-- Options come from the payroll_steps table. Saved on both Add and Edit. --}}
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                             <select id="f_step_no" name="step_no" x-model="form.step_no" required class="{{ $inputClass }}">
                                 <option value="" disabled hidden>Select step</option>
                                 @foreach ($payrollSteps as $stepNo => $stepLabel)
@@ -333,6 +475,7 @@
 
                     <div class="grid gap-4 sm:grid-cols-2">
                         <div>
+<<<<<<< HEAD
                             <label for="f_department" class="{{ $labelClass }}">Department <span class="text-red-600">*</span></label>
                             <input id="f_department" name="department" x-model="form.department" list="employeeDepartmentOptions"
                                 placeholder="Select or type department" maxlength="100" required class="{{ $inputClass }}">
@@ -376,11 +519,14 @@
 
                     <div class="grid gap-4 sm:grid-cols-2">
                         <div>
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                             <label for="f_birthday" class="{{ $labelClass }}">Birthday <span class="text-red-600">*</span></label>
                             <input id="f_birthday" type="date" name="birthday" x-model="form.birthday" max="{{ now()->subDay()->toDateString() }}" required class="{{ $inputClass }}">
                             <p class="{{ $errClass }}">{{ $errors->first('birthday') }}</p>
                         </div>
                         <div>
+<<<<<<< HEAD
                             <label for="f_gender" class="{{ $labelClass }}">Gender</label>
                             <select id="f_gender" name="gender" x-model="form.gender" class="{{ $inputClass }}">
                                 <option value="">Select gender</option>
@@ -430,6 +576,11 @@
                                     placeholder="ZIP Code" required class="{{ $inputClass }}">
                                 <p class="{{ $errClass }}">{{ $errors->first('zip_code') }}</p>
                             </div>
+=======
+                            <label for="f_address" class="{{ $labelClass }}">Address <span class="text-red-600">*</span></label>
+                            <input id="f_address" name="address" x-model="form.address" placeholder="House no., street, city, province" required class="{{ $inputClass }}">
+                            <p class="{{ $errClass }}">{{ $errors->first('address') }}</p>
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                         </div>
                     </div>
 
@@ -455,7 +606,11 @@
                             class="cursor-pointer rounded-lg bg-gray-100 px-6 py-3 font-bold text-gray-800 transition hover:bg-gray-300">
                             Cancel
                         </button>
+<<<<<<< HEAD
                         <button type="submit" :disabled="!editingId && form.employee_source === 'applicant' && !hasApplicants"
+=======
+                        <button type="submit" :disabled="!editingId && !hasApplicants"
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                             class="cursor-pointer rounded-lg bg-[#b22222] px-6 py-3 font-bold text-white transition hover:bg-[#8b1a1a] hover:shadow-[0_6px_20px_rgba(178,34,34,0.4)] disabled:cursor-not-allowed disabled:opacity-60">
                             <span x-text="editingId ? 'Save Changes' : 'Add Employee'"></span>
                         </button>
@@ -470,6 +625,7 @@
             const defaultStep = String(cfg.defaultStep ?? '');
 
             const blank = () => ({
+<<<<<<< HEAD
                 employee_source: 'applicant',
                 user_id: '',
                 employee_id: '', first_name: '', middle_name: '', last_name: '', suffix: '',
@@ -479,6 +635,13 @@
                 email: '', birthday: '', gender: '',
                 address_line: '', address_landmark: '', barangay: '', city_municipality: '', province: '', zip_code: '',
                 emergency_name: '', emergency_contact: '',
+=======
+                user_id: '',
+                employee_id: '', name: '', position: '', department: '', role_type: '',
+                employment_status: 'regular',
+                step_no: defaultStep,
+                email: '', birthday: '', address: '', emergency_name: '', emergency_contact: '',
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             });
 
             return {
@@ -503,7 +666,10 @@
                     if (cfg.reopen) {
                         this.editingId = cfg.editingId || null;
                         this.form = Object.assign(blank(), cfg.old);
+<<<<<<< HEAD
                         this.form.employee_source = this.form.employee_source === 'existing' ? 'existing' : 'applicant';
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                         this.form.step_no = String(this.form.step_no ?? defaultStep);
                         this.formOpen = true;
                     }
@@ -514,6 +680,7 @@
                     return this.statuses[value] || value || '—';
                 },
 
+<<<<<<< HEAD
                 // Fill the selected applicant's application details and employee login email.
                 pickApplicant() {
                     const a = this.applicants[this.form.user_id];
@@ -587,6 +754,13 @@
                     this.form.user_id = '';
                     Object.assign(this.form, this.splitName(''));
                     this.form.email = '';
+=======
+                // Fill name and email from the chosen applicant's account
+                pickApplicant() {
+                    const a = this.applicants[this.form.user_id];
+                    this.form.name  = a ? a.name : '';
+                    this.form.email = a ? a.email : '';
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                 },
 
                 openDetail(id) { this.detailId = id; },
@@ -607,16 +781,25 @@
                     const e = this.detail;
                     if (!e) return;
                     this.form = {
+<<<<<<< HEAD
                         employee_source: 'existing',
                         user_id: '',
                         employee_id: e.employee_id, ...this.splitName(e.name), position: e.position,
+=======
+                        user_id: '',
+                        employee_id: e.employee_id, name: e.name, position: e.position,
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                         department: e.department, role_type: e.role_type,
                         employment_status: e.employment_status || 'regular',
                         // Use the employee's saved step (needs 'step_no' in the card data)
                         step_no: String(e.step_no ?? defaultStep),
                         email: e.email,
+<<<<<<< HEAD
                         birthday: e.birthday, gender: e.gender || '',
                         ...this.splitAddress(e.address),
+=======
+                        birthday: e.birthday, address: e.address,
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                         emergency_name: e.emergency_name, emergency_contact: e.emergency_contact,
                     };
                     this.editingId = e.id;

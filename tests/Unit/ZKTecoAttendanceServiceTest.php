@@ -70,6 +70,10 @@ it('matches device users by employee id and pairs punches without a reported dir
     ])
         ->and($attendance->time_in)->toBe('08:00:00')
         ->and($attendance->time_out)->toBe('17:00:00')
+<<<<<<< HEAD
         ->and((float) $attendance->hours_worked)->toBe(7.0)
+=======
+        ->and((float) $attendance->hours_worked)->toBe(8.0)
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         ->and($attendance->status)->toBe('Present');
 });

@@ -77,7 +77,23 @@ class EmployeeDashboardController extends Controller
     /** Custom banners if the Admin uploaded any, otherwise the 3 default images in public/Image. */
     private function slides(): array
     {
+<<<<<<< HEAD
         return Banner::slidesFor('admin');
+=======
+        $custom = Banner::orderBy('sort_order')->orderBy('id')->get();
+
+        if ($custom->isNotEmpty()) {
+            return $custom->map(fn (Banner $b) => [
+                'url' => asset('storage/' . $b->path),
+                'alt' => $b->alt ?: 'Banner',
+            ])->values()->all();
+        }
+
+        return collect([1, 2, 3])->map(fn ($i) => [
+            'url' => asset("Image/promote{$i}.jpg"),
+            'alt' => "Promo {$i}",
+        ])->all();
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     }
 
     // ------------------------------------------------------------------

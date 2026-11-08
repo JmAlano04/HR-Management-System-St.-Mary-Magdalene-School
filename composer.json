@@ -14,8 +14,11 @@
         "hafizasifali/zkteco-php": "dev-main",
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.10.1",
+<<<<<<< HEAD
         "phpoffice/phpspreadsheet": "*",
         "resend/resend-php": "^1.17",
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         "spatie/laravel-permission": "^6.25"
     },
     "require-dev": {

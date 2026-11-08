@@ -9,6 +9,14 @@
         <h1 class="text-2xl font-extrabold leading-none ml-[80px] tracking-tight text-[#b22222] sm:text-4xl">Salary Monitoring</h1>
     </x-slot>
 
+<<<<<<< HEAD
+=======
+    @php
+        // Same row style as the Payroll Processing payslip
+        $row = 'flex min-h-[30px] items-center justify-between gap-3 border-b border-[#ecebea] text-[0.85rem] text-gray-500';
+    @endphp
+
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     <div
         class="px-4 pb-12 sm:px-6 lg:px-10"
         x-data="salaryMonitoring(@js([
@@ -34,12 +42,19 @@
                     <div class="flex flex-wrap items-center gap-[7px]">
                         <template x-for="b in buttons" :key="b.role">
                             <button type="button" @click="send(b.role)" :disabled="!canSend(b.role)" :title="hint(b.role)"
+<<<<<<< HEAD
                                 class="min-h-[32px] cursor-pointer rounded-lg border px-2.5 text-[0.72rem] font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-100"
                                 :class="allSent(b.role) && !hasSelectedToSend(b.role)
                                     ? 'border-[#99d6aa] bg-[#2f9e44]'
                                     : canSend(b.role)
                                         ? 'border-[#f1caca] bg-[#b22222] hover:bg-[#8d1111]'
                                         : 'border-gray-300 bg-gray-300 text-gray-600'"
+=======
+                                class="min-h-[32px] cursor-pointer rounded-lg border px-2.5 text-[0.72rem] font-extrabold text-white disabled:cursor-default disabled:opacity-90"
+                                :class="allSent(b.role) && !hasSelectedToSend(b.role)
+                                    ? 'border-[#99d6aa] bg-[#2f9e44]'
+                                    : 'border-[#f1caca] bg-[#b22222] hover:bg-[#8d1111]'"
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                                 x-text="label(b)"></button>
                         </template>
                     </div>
@@ -91,11 +106,23 @@
                                 <strong class="text-[0.95rem]" x-text="money(r.net)"></strong>
                             </span>
 
+<<<<<<< HEAD
                             <span class="min-w-[48px] text-center text-[0.78rem] font-extrabold text-gray-500" x-text="r.cutoff"></span>
                         </div>
 
                         <div class="flex flex-wrap gap-1.5 lg:justify-end">
                             <template x-for="role in ['hr', 'admin', 'employee']" :key="role">
+=======
+                            {{-- Payroll run: pay period + month --}}
+                            <span class="grid min-w-[110px] gap-[3px] text-center">
+                                <span class="text-[0.78rem] font-extrabold text-gray-700" x-text="r.cutoffLabel"></span>
+                                <small class="text-[0.72rem] font-semibold text-gray-500" x-text="r.period"></small>
+                            </span>
+                        </div>
+
+                        <div class="flex flex-wrap gap-1.5 lg:justify-end">
+                            <template x-for="role in ['admin', 'hr', 'employee']" :key="role">
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                                 <button type="button"
                                     class="inline-flex min-h-[30px] items-center gap-[5px] rounded-full border px-[9px] text-[0.7rem] font-extrabold"
                                     :class="[badge(r, role).css, badge(r, role).rejected ? 'cursor-pointer' : 'cursor-default']"
@@ -119,6 +146,7 @@
             @endif
         </section>
 
+<<<<<<< HEAD
         {{-- ============ Payslip modal ============ --}}
         <div x-show="slip" x-cloak x-transition.opacity @click.self="viewId = null"
             class="fixed inset-0 z-[60] grid place-items-center bg-[rgba(17,24,39,0.48)] p-5">
@@ -135,10 +163,33 @@
                             <strong class="text-[clamp(1.5rem,2vw,2.25rem)] font-extrabold leading-tight text-gray-900" x-text="slip.employee_name"></strong>
                             <span class="text-[0.82rem] text-gray-800" x-text="'ID: ' + slip.employee_number"></span>
                             <span class="text-[0.82rem] text-gray-500" x-text="slip.department + ' | ' + slip.position + ' | ' + slip.step_name"></span>
+=======
+        {{-- ============ Payslip modal (same layout as Payroll Processing) ============ --}}
+        <div x-show="slip" x-cloak x-transition.opacity @click.self="viewId = null"
+            class="fixed inset-0 z-[60] grid place-items-center bg-[rgba(17,24,39,0.48)] p-3">
+            <section role="dialog" aria-modal="true"
+                class="max-h-[calc(100vh-40px)] w-[min(900px,calc(100vw-40px))] overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden rounded-[28px] bg-white px-3.5 pb-3.5 pt-2 shadow-[0_20px_50px_rgba(15,23,42,0.08)]">
+                <div class="mb-2 flex justify-end">
+                    <button type="button" @click="viewId = null" aria-label="Close payslip"
+                        class="h-9 w-9 cursor-pointer rounded-[10px] text-lg text-gray-400 hover:bg-[#fef2f2] hover:text-[#b22222]">
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                    </button>
+                </div>
+
+                <template x-if="slip">
+                    <div class="bg-white">
+                        <div class="flex flex-col items-center gap-0.5 px-[18px] pb-[18px] pt-2.5 text-center">
+                            <strong class="text-[clamp(1.5rem,2vw,2.25rem)] font-extrabold leading-tight text-gray-900" x-text="slip.employee_name"></strong>
+                            <span class="text-[0.88rem] text-gray-800" x-text="'ID: ' + slip.employee_number"></span>
+                            <span class="text-[0.88rem] text-gray-500" x-text="slip.department + ' | ' + slip.position + ' | ' + slip.step_name"></span>
+                            <span class="text-[0.8rem] font-semibold text-gray-500"
+                                x-text="slip.period + ' | ' + slip.cutoff_label + (slip.cutoff_day ? ' | ' + slip.cutoff_day + ' Cutoff' : '')"></span>
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                         </div>
 
                         <div class="grid grid-cols-2 border-y border-[#ecebea] sm:grid-cols-5">
                             <template x-for="(m, k) in [
+<<<<<<< HEAD
                                 ['Date', slip.cutoff_label || slip.cutoff],
                                 ['Days worked', Number(slip.days_worked)],
                                 ['Hours worked', Number(slip.hours_worked)],
@@ -148,11 +199,23 @@
                                 <div class="grid justify-items-center gap-[3px] px-1.5 py-2.5 text-center" :class="k > 0 ? 'sm:border-l sm:border-[#ecebea]' : ''">
                                     <span class="text-[0.68rem] font-extrabold uppercase tracking-[0.08em] text-gray-500" x-text="m[0]"></span>
                                     <strong class="text-[0.95rem] text-gray-900" x-text="m[1]"></strong>
+=======
+                                ['Pay period', slip.cutoff],
+                                ['Days worked', slip.days_worked],
+                                ['Hours worked', slip.hours_worked],
+                                ['Late (mins)', slip.late_minutes],
+                                ['Monthly wage', money(slip.monthly_wage)]
+                            ]" :key="k">
+                                <div class="grid justify-items-center gap-[3px] px-1.5 py-2.5 text-center" :class="k > 0 ? 'sm:border-l sm:border-[#ecebea]' : ''">
+                                    <span class="text-[0.68rem] font-extrabold uppercase text-gray-500" x-text="m[0]"></span>
+                                    <strong class="text-[0.95rem]" x-text="m[1]"></strong>
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                                 </div>
                             </template>
                         </div>
 
                         <div class="grid sm:grid-cols-2">
+<<<<<<< HEAD
                             <section class="min-w-0 border-t border-[#ecebea] p-3">
                                 <h3 class="mb-2.5 text-[0.78rem] font-extrabold uppercase tracking-[0.08em] text-[#b22222]">Earnings</h3>
                                 <div class="flex min-h-[30px] items-center justify-between gap-3 border-b border-[#ecebea] text-[0.85rem] text-gray-500">
@@ -194,6 +257,47 @@
                         </div>
                     </div>
                 </template>
+=======
+                            {{-- Earnings --}}
+                            <section class="min-w-0 border-t border-[#ecebea] p-3">
+                                <h3 class="mb-2.5 text-[0.78rem] uppercase tracking-[0.08em] text-[#b22222]">Earnings</h3>
+                                <div class="{{ $row }}"><span>Basic salary</span><strong class="min-w-[120px] text-center text-gray-900" x-text="money(slip.basic_pay)"></strong></div>
+                                <div class="{{ $row }}"><span>Daily rate</span><strong class="min-w-[120px] text-center text-gray-900" x-text="money(slip.daily_wage)"></strong></div>
+                                <div class="{{ $row }}"><span>Honorarium</span><strong class="min-w-[120px] text-center text-gray-900" x-text="Number(slip.honorarium) > 0 ? money(slip.honorarium) : '-'"></strong></div>
+                                <div class="mt-2 flex min-h-[30px] items-center justify-between gap-3 text-[0.85rem] font-extrabold text-gray-900"><span>Gross earnings</span><strong class="min-w-[120px] text-center text-[#b22222]" x-text="money(slip.gross_pay)"></strong></div>
+                            </section>
+
+                            {{-- Deductions (same order and same "-" rules as Payroll Processing) --}}
+                            <section class="min-w-0 border-t border-[#ecebea] p-3 sm:border-l">
+                                <h3 class="mb-2.5 text-[0.78rem] uppercase tracking-[0.08em] text-[#b22222]">Deductions</h3>
+                                <template x-for="r in deductionRows" :key="r[1]">
+                                    <div class="{{ $row }}">
+                                        <span x-text="r[0]"></span>
+                                        <span class="min-w-[120px] text-center font-bold text-gray-900" x-text="deductionText(r[1])"></span>
+                                    </div>
+                                </template>
+                                <div class="mt-2 flex min-h-[30px] items-center justify-between gap-3 text-[0.85rem] font-extrabold text-gray-900"><span>Total deductions</span><strong class="min-w-[120px] text-center text-[#b22222]" x-text="'- ' + money(slip.total_deductions)"></strong></div>
+                            </section>
+                        </div>
+
+                        <div class="flex items-center justify-between gap-3 border-t-2 border-[#b22222] bg-[#fef2f2] px-5 py-[18px] font-black tracking-[0.08em] text-[#b22222]">
+                            <span>NET PAY</span>
+                            <strong class="text-[1.25rem] tracking-normal" x-text="money(slip.net_pay)"></strong>
+                        </div>
+                    </div>
+                </template>
+
+                <div class="mt-3 flex justify-between gap-2.5">
+                    <span>
+                        Received by:
+                        <span class="ml-2 inline-block min-w-[180px] border-b border-gray-500"></span>
+                    </span>
+                    <button type="button" @click="viewId = null"
+                        class="inline-flex min-h-[42px] cursor-pointer items-center justify-center gap-2 rounded-xl border border-[#f1caca] bg-[#b22222] px-4 font-bold text-white transition hover:bg-[#d93c3c]">
+                        Close
+                    </button>
+                </div>
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             </section>
         </div>
 
@@ -227,6 +331,7 @@
                     { role: 'employee', text: 'Send to Employees' },
                 ],
 
+<<<<<<< HEAD
                 deductionRows: [
                     ['MALASAKITAN', 'malasakitan'], ['Late', 'late'],
                     ['SSS', 'sss'], ['SSS LOAN', 'sss_loan'], ['PhilHealth', 'philhealth'],
@@ -234,20 +339,47 @@
                     ['HDMF', 'hdmf'], ['HDMF LOAN', 'hdmf_loan'], ['Cash advance', 'cash_advance'],
                 ],
 
+=======
+                // Same order as the Payroll Processing payslip: automatic items first, then loans / cash advance
+                deductionRows: [
+                    ['MALASAKITAN', 'malasakitan'], ['Late', 'late'], ['Absences', 'absences'],
+                    ['SSS', 'sss'], ['PhilHealth', 'philhealth'],
+                    ['HDMF', 'hdmf'], ['PERAA/CEAP', 'peraa_ceap'],
+                    ['SSS Loan', 'sss_loan'], ['PhilHealth Loan', 'philhealth_loan'],
+                    ['PERAA/CEAP Loan', 'peraa_ceap_loan'], ['HDMF Loan', 'hdmf_loan'],
+                    ['Cash advance', 'cash_advance'],
+                ],
+
+                // Deducted on the 30th pay period only (shown as "-" on the 15th, like Payroll Processing)
+                only30: ['sss', 'philhealth', 'peraa_ceap', 'sss_loan', 'philhealth_loan', 'peraa_ceap_loan', 'hdmf_loan'],
+
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                 get slip() { return this.viewId ? this.slips[this.viewId] : null; },
 
                 money(v) {
                     return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(Number(v) || 0);
                 },
 
+<<<<<<< HEAD
+=======
+                deductionText(key) {
+                    if (!this.slip) return '';
+                    if (this.only30.includes(key) && this.slip.cutoff !== '30th') return '-';
+                    return this.money(this.slip.deductions[key]);
+                },
+
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                 toggleAll(on) { this.selected = on ? this.rows.map((r) => r.id) : []; },
 
                 // ---- send rules (the server re-checks all of these) ----
                 rejected(r) { return r.admin.status === 'Rejected' || r.hr.status === 'Rejected'; },
+<<<<<<< HEAD
                 approvedByAdminAndHr(r) {
                     return [r.admin.status, r.hr.status]
                         .every((status) => String(status || '').trim().toLowerCase() === 'approved');
                 },
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                 needsSend(r, role) {
                     if (role === 'admin') return !r.admin.sent || this.rejected(r);
                     return !r.employee.sent;
@@ -261,9 +393,16 @@
                     return role === 'admin' && this.selectedToSend(role).some((r) => r.admin.sent);
                 },
                 ready(role) {
+<<<<<<< HEAD
                     if (role !== 'employee') return true;
                     const selected = this.selectedToSend(role);
                     return selected.length > 0 && selected.every((r) => this.approvedByAdminAndHr(r));
+=======
+                    if (role === 'employee') {
+                        return this.selectedToSend(role).every((r) => r.admin.status === 'Approved' && r.hr.status === 'Approved');
+                    }
+                    return true;
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                 },
                 canSend(role) { return this.hasSelectedToSend(role) && this.ready(role); },
 
@@ -292,7 +431,11 @@
                     let status, css, dot, rejected = false;
 
                     if (role === 'employee') {
+<<<<<<< HEAD
                         status = sent ? 'Sent' : 'Not yet sent';
+=======
+                        status = sent ? 'Approved' : 'Not yet sent';
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                     } else if (r[role].status === 'Rejected') {
                         status = 'Rejected'; rejected = true;
                     } else if (!sent) {
@@ -301,7 +444,11 @@
                         status = r[role].status === 'Approved' ? 'Approved' : 'Pending';
                     }
 
+<<<<<<< HEAD
                     if (status === 'Approved' || status === 'Sent') { css = 'border-[#a7d7b1] bg-[#f0faf2] text-[#217a38]'; dot = 'bg-[#2f9e44]'; }
+=======
+                    if (status === 'Approved') { css = 'border-[#a7d7b1] bg-[#f0faf2] text-[#217a38]'; dot = 'bg-[#2f9e44]'; }
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                     else if (status === 'Rejected') { css = 'border-[#fecaca] bg-[#fef2f2] text-[#b91c1c] hover:bg-[#fee2e2]'; dot = 'bg-[#b91c1c]'; }
                     else if (status === 'Pending') { css = 'border-[#f0cf72] bg-[#fff8df] text-[#8a6500]'; dot = 'bg-[#d49a00]'; }
                     else { css = 'border-dashed border-[#ecebea] bg-white text-gray-500'; dot = 'bg-gray-400'; }
@@ -310,4 +457,8 @@
                 },
             };
         }
+<<<<<<< HEAD
     </script>
+=======
+    </script>
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120

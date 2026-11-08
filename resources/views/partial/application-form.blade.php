@@ -3,13 +3,18 @@
     @php
         // Passed from ApplicationController@index (null if the applicant hasn't submitted yet)
         $application = $application ?? null;
+<<<<<<< HEAD
         $status = $application->status ?? null;
         $startStep = ! $application ? 1 : ($application->interview_completed_at ? 4 : 3);
+=======
+        $status = $application->status ?? null; // pending | qualified | rejected
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 
         // Titles of the currently open positions (from the job_openings table)
         $jobOpenings = $jobOpenings ?? collect();
 
         $inputClass = 'min-h-[50px] w-full rounded-lg border-2 border-gray-200 bg-white px-4 py-3 text-[15px] transition hover:border-gray-300 focus:border-[#b22222] focus:outline-none focus:ring-4 focus:ring-red-700/10';
+<<<<<<< HEAD
         $initialNameParts = preg_split('/\s+/', trim((string) ($user->name ?? '')), -1, PREG_SPLIT_NO_EMPTY) ?: [];
         $initialSuffix = '';
         if (count($initialNameParts) > 1 && preg_match('/^(jr\.?|sr\.?|ii|iii|iv|v)$/i', rtrim(end($initialNameParts), ','))) {
@@ -18,11 +23,17 @@
         $initialFirstName = array_shift($initialNameParts) ?? '';
         $initialLastName = count($initialNameParts) > 1 ? array_pop($initialNameParts) : (array_pop($initialNameParts) ?? '');
         $initialMiddleName = implode(' ', $initialNameParts);
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     @endphp
 
     <div
         class="bg-gradient-to-br from-[#f5f7fa] to-[#f5f7fa] px-5 py-10"
+<<<<<<< HEAD
         x-data="applicationForm({{ $startStep }}, {{ $application ? 'true' : 'false' }}, {{ $jobOpenings->isNotEmpty() ? 'true' : 'false' }})"
+=======
+        x-data="applicationForm({{ $application ? 3 : 1 }}, {{ $application ? 'true' : 'false' }}, {{ $jobOpenings->isNotEmpty() ? 'true' : 'false' }})"
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     >
         <div class="mx-auto max-w-[850px] rounded-2xl bg-white p-5 shadow-[0_20px_60px_rgba(0,0,0,0.15)] sm:p-12">
 
@@ -47,6 +58,7 @@
             {{-- Progress indicator --}}
             <div class="mb-12 flex items-center justify-between gap-1">
                 @foreach (['Basic Info', 'Documents', 'Interview', 'Status'] as $i => $label)
+<<<<<<< HEAD
                     @php
                         $n = $i + 1;
                         $stepCircleClass = match (true) {
@@ -61,6 +73,17 @@
                             @if ($stepCircleClass === '')
                                 :class="step > {{ $n }} ? 'bg-[#28a745] text-white shadow-[0_6px_20px_rgba(40,167,69,0.25)]' : (step === {{ $n }} ? 'bg-[#b22222] text-white shadow-[0_6px_20px_rgba(178,34,34,0.35)]' : 'bg-gray-200 text-gray-400')"
                             @endif
+=======
+                    @php $n = $i + 1; @endphp
+                    <div class="flex flex-1 flex-col items-center gap-2">
+                        <span
+                            class="flex h-10 w-10 items-center justify-center rounded-full text-base font-bold transition-all duration-300 sm:h-12 sm:w-12 sm:text-lg"
+                            :class="step === {{ $n }}
+                                ? 'scale-110 bg-[#b22222] text-white shadow-[0_6px_20px_rgba(178,34,34,0.35)]'
+                                : (step > {{ $n }}
+                                    ? 'bg-[#28a745] text-white shadow-[0_6px_20px_rgba(40,167,69,0.25)]'
+                                    : 'bg-gray-200 text-gray-400')"
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                         >{{ $n }}</span>
                         <span
                             class="text-center text-[11px] font-semibold transition sm:text-[13px]"
@@ -92,6 +115,7 @@
                     <div class="space-y-6">
                         {{-- Full name --}}
                         <div>
+<<<<<<< HEAD
                             <label class="mb-2 block font-semibold">Full Name <span class="font-bold text-red-600">*</span></label>
                             <div class="grid gap-4 sm:grid-cols-2">
                                 <div>
@@ -116,6 +140,13 @@
                                 </div>
                             </div>
                             <p class="mt-1 text-[13px] text-gray-500">Enter your legal name as it appears on your documents</p>
+=======
+                            <label for="fullname" class="mb-2 block font-semibold">Full Name <span class="font-bold text-red-600">*</span></label>
+                            <input type="text" id="fullname" name="fullname" value="{{ old('fullname', $user->name ?? '') }}" required
+                                placeholder="Enter your complete name" class="{{ $inputClass }}">
+                            <p class="mt-1 text-[13px] text-gray-500">Your legal first and last name</p>
+                            <p class="mt-1 text-[13px] font-semibold text-red-600">{{ $errors->first('fullname') }}</p>
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                         </div>
 
                         {{-- Email + Phone --}}
@@ -139,6 +170,7 @@
 
                         {{-- Address --}}
                         <div>
+<<<<<<< HEAD
                             <label class="mb-2 block font-semibold">Home Address <span class="font-bold text-red-600">*</span></label>
                             <div class="grid gap-4 sm:grid-cols-2">
                                 <div>
@@ -174,6 +206,13 @@
                                 </div>
                             </div>
                             <p class="mt-1 text-[13px] text-gray-500">Where HR can reach you if needed</p>
+=======
+                            <label for="home_address" class="mb-2 block font-semibold">Home Address <span class="font-bold text-red-600">*</span></label>
+                            <input type="text" id="home_address" name="home_address" value="{{ old('home_address') }}" required
+                                placeholder="House number, street, city, province" class="{{ $inputClass }}">
+                            <p class="mt-1 text-[13px] text-gray-500">Where HR can reach you if needed</p>
+                            <p class="mt-1 text-[13px] font-semibold text-red-600">{{ $errors->first('home_address') }}</p>
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                         </div>
 
                         {{-- Birth date + Gender --}}
@@ -321,12 +360,20 @@
                         <p class="text-[15px] text-gray-500">Please wait for Admin and HR Confirmation</p>
                     </div>
 
+<<<<<<< HEAD
                     @if (in_array($status, ['qualified', 'approved'], true))
+=======
+                    @if ($status === 'qualified')
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                         <div class="flex min-h-[300px] flex-col items-center justify-center rounded-xl border-2 border-[#28a745] bg-gradient-to-br from-[#d4edda] to-[#c3e6cb] p-10 text-center text-[#155724] shadow-[0_8px_25px_rgba(40,167,69,0.2)]">
                             <h3 class="mb-3 text-[28px] font-bold">🎉 Qualified</h3>
                             <p class="text-lg font-semibold">Congratulations! HR will contact you with the next steps.</p>
                         </div>
+<<<<<<< HEAD
                     @elseif (in_array($status, ['hr_rejected', 'rejected'], true))
+=======
+                    @elseif ($status === 'rejected')
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                         <div class="flex min-h-[300px] flex-col items-center justify-center rounded-xl border-2 border-[#dc3545] bg-gradient-to-br from-[#f8d7da] to-[#f5c6cb] p-10 text-center text-[#721c24] shadow-[0_8px_25px_rgba(220,53,69,0.2)]">
                             <h3 class="mb-3 text-[28px] font-bold">Not Qualified</h3>
                             <p class="text-lg font-semibold">Thank you for applying. Unfortunately, your application was not successful.</p>
@@ -334,6 +381,7 @@
                                 <p class="mt-1 max-w-[680px] font-medium">{{ $application->rejection_reason }}</p>
                             @endif
                         </div>
+<<<<<<< HEAD
                     @elseif ($status === 'hr_approved')
                         <div class="flex min-h-[300px] flex-col items-center justify-center rounded-xl border-2 border-[#ffc107] bg-gradient-to-br from-[#fff3cd] to-[#ffeaa7] p-10 text-center text-[#856404] shadow-[0_8px_25px_rgba(255,193,7,0.2)]">
                             <h3 class="mb-3 text-[28px] font-bold">⏳ Awaiting Admin Approval</h3>
@@ -343,6 +391,12 @@
                         <div class="flex min-h-[300px] flex-col items-center justify-center rounded-xl border-2 border-[#ffc107] bg-gradient-to-br from-[#fff3cd] to-[#ffeaa7] p-10 text-center text-[#856404] shadow-[0_8px_25px_rgba(255,193,7,0.2)]">
                             <h3 class="mb-3 text-[28px] font-bold">⏳ Awaiting HR and Admin Approval</h3>
                             <p class="text-lg font-semibold">Your interview is complete. HR will review your application first, followed by Admin.</p>
+=======
+                    @else
+                        <div class="flex min-h-[300px] flex-col items-center justify-center rounded-xl border-2 border-[#ffc107] bg-gradient-to-br from-[#fff3cd] to-[#ffeaa7] p-10 text-center text-[#856404] shadow-[0_8px_25px_rgba(255,193,7,0.2)]">
+                            <h3 class="mb-3 text-[28px] font-bold">⏳ Pending</h3>
+                            <p class="text-lg font-semibold">Waiting for Admin and HR confirmation...</p>
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                         </div>
                     @endif
                 </div>
@@ -356,6 +410,19 @@
                         Back
                     </button>
 
+<<<<<<< HEAD
+=======
+                    {{-- After submitting: only move between steps 3 and 4 --}}
+                    <button type="button" x-show="submitted && step === 4" @click="step = 3"
+                        class="min-w-[140px] cursor-pointer rounded-lg bg-gray-100 px-7 py-3.5 font-bold text-gray-800 transition hover:bg-gray-300">
+                        Back
+                    </button>
+                    <button type="button" x-show="submitted && step === 3" @click="step = 4"
+                        class="min-w-[140px] cursor-pointer rounded-lg bg-[#b22222] px-7 py-3.5 font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#8b1a1a] hover:shadow-[0_6px_20px_rgba(178,34,34,0.4)]">
+                        Next
+                    </button>
+
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                     {{-- Step 1 -> 2 --}}
                     <button type="button" x-show="step === 1 && !submitted" @click="next()" :disabled="!hasOpenings"
                         class="min-w-[140px] cursor-pointer rounded-lg bg-[#b22222] px-7 py-3.5 font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#8b1a1a] hover:shadow-[0_6px_20px_rgba(178,34,34,0.4)] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:shadow-none">

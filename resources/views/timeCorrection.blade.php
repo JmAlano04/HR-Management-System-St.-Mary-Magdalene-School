@@ -30,9 +30,15 @@
                                 @break
 
                             @case('HR')
+<<<<<<< HEAD
                                 <div class="mt-2 text-blue-700">
                                     @include('partial.timeCorrection-dashboard')
                                 </div>
+=======
+                                <p class="mt-2 text-blue-700">
+                                    @include('partial.timeCorrection-dashboard')
+                                </p>
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                                 @break
 
                             @case('Employee')

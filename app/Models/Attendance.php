@@ -18,6 +18,7 @@ class Attendance extends Model
     public const PRESENT      = 'Present';
     public const LATE         = 'Late';
     public const HALF_DAY     = 'Half Day';
+<<<<<<< HEAD
     public const UNDERTIME    = 'Undertime';
     public const PAID_LEAVE   = 'Paid Leave';
     public const UNPAID_LEAVE = 'Unpaid Leave';
@@ -33,6 +34,16 @@ class Attendance extends Model
     /** Statuses selectable in the Add Attendance form. */
     public const FORM_STATUSES = [
         self::PRESENT, self::LATE, self::HALF_DAY, self::UNDERTIME,
+=======
+    public const PAID_LEAVE   = 'Paid Leave';
+    public const UNPAID_LEAVE = 'Unpaid Leave';
+    public const ABSENT       = 'Absent';
+    public const NWD_REVIEW   = 'Non-Working Day Review';
+
+    /** Statuses selectable in the Add Attendance form. */
+    public const FORM_STATUSES = [
+        self::PRESENT, self::LATE, self::HALF_DAY,
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         self::PAID_LEAVE, self::UNPAID_LEAVE, self::ABSENT,
     ];
 
@@ -168,7 +179,11 @@ class Attendance extends Model
     public static function computeDaysWorked(string $status): float
     {
         return match ($status) {
+<<<<<<< HEAD
             self::PRESENT, self::LATE, self::UNDERTIME => 1.0,
+=======
+            self::PRESENT, self::LATE => 1.0,
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             self::HALF_DAY            => 0.5,
             default                   => 0.0,
         };

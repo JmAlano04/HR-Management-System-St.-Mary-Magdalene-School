@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Application;
 use App\Models\JobOpening;
+<<<<<<< HEAD
 use App\Services\HrmsNotifier;
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -22,7 +25,11 @@ class ApplicationController extends Controller
     {
         return view('application-form', [
             'application' => Application::where('user_id', Auth::id())->first(),
+<<<<<<< HEAD
             'user' => Auth::user(),
+=======
+            'user'        => Auth::user(),
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             // Only positions that are currently open (managed from the Open Positions page)
             'jobOpenings' => JobOpening::orderBy('title')->pluck('title'),
         ]);
@@ -37,6 +44,7 @@ class ApplicationController extends Controller
         }
 
         $data = $request->validate([
+<<<<<<< HEAD
             'first_name' => 'required|string|max:75',
             'middle_name' => 'nullable|string|max:75',
             'last_name' => 'required|string|max:75',
@@ -97,10 +105,33 @@ class ApplicationController extends Controller
 
         // Use the same disk the Application model reads from
         $disk = Application::DOCUMENT_DISK;
+=======
+            'fullname'     => 'required|string|max:255',
+            'email'        => 'required|email|max:255',
+            'phone'        => 'required|digits:11',
+            'home_address' => 'required|string|max:255',
+            'birth_date'   => 'required|date|before_or_equal:' . now()->subYears(18)->toDateString(),
+            'gender'       => 'required|in:Male,Female,Other',
+            'civil_status' => 'required|in:Single,Married,Widowed,Separated,Divorced',
+            'education'    => ['required', Rule::in(self::EDUCATION)],
+            // Must be one of the currently open positions
+            'position'     => ['required', 'string', Rule::exists('job_openings', 'title')],
+            'resume'       => 'required|file|mimes:pdf|max:5120',
+            'coverletter'  => 'required|file|mimes:pdf|max:5120',
+            'appletter'    => 'required|file|mimes:pdf|max:5120',
+        ], [
+            'birth_date.before_or_equal' => 'You must be at least 18 years old.',
+            'position.exists'            => 'That position is no longer open. Please choose another one.',
+        ]);
+
+        // Use the same disk the Application model reads from
+        $disk   = Application::DOCUMENT_DISK;
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         $stored = [];
 
         try {
             foreach (array_keys(Application::DOCUMENTS) as $doc) {
+<<<<<<< HEAD
                 $file = $request->file($doc);
                 $originalName = basename(str_replace('\\', '/', $file->getClientOriginalName()));
                 $originalName = preg_replace('/[\x00-\x1F\x7F]/', '', $originalName) ?: 'document.pdf';
@@ -116,6 +147,16 @@ class ApplicationController extends Controller
             $data['status'] = 'pending';
 
             $application = Application::create($data);
+=======
+                $data[$doc] = $stored[] = $request->file($doc)
+                    ->store('applications/' . Auth::id(), $disk);
+            }
+
+            $data['user_id'] = Auth::id();
+            $data['status']  = 'pending';
+
+            Application::create($data);
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         } catch (QueryException $e) {
             // Don't leave orphaned files if the insert fails
             Storage::disk($disk)->delete($stored);
@@ -129,8 +170,14 @@ class ApplicationController extends Controller
             throw $e;
         }
 
+<<<<<<< HEAD
         HrmsNotifier::newApplicant($application);
 
         return redirect()->route('applications.index')->with('success', 'Application submitted!');
     }
 }
+=======
+        return redirect()->route('applications.index')->with('success', 'Application submitted!');
+    }
+}
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120

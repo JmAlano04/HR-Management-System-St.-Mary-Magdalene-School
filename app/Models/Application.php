@@ -17,23 +17,36 @@ class Application extends Model
 
     // column name => display meta
     public const DOCUMENTS = [
+<<<<<<< HEAD
         'resume' => ['label' => 'Resume'],
         'coverletter' => ['label' => 'Cover Letter'],
         'appletter' => ['label' => 'Application Letter'],
+=======
+        'resume'      => ['label' => 'Resume'],
+        'coverletter' => ['label' => 'Cover Letter'],
+        'appletter'   => ['label' => 'Application Letter'],
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     ];
 
     // Statuses that mean the application is finished (goes to the Archive tab)
     public const APPROVED_STATUSES = ['qualified', 'approved'];
+<<<<<<< HEAD
 
     public const REJECTED_STATUSES = ['hr_rejected', 'rejected'];
+=======
+    public const REJECTED_STATUSES = ['rejected'];
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 
     protected $fillable = [
         'user_id',
         'fullname',
+<<<<<<< HEAD
         'first_name',
         'middle_name',
         'last_name',
         'suffix',
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         'email',
         'phone',
         'home_address',
@@ -46,6 +59,7 @@ class Application extends Model
         'resume',
         'coverletter',
         'appletter',
+<<<<<<< HEAD
         'resume_original_name',
         'coverletter_original_name',
         'appletter_original_name',
@@ -53,14 +67,24 @@ class Application extends Model
         'interview_time',
         'interview_location',
         'interview_completed_at',
+=======
+        'interview_date',
+        'interview_time',
+        'interview_location',
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         'status',
         'rejection_reason',
     ];
 
     protected $casts = [
+<<<<<<< HEAD
         'birth_date' => 'date',
         'interview_date' => 'date',
         'interview_completed_at' => 'datetime',
+=======
+        'birth_date'     => 'date',
+        'interview_date' => 'date',
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     ];
 
     /* ---------- Relationships ---------- */
@@ -83,7 +107,11 @@ class Application extends Model
     }
 
     /**
+<<<<<<< HEAD
      * Filter by key: pending | scheduled | admin_review | approved | rejected
+=======
+     * Filter by key: pending | scheduled | approved | rejected
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
      * Empty string / unknown key = no filter.
      */
     public function scopeStatusKey(Builder $query, ?string $key): Builder
@@ -91,12 +119,20 @@ class Application extends Model
         $finished = array_merge(self::APPROVED_STATUSES, self::REJECTED_STATUSES);
 
         return match ($key) {
+<<<<<<< HEAD
             'approved' => $query->whereIn('status', self::APPROVED_STATUSES),
             'rejected' => $query->whereIn('status', self::REJECTED_STATUSES),
             'admin_review' => $query->where('status', 'hr_approved'),
             'scheduled' => $query->whereNotIn('status', [...$finished, 'hr_approved'])->whereNotNull('interview_date'),
             'pending' => $query->whereNotIn('status', [...$finished, 'hr_approved'])->whereNull('interview_date'),
             default => $query,
+=======
+            'approved'  => $query->whereIn('status', self::APPROVED_STATUSES),
+            'rejected'  => $query->whereIn('status', self::REJECTED_STATUSES),
+            'scheduled' => $query->whereNotIn('status', $finished)->whereNotNull('interview_date'),
+            'pending'   => $query->whereNotIn('status', $finished)->whereNull('interview_date'),
+            default     => $query,
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         };
     }
 
@@ -111,8 +147,13 @@ class Application extends Model
 
         return $query->where(function (Builder $q) use ($term) {
             $q->where('fullname', 'like', "%{$term}%")
+<<<<<<< HEAD
                 ->orWhere('email', 'like', "%{$term}%")
                 ->orWhere('position', 'like', "%{$term}%");
+=======
+              ->orWhere('email', 'like', "%{$term}%")
+              ->orWhere('position', 'like', "%{$term}%");
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 
             if (preg_match('/(\d+)/', $term, $m)) {
                 $q->orWhere('id', (int) $m[1]);
@@ -125,10 +166,17 @@ class Application extends Model
     // Display code, e.g. APP-00012
     public function getCodeAttribute(): string
     {
+<<<<<<< HEAD
         return 'APP-'.str_pad((string) $this->id, 5, '0', STR_PAD_LEFT);
     }
 
     // pending | scheduled | admin_review | approved | rejected
+=======
+        return 'APP-' . str_pad((string) $this->id, 5, '0', STR_PAD_LEFT);
+    }
+
+    // pending | scheduled | approved | rejected
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     public function getStatusKeyAttribute(): string
     {
         if (in_array($this->status, self::APPROVED_STATUSES, true)) {
@@ -137,9 +185,12 @@ class Application extends Model
         if (in_array($this->status, self::REJECTED_STATUSES, true)) {
             return 'rejected';
         }
+<<<<<<< HEAD
         if ($this->status === 'hr_approved') {
             return 'admin_review';
         }
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 
         return $this->interview_date ? 'scheduled' : 'pending';
     }
@@ -148,11 +199,18 @@ class Application extends Model
     public function getWorkflowStatusAttribute(): string
     {
         return match ($this->status_key) {
+<<<<<<< HEAD
             'approved' => 'Approved',
             'rejected' => $this->status === 'hr_rejected' ? 'Rejected by HR' : 'Rejected by Admin',
             'admin_review' => 'Awaiting Admin Review',
             'scheduled' => 'Interview Scheduled',
             default => 'Pending Review',
+=======
+            'approved'  => 'Approved',
+            'rejected'  => 'Rejected',
+            'scheduled' => 'Interview Scheduled',
+            default     => 'Pending Review',
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         };
     }
 
@@ -186,6 +244,7 @@ class Application extends Model
     // Admin/HR can decide only after the interview is done, and only once
     public function getCanDecideAttribute(): bool
     {
+<<<<<<< HEAD
         return $this->can_hr_decide || $this->can_admin_decide;
     }
 
@@ -203,6 +262,15 @@ class Application extends Model
     public function getCanAdminDecideAttribute(): bool
     {
         return $this->status === 'hr_approved';
+=======
+        if ($this->is_archived) {
+            return false;
+        }
+
+        $at = $this->interview_at;
+
+        return $at !== null && $at->lte(now());
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     }
 
     /* ---------- Helpers ---------- */
@@ -216,6 +284,7 @@ class Application extends Model
 
         return $this->getAttribute($type) ?: null;
     }
+<<<<<<< HEAD
 
     public function documentOriginalName(string $type): ?string
     {
@@ -227,3 +296,6 @@ class Application extends Model
             ?: self::DOCUMENTS[$type]['label'].'.pdf';
     }
 }
+=======
+}
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120

@@ -4,11 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Models\Payslip;
 use App\Models\User;
+<<<<<<< HEAD
 use App\Services\HrmsNotifier;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+=======
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Barryvdh\DomPDF\Facade\Pdf;
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 
 class PayslipController extends Controller
 {
@@ -21,16 +28,47 @@ class PayslipController extends Controller
         $this->authorizePayrollView();
 
         $prefix = $this->stagePrefix();          // 'hr' or 'admin'
+<<<<<<< HEAD
+=======
+        $stage  = $prefix === Payslip::STAGE_HR ? 'HR' : 'Admin';
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 
         $sentToAdminQuery = fn () => Payslip::query()->sentToAdmin();
 
         $summary = [
+<<<<<<< HEAD
             'total' => $sentToAdminQuery()->count(),
             'pending' => $sentToAdminQuery()->stageStatus($prefix, Payslip::PENDING)->count(),
+=======
+            'total'    => $sentToAdminQuery()->count(),
+            'pending'  => $sentToAdminQuery()->stageStatus($prefix, Payslip::PENDING)->count(),
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             'approved' => $sentToAdminQuery()->stageStatus($prefix, Payslip::APPROVED)->count(),
             'rejected' => $sentToAdminQuery()->stageStatus($prefix, Payslip::REJECTED)->count(),
         ];
 
+<<<<<<< HEAD
+=======
+        // Ready for employee release only when BOTH Admin and HR approved everything
+        $allApproved = $summary['total'] > 0
+            && ! $sentToAdminQuery()
+                ->where(fn ($q) => $q
+                    ->where('admin_status', '!=', Payslip::APPROVED)
+                    ->orWhere('hr_status', '!=', Payslip::APPROVED))
+                ->exists();
+
+        $statusText = match (true) {
+            $summary['total'] === 0 =>
+                'Waiting for salary transfer',
+
+            $allApproved =>
+                'All payslips approved and ready for employee release',
+
+            default =>
+                "{$summary['approved']} of {$summary['total']} payslips approved by {$stage}",
+        };
+
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         $payslips = $sentToAdminQuery()
             ->with(['employee', 'response'])
             ->orderByDesc('transfer_date')
@@ -40,11 +78,20 @@ class PayslipController extends Controller
 
         // NOTE: change to view('payroll') if your file is resources/views/payroll.blade.php
         return view('payroll', [
+<<<<<<< HEAD
             'payslips' => $payslips,
             'cards' => $payslips->getCollection()
                 ->map->toCard()
                 ->keyBy('id'),
             'summary' => $summary,
+=======
+            'payslips'   => $payslips,
+            'cards'      => $payslips->getCollection()
+                ->map->toCard()
+                ->keyBy('id'),
+            'summary'    => $summary,
+            'statusText' => $statusText,
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         ]);
     }
 
@@ -67,6 +114,7 @@ class PayslipController extends Controller
             ]);
         }
 
+<<<<<<< HEAD
         if ($prefix === Payslip::STAGE_ADMIN
             && $payslip->stageStatus(Payslip::STAGE_HR) !== 'approved') {
             return back()->withErrors([
@@ -79,6 +127,9 @@ class PayslipController extends Controller
         $prefix === Payslip::STAGE_HR
             ? HrmsNotifier::payslipHrDecided($payslip)
             : HrmsNotifier::payslipAdminDecided($payslip);
+=======
+        $payslip->approveStage($prefix, Auth::id());
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 
         return back()->with('success', 'Payslip approved.');
     }
@@ -92,7 +143,11 @@ class PayslipController extends Controller
 
         $data = $request->validate([
             'payslip_id' => ['required', 'integer', 'exists:payslips,id'],
+<<<<<<< HEAD
             'reason' => ['required', 'string', 'max:1000'],
+=======
+            'reason'     => ['required', 'string', 'max:1000'],
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         ]);
 
         $payslip = Payslip::sentToAdmin()->findOrFail($data['payslip_id']);
@@ -103,6 +158,7 @@ class PayslipController extends Controller
             ]);
         }
 
+<<<<<<< HEAD
         if ($prefix === Payslip::STAGE_ADMIN
             && $payslip->stageStatus(Payslip::STAGE_HR) === 'pending') {
             return back()->withErrors([
@@ -115,6 +171,9 @@ class PayslipController extends Controller
         $prefix === Payslip::STAGE_HR
             ? HrmsNotifier::payslipHrDecided($payslip)
             : HrmsNotifier::payslipAdminDecided($payslip);
+=======
+        $payslip->rejectStage($prefix, $data['reason'], Auth::id());
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 
         return back()->with('success', 'Payslip rejected.');
     }
@@ -126,6 +185,7 @@ class PayslipController extends Controller
     {
         $prefix = $this->authorizeReviewer();
 
+<<<<<<< HEAD
         $pending = Payslip::sentToAdmin()
             ->stageStatus($prefix, Payslip::PENDING);
         if ($prefix === Payslip::STAGE_ADMIN) {
@@ -136,6 +196,12 @@ class PayslipController extends Controller
         $count = $pending
             ->update([
                 Payslip::stageColumn($prefix, 'status') => Payslip::APPROVED,
+=======
+        $count = Payslip::sentToAdmin()
+            ->stageStatus($prefix, Payslip::PENDING)
+            ->update([
+                Payslip::stageColumn($prefix, 'status')      => Payslip::APPROVED,
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                 Payslip::stageColumn($prefix, 'reviewed_at') => now(),
                 Payslip::stageColumn($prefix, 'reviewed_by') => Auth::id(),
             ]);
@@ -146,6 +212,7 @@ class PayslipController extends Controller
             ]);
         }
 
+<<<<<<< HEAD
         foreach (Payslip::whereIn('id', $payslipIds)->get() as $payslip) {
             $prefix === Payslip::STAGE_HR
                 ? HrmsNotifier::payslipHrDecided($payslip)
@@ -155,6 +222,11 @@ class PayslipController extends Controller
         return back()->with(
             'success',
             $count.' '.($count === 1 ? 'payslip' : 'payslips').' approved.'
+=======
+        return back()->with(
+            'success',
+            $count . ' ' . ($count === 1 ? 'payslip' : 'payslips') . ' approved.'
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         );
     }
 
@@ -173,7 +245,11 @@ class PayslipController extends Controller
         $name = "payslip-{$payslip->employee?->employee_id}-{$date}-{$payslip->cutoff}.pdf";
 
         return Pdf::loadView('pdf', [
+<<<<<<< HEAD
             'card' => $payslip->toEmployeeCard(),
+=======
+            'card'    => $payslip->toEmployeeCard(),
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             'payslip' => $payslip,
         ])->setPaper('a4')->download($name);
     }
@@ -222,4 +298,8 @@ class PayslipController extends Controller
             ? Payslip::STAGE_HR
             : Payslip::STAGE_ADMIN;
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120

@@ -2,10 +2,15 @@
 
 namespace App\Http\Controllers;
 
+<<<<<<< HEAD
 use App\Models\Employee;
 use App\Models\EmployeeDocument;
 use App\Models\SubmissionBox;
 use App\Services\HrmsNotifier;
+=======
+use App\Models\EmployeeDocument;
+use App\Models\SubmissionBox;
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,6 +22,7 @@ class DocumentController extends Controller
     /** HR document management: stats, submission boxes and the files employees uploaded. */
     public function index()
     {
+<<<<<<< HEAD
         $boxes = SubmissionBox::with(['documents.employee', 'recipient'])->latest()->get();
 
         return view('hr-document', [
@@ -25,6 +31,12 @@ class DocumentController extends Controller
                 ->whereNotNull('user_id')
                 ->orderBy('name')
                 ->get(['id', 'name', 'employee_id']),
+=======
+        $boxes = SubmissionBox::with('documents.employee')->latest()->get();
+
+        return view('hr-document', [
+            'boxes'      => $boxes->map->toCard()->values(),
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             'stats'      => [
                 'total'    => EmployeeDocument::count(),
                 'approved' => EmployeeDocument::where('status', EmployeeDocument::APPROVED)->count(),
@@ -42,6 +54,7 @@ class DocumentController extends Controller
             'name'         => ['required', 'string', 'max:150'],
             'type'         => ['required', 'string', 'max:100'],
             'deadline'     => ['nullable', 'date', 'after_or_equal:today'],
+<<<<<<< HEAD
             'employee_id'  => ['nullable', 'integer', 'exists:employees,id'],
             'instructions' => ['nullable', 'string', 'max:1000'],
         ]);
@@ -54,6 +67,12 @@ class DocumentController extends Controller
         foreach ($recipients as $employeeId) {
             HrmsNotifier::documentsRequested($box, (int) $employeeId);
         }
+=======
+            'instructions' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        SubmissionBox::create($data + ['created_by' => Auth::id()]);
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 
         return redirect()->route('documents.index')->with('success', 'Submission box created.');
     }
@@ -69,11 +88,17 @@ class DocumentController extends Controller
         $document = EmployeeDocument::findOrFail($data['document_id']);
 
         if ($data['decision'] === EmployeeDocument::REJECTED) {
+<<<<<<< HEAD
             HrmsNotifier::documentsReviewed($document, $data['decision']);
 
             // Burahin muna ang file sa storage, tapos ang record
             if ($document->file_path) {
                 Storage::disk('local')->delete($document->file_path);
+=======
+            // Burahin muna ang file sa storage, tapos ang record
+            if ($document->file_path) {
+                Storage::disk('public')->delete($document->file_path);
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             }
 
             $document->delete();
@@ -83,7 +108,10 @@ class DocumentController extends Controller
                 'reviewed_at' => now(),
                 'reviewed_by' => Auth::id(),
             ]);
+<<<<<<< HEAD
             HrmsNotifier::documentsReviewed($document, $data['decision']);
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         }
 
         return redirect()->route('documents.index')

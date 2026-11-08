@@ -11,6 +11,7 @@ class NotificationController extends Controller
     public function index(Request $request)
     {
         return view('notifications.index', [
+<<<<<<< HEAD
             'notifications' => $request->user()->notifications()->latest()->paginate(20),
         ]);
     }
@@ -49,17 +50,45 @@ class NotificationController extends Controller
             'items' => $notifications->getCollection()->map(fn ($notification) => $this->toItem($notification)),
             'has_more' => $notifications->hasMorePages(),
         ])->header('Cache-Control', 'no-store, private');
+=======
+            'notifications' => $request->user()->notifications()->paginate(20),
+        ]);
+    }
+
+    /** Small JSON feed for the bell dropdown (polled every 30s). */
+    public function feed(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        return response()->json([
+            'unread' => $user->unreadNotifications()->count(),
+            'items'  => $user->notifications()->limit(10)->get()->map(fn ($n) => [
+                'id'      => $n->id,
+                'title'   => $n->data['title'] ?? '',
+                'message' => $n->data['message'] ?? '',
+                'url'     => $n->data['url'] ?? null,
+                'type'    => $n->data['type'] ?? 'info',
+                'read'    => $n->read_at !== null,
+                'time'    => $n->created_at->diffForHumans(),
+            ]),
+        ]);
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     }
 
     public function read(Request $request, string $id): JsonResponse
     {
+<<<<<<< HEAD
         $request->user()->notifications()->whereNull('archived_at')->whereKey($id)->first()?->markAsRead();
+=======
+        $request->user()->notifications()->whereKey($id)->first()?->markAsRead();
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 
         return response()->json(['ok' => true]);
     }
 
     public function readAll(Request $request): JsonResponse
     {
+<<<<<<< HEAD
         $request->user()->unreadNotifications()->whereNull('archived_at')->update(['read_at' => now()]);
 
         return response()->json(['ok' => true]);
@@ -124,4 +153,10 @@ class NotificationController extends Controller
             'sent' => $notification->created_at->format('M j, Y g:i A'),
         ];
     }
+=======
+        $request->user()->unreadNotifications->markAsRead();
+
+        return response()->json(['ok' => true]);
+    }
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 }

@@ -9,7 +9,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class SubmissionBox extends Model
 {
+<<<<<<< HEAD
     protected $fillable = ['name', 'type', 'deadline', 'instructions', 'employee_id', 'is_active', 'created_by'];
+=======
+    protected $fillable = ['name', 'type', 'deadline', 'instructions', 'is_active', 'created_by'];
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 
     protected function casts(): array
     {
@@ -29,11 +33,14 @@ class SubmissionBox extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+<<<<<<< HEAD
     public function recipient(): BelongsTo
     {
         return $this->belongsTo(Employee::class, 'employee_id');
     }
 
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     /** Boxes employees can currently see (employee side). */
     public function scopeActive(Builder $query): Builder
     {
@@ -72,7 +79,10 @@ class SubmissionBox extends Model
             'type'         => $this->type,
             'deadline'     => $this->deadline?->format('M j, Y'),
             'instructions' => $this->instructions,
+<<<<<<< HEAD
             'recipient'    => $this->recipient?->name ?? 'All employees',
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             'active'       => $this->is_active,
             'employees'    => $employees,
         ];

@@ -2,9 +2,15 @@
 
 namespace App\Http\Controllers;
 
+<<<<<<< HEAD
 use App\Models\Employee;
 use App\Models\OffboardingCase;
 use App\Services\HrmsNotifier;
+=======
+use App\Http\Controllers\Controller;
+use App\Models\Employee;
+use App\Models\OffboardingCase;
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -23,9 +29,15 @@ class EmployeeOffboardingController extends Controller
             ->first();
 
         return view('offboarding', [
+<<<<<<< HEAD
             'employee' => $employee,
             'case' => $case,
             'requiredLabels' => $case?->required_document_labels ?? [],
+=======
+            'employee'         => $employee,
+            'case'             => $case,
+            'requiredLabels'   => OffboardingCase::REQUIRED_DOCUMENTS,
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             'requirementsSent' => $case?->requirementsSent() ?? false,
         ]);
     }
@@ -46,6 +58,7 @@ class EmployeeOffboardingController extends Controller
             'employee_message' => ['nullable', 'string', 'max:2000'],
         ]);
 
+<<<<<<< HEAD
         $case = OffboardingCase::create([
             'employee_id' => $employee->id,
             'reason' => 'Resignation',
@@ -57,6 +70,17 @@ class EmployeeOffboardingController extends Controller
 
         HrmsNotifier::offboardingSubmitted($case);
 
+=======
+        OffboardingCase::create([
+            'employee_id'      => $employee->id,
+            'reason'           => 'Resignation',
+            'last_working_day' => $data['last_working_day'],
+            'employee_message' => $data['employee_message'] ?? null,
+            'status'           => 'Open',
+            'progress'         => 10,
+        ]);
+
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         return redirect()
             ->route('offboarding.employee.index')
             ->with('success', 'Your request was sent to HR. You can track its status here.');
@@ -66,7 +90,11 @@ class EmployeeOffboardingController extends Controller
     {
         abort_unless($case->employee_id === $this->employee($request)->id, 403);
 
+<<<<<<< HEAD
         if (in_array($case->status, ['Closed', 'Rejected'], true) || $case->sent_to_admin) {
+=======
+        if (in_array($case->status, ['Closed', 'Rejected'], true)) {
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             return back()->withErrors(['documents' => 'This request is no longer accepting documents.']);
         }
 
@@ -75,7 +103,11 @@ class EmployeeOffboardingController extends Controller
         }
 
         $request->validate([
+<<<<<<< HEAD
             'documents' => ['required', 'array'],
+=======
+            'documents'   => ['required', 'array'],
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             'documents.*' => ['nullable', 'file', 'mimes:pdf,png,jpg,jpeg,doc,docx', 'max:10240'],
         ]);
 
@@ -86,14 +118,23 @@ class EmployeeOffboardingController extends Controller
             return back()->withErrors(['documents' => 'Choose at least one required document before sending.']);
         }
 
+<<<<<<< HEAD
         if (array_diff(array_keys($files), $case->uploadableDocumentLabels())) {
+=======
+        if (array_diff(array_keys($files), OffboardingCase::uploadableLabels())) {
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             return back()->withErrors(['documents' => 'One or more documents are not part of your requirements.']);
         }
 
         $sent = 0;
+<<<<<<< HEAD
         $submittedDocuments = [];
 
         DB::transaction(function () use ($case, $files, &$sent, &$submittedDocuments) {
+=======
+
+        DB::transaction(function () use ($case, $files, &$sent) {
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             foreach ($files as $label => $file) {
                 $existing = $case->documents()->where('document_label', $label)->first();
 
@@ -108,6 +149,7 @@ class EmployeeOffboardingController extends Controller
                     Storage::disk(OffboardingCase::DOCUMENT_DISK)->delete($existing->file_path);
                 }
 
+<<<<<<< HEAD
                 $document = $case->documents()->updateOrCreate(
                     ['document_label' => $label],
                     [
@@ -125,12 +167,31 @@ class EmployeeOffboardingController extends Controller
             }
 
             $case->refreshProgress();
+=======
+                $case->documents()->updateOrCreate(
+                    ['document_label' => $label],
+                    [
+                        'file_name'        => $file->getClientOriginalName(),
+                        'file_path'        => $path,
+                        'review_status'    => 'Under review',
+                        'rejection_reason' => null,
+                        'reviewed_at'      => null,
+                        'reviewed_by'      => null,
+                    ]
+                );
+
+                $sent++;
+            }
+
+            $case->update(['progress' => max($case->progress, 30)]);
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         });
 
         if ($sent === 0) {
             return back()->withErrors(['documents' => 'Those documents are already approved.']);
         }
 
+<<<<<<< HEAD
         foreach ($submittedDocuments as $document) {
             HrmsNotifier::offboardingRequirementSubmitted($document);
         }
@@ -138,6 +199,11 @@ class EmployeeOffboardingController extends Controller
         return redirect()
             ->route('offboarding.employee.index')
             ->with('success', $sent.' '.str('document')->plural($sent).' sent to HR.');
+=======
+        return redirect()
+            ->route('employee.offboarding.index')
+            ->with('success', $sent . ' ' . str('document')->plural($sent) . ' sent to HR.');
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     }
 
     private function employee(Request $request): Employee
@@ -148,4 +214,8 @@ class EmployeeOffboardingController extends Controller
 
         return $employee;
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120

@@ -7,7 +7,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Employee\StoreEmployeeDocumentRequest;
 use App\Models\EmployeeDocument;
 use App\Models\SubmissionBox;
+<<<<<<< HEAD
 use App\Services\HrmsNotifier;
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -28,6 +31,7 @@ class EmployeeDocumentController extends Controller
         $employee = $request->user()->employee;
 
         $boxes = SubmissionBox::active()
+<<<<<<< HEAD
             ->where(function ($query) use ($employee) {
                 $query->whereNull('employee_id')->orWhere('employee_id', $employee->id);
             })
@@ -36,6 +40,12 @@ class EmployeeDocumentController extends Controller
                 ->reorder()->latest('id')])
             ->latest('created_at')
             ->latest('id')
+=======
+            ->with(['documents' => fn ($q) => $q
+                ->where('employee_id', $employee->id)
+                ->reorder()->latest('id')])
+            ->orderByRaw('deadline is null, deadline asc')
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             ->get()
             ->map(function (SubmissionBox $box) {
                 $latest = $box->documents->first();
@@ -60,6 +70,7 @@ class EmployeeDocumentController extends Controller
      */
     public function boxDocuments(Request $request, SubmissionBox $box): JsonResponse
     {
+<<<<<<< HEAD
         $employee = $request->user()->employee;
         abort_unless(
             $box->is_active && (! $box->employee_id || (int) $box->employee_id === (int) $employee->id),
@@ -68,6 +79,12 @@ class EmployeeDocumentController extends Controller
 
         $documents = $box->documents()
             ->where('employee_id', $employee->id)
+=======
+        abort_unless($box->is_active, 404);
+
+        $documents = $box->documents()
+            ->where('employee_id', $request->user()->employee->id)
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             ->reorder()->latest('id')
             ->get()
             ->map(fn (EmployeeDocument $doc) => [
@@ -93,11 +110,15 @@ class EmployeeDocumentController extends Controller
     public function store(StoreEmployeeDocumentRequest $request): RedirectResponse|JsonResponse
     {
         $employee = $request->user()->employee;
+<<<<<<< HEAD
         $box      = SubmissionBox::active()
             ->where(function ($query) use ($employee) {
                 $query->whereNull('employee_id')->orWhere('employee_id', $employee->id);
             })
             ->find($request->integer('submission_box_id'));
+=======
+        $box      = SubmissionBox::active()->find($request->integer('submission_box_id'));
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 
         // Same "no longer available" guard as the JS.
         if (! $box) {
@@ -140,6 +161,7 @@ class EmployeeDocumentController extends Controller
             'status'            => 'pending',
         ]);
 
+<<<<<<< HEAD
         HrmsNotifier::documentsSubmitted(
             (int) $employee->id,
             [$document->name],
@@ -149,6 +171,8 @@ class EmployeeDocumentController extends Controller
             $document->created_at?->format('M d, Y h:i A')
         );
 
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         if ($request->expectsJson()) {
             return response()->json($document, 201);
         }

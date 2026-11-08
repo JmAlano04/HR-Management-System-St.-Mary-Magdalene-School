@@ -258,6 +258,10 @@
             'payroll',
             'loans',
             'offboarding',
+<<<<<<< HEAD
+=======
+            'documents',
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             'reports',
         ],
 
@@ -361,7 +365,11 @@
         ? 'translate-x-0'
         : '-translate-x-full'"
     @keydown.escape.window="sidebarOpen = false"
+<<<<<<< HEAD
     class="fixed inset-y-0 left-0 z-40 flex w-[min(21rem,calc(100vw-2rem))]
+=======
+    class="fixed inset-y-0 left-0 z-40 flex w-84
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
            flex-col overflow-y-auto border-r border-red-100
            bg-red-50 transition-transform duration-200
            ease-in-out lg:translate-x-0

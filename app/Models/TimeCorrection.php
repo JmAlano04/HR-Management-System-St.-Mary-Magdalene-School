@@ -27,7 +27,10 @@ class TimeCorrection extends Model
         'applied_at',
         'hr_reviewed_at',
         'hr_reviewed_by',
+<<<<<<< HEAD
         'rejection_reason',
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     ];
 
     protected $casts = [

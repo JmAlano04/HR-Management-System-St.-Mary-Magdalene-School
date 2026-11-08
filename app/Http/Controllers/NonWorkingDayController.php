@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+<<<<<<< HEAD
 use App\Models\Attendance;
 use App\Models\NonWorkingDay;
 use App\Models\SchoolEmployee;
@@ -9,6 +10,12 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+=======
+use App\Models\NonWorkingDay;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 use Illuminate\Validation\Rule;
 
 class NonWorkingDayController extends Controller
@@ -45,6 +52,7 @@ class NonWorkingDayController extends Controller
 
         $isPaid = $data['pay_type'] === NonWorkingDay::PAID;
 
+<<<<<<< HEAD
         DB::transaction(function () use ($data, $isPaid) {
             $nonWorkingDay = NonWorkingDay::create([
                 'date'       => $data['date'],
@@ -103,11 +111,24 @@ class NonWorkingDayController extends Controller
         });
 
         return back()->with('success', 'Non-working day saved and attendance logged for all employees.');
+=======
+        NonWorkingDay::create([
+            'date'       => $data['date'],
+            'name'       => trim($data['name']),
+            'category'   => $data['category'],
+            'pay_type'   => $data['pay_type'],
+            'paid_days'  => $isPaid ? ($data['paid_days'] ?? 1) : 0,
+            'paid_hours' => $isPaid ? ($data['paid_hours'] ?? 8) : 0,
+        ]);
+
+        return back()->with('success', 'Non-working day saved.');
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     }
 
     /** DELETE /non-working-days/{nonWorkingDay}  (route: non-working-days.destroy) */
     public function destroy(NonWorkingDay $nonWorkingDay): RedirectResponse
     {
+<<<<<<< HEAD
         DB::transaction(function () use ($nonWorkingDay) {
             Attendance::query()
                 ->whereDate('date', $nonWorkingDay->date)
@@ -119,6 +140,9 @@ class NonWorkingDayController extends Controller
 
             $nonWorkingDay->delete();
         });
+=======
+        $nonWorkingDay->delete();
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 
         return back()->with('success', 'Non-working day removed.');
     }

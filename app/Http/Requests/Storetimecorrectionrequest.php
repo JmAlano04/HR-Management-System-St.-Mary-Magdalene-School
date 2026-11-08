@@ -24,6 +24,19 @@ class StoreTimeCorrectionRequest extends FormRequest
             'incorrect_time'  => ['required', 'date_format:H:i', ...$timeIn],
             'correct_time'    => ['required', 'date_format:H:i', ...$timeIn],
             'note'            => ['nullable', 'string', 'max:1000'],
+<<<<<<< HEAD
+=======
+            'proof'           => ['required', 'image', 'mimes:png,jpg,jpeg,webp', 'max:10240'], // 10 MB
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'proof.required' => 'Please upload the logbook proof image.',
+            'proof.max'      => 'That image is larger than 10 MB. Please choose a smaller file.',
+            'proof.image'    => 'Please choose an image file for the logbook proof.',
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         ];
     }
 }

@@ -1,6 +1,7 @@
 {{-- resources/views/profile/partials/update-account-form.blade.php --}}
 {{-- Needs: $employee, $stepName (passed from ProfileController@edit) --}}
 @php
+<<<<<<< HEAD
     $accountHasErrors = $errors->getBag('default')->any();
     $passwordHasErrors = $errors->getBag('updatePassword')->any();
     $fullName = $employee->name ?? '';
@@ -9,12 +10,21 @@
     $currentUser = auth()->user();
     $isInternalStaffAccount = $currentUser->hasAnyRole(['Admin', 'HR', 'Accounting'])
         && str_ends_with(strtolower($currentUser->email), '@stmary.edu');
+=======
+    $fullName = $employee->name ?? '';
+    $initials = collect(preg_split('/\s+/', trim($fullName)))
+        ->filter()->take(2)->map(fn ($part) => mb_strtoupper(mb_substr($part, 0, 1)))->implode('') ?: '--';
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 
     $statusKey = strtolower(str_replace(['-', '_'], ' ', trim((string) $employee->employment_status)));
     $employmentStatus = match ($statusKey) {
         ''            => 'Not set',
         'regular'     => 'Regular',
+<<<<<<< HEAD
         'non regular' => 'Probationary',
+=======
+        'non regular' => 'Non-regular',
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         default       => ucfirst($statusKey),
     };
 
@@ -40,21 +50,32 @@
 
 <section aria-labelledby="accountProfileHeading"
     x-data="{
+<<<<<<< HEAD
         editing: @js($accountHasErrors),
         tab: @js($startTab),
         hasErrors: @js($accountHasErrors),
         passwordModalOpen: @js($passwordHasErrors || session('status') === 'password-updated'),
+=======
+        editing: @js($errors->any()),
+        tab: @js($startTab),
+        hasErrors: @js($errors->any()),
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         cancel() {
             if (this.hasErrors) { window.location = @js(route('profile.edit')); return; }
             this.$refs.form.reset();
             this.editing = false;
         },
+<<<<<<< HEAD
         closePasswordModal() {
             this.passwordModalOpen = false;
             this.$refs.passwordForm?.reset();
         },
     }"
     @keydown.escape.window="passwordModalOpen ? closePasswordModal() : (editing && cancel())">
+=======
+    }"
+    @keydown.escape.window="editing && cancel()">
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 
     @if (session('status') === 'profile-updated')
         <div class="mb-4 rounded-lg border border-green-300 bg-green-50 px-4 py-3 text-sm font-semibold text-green-800" role="status">
@@ -73,6 +94,7 @@
                 <h3 id="accountProfileHeading" class="mb-1 break-words text-2xl font-bold leading-tight text-gray-900 sm:text-3xl">{{ $fullName ?: 'My Account' }}</h3>
                 <div class="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-2 text-[0.88rem] font-semibold text-gray-500" aria-label="Employment details">
                     <span>{{ $employee->employee_id }}</span>
+<<<<<<< HEAD
                     @unless ($isInternalStaffAccount)
                         <span class="text-gray-400" aria-hidden="true">|</span>
                         <span>{{ $employee->position ?: 'No position' }}</span>
@@ -81,10 +103,19 @@
                         <span class="text-gray-400" aria-hidden="true">|</span>
                         <span>{{ $stepName ?: 'Not set' }}</span>
                     @endunless
+=======
+                    <span class="text-gray-400" aria-hidden="true">|</span>
+                    <span>{{ $employee->position ?: 'No position' }}</span>
+                    <span class="text-gray-400" aria-hidden="true">|</span>
+                    <span>{{ $employmentStatus }}</span>
+                    <span class="text-gray-400" aria-hidden="true">|</span>
+                    <span>{{ $stepName ?: 'Not set' }}</span>
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                 </div>
             </div>
         </div>
 
+<<<<<<< HEAD
         <div x-show="!editing" class="flex flex-none flex-wrap items-center gap-2 self-start">
             <button type="button" @click="passwordModalOpen = true"
                 class="min-h-[44px] cursor-pointer whitespace-nowrap rounded-md px-3 py-2 font-bold text-[#b22222] transition hover:bg-red-50">
@@ -95,6 +126,12 @@
                 <i class="fa-solid fa-pen" aria-hidden="true"></i> Edit
             </button>
         </div>
+=======
+        <button type="button" x-show="!editing" @click="editing = true"
+            class="min-h-[44px] flex-none cursor-pointer self-start whitespace-nowrap rounded-md px-2.5 py-2 font-bold text-[#b22222] transition hover:bg-gray-50 hover:text-[#8d1111]">
+            <i class="fa-solid fa-pen" aria-hidden="true"></i> Edit
+        </button>
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     </div>
 
     <form method="POST" action="{{ route('profile.updateAccount') }}" x-ref="form" novalidate>
@@ -102,12 +139,20 @@
         @method('PATCH')
 
         {{-- Tabs --}}
+<<<<<<< HEAD
         <div class="hrms-tablist hrms-tablist-nowrap -mx-1 mb-6 overflow-x-auto px-1" role="tablist" aria-label="Account information">
+=======
+        <div class="-mx-1 mb-6 flex overflow-x-auto border-b border-gray-200 px-1" role="tablist" aria-label="Account information">
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             @foreach ($tabs as $key => [$label, $icon])
                 <button type="button" role="tab" @click="tab = '{{ $key }}'"
                     :aria-selected="tab === '{{ $key }}'"
                     :class="tab === '{{ $key }}' ? 'border-[#b22222] text-[#b22222]' : 'border-transparent text-gray-500 hover:text-[#b22222]'"
+<<<<<<< HEAD
                     class="hrms-tab cursor-pointer whitespace-nowrap text-[0.92rem]">
+=======
+                    class="inline-flex min-h-[42px] shrink-0 grow cursor-pointer items-center justify-center gap-[9px] whitespace-nowrap border-b-2 px-3.5 py-2 text-[0.92rem] font-bold transition">
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                     <i class="{{ $icon }}" aria-hidden="true"></i> {{ $label }}
                 </button>
             @endforeach
@@ -183,6 +228,7 @@
                 class="min-h-[44px] w-full cursor-pointer rounded-[9px] bg-[#b22222] px-5 py-2.5 font-extrabold text-white transition hover:bg-[#8d1111] sm:w-auto">Save changes</button>
         </div>
     </form>
+<<<<<<< HEAD
 
     <template x-teleport="body">
         <div x-show="passwordModalOpen" x-cloak x-transition.opacity
@@ -200,4 +246,6 @@
             </div>
         </div>
     </template>
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 </section>

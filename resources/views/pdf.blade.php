@@ -4,23 +4,46 @@
     // Monthly wage = daily wage x 26
     $monthlyWage = (float) $card['daily_wage'] * 26;
 
+<<<<<<< HEAD
     // "15th" -> "August 15, 2024" style dates for the payslip header.
     $cutoff      = trim((string) ($card['cutoff'] ?? $payslip->cutoff));
     $payPeriod   = $card['cutoff_label'] ?? ($payslip->cutoffDateLabel() ?? ($cutoff === '' ? '-' : $cutoff));
     $is30        = $cutoff === '30th';
 
+=======
+    // "15th" -> "15th Pay Period", "30th" -> "30th Pay Period"
+    $cutoff      = trim((string) ($card['cutoff'] ?? $payslip->cutoff));
+    $payPeriod   = $cutoff === '' ? '-' : $cutoff . ' Pay Period';
+    $is30        = $cutoff === '30th';
+
+    // Honorarium (administrative role only, fixed P1,924.31):
+    // use the card value, then fall back to the saved payslip column
+    $honorarium = (float) ($card['honorarium'] ?? $payslip->honorarium ?? 0);
+
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     // PhilHealth loan: read safely so the PDF still works before the column exists
     $deds = $card['deductions'] ?? [];
     $deds['philhealth_loan'] = $deds['philhealth_loan']
         ?? ($payslip->getAttributes()['philhealth_loan'] ?? 0);
 
     // [label, key, only on the 30th pay period]
+<<<<<<< HEAD
     $deductionRows = [
         ['MALASAKITAN',     'malasakitan',     false],
         ['Late',            'late',            false],
         ['SSS',             'sss',             true],
         ['PhilHealth',      'philhealth',      true],
         ['HDMF',            'hdmf',            true],
+=======
+    // HDMF is a fixed 200 and is shown on every pay period.
+    $deductionRows = [
+        ['MALASAKITAN',     'malasakitan',     false],
+        ['Late',            'late',            false],
+        ['Absences',        'absences',        false],
+        ['SSS',             'sss',             true],
+        ['PhilHealth',      'philhealth',      true],
+        ['HDMF',            'hdmf',            false],
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         ['PERAA/CEAP',      'peraa_ceap',      true],
         ['SSS Loan',        'sss_loan',        true],
         ['PhilHealth Loan', 'philhealth_loan', true],
@@ -69,7 +92,11 @@
 
     <table class="meta">
         <tr>
+<<<<<<< HEAD
             <td><span class="muted">Date</span><br><strong>{{ $payPeriod }}</strong></td>
+=======
+            <td><span class="muted">Pay period</span><br><strong>{{ $payPeriod }}</strong></td>
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             <td><span class="muted">Transfer date</span><br><strong>{{ $payslip->transfer_date?->format('M d, Y') ?? '-' }}</strong></td>
             <td><span class="muted">Days worked</span><br><strong>{{ $card['days_worked'] }}</strong></td>
             <td><span class="muted">Hours worked</span><br><strong>{{ $card['hours_worked'] }}</strong></td>
@@ -85,14 +112,22 @@
                 <table>
                     <tr class="row"><td>Basic salary</td><td>{{ $peso($card['basic_pay']) }}</td></tr>
                     <tr class="row"><td>Daily rate</td><td>{{ $peso($card['daily_wage']) }}</td></tr>
+<<<<<<< HEAD
                     <tr class="row"><td>Honorarium</td><td>{{ (float) $card['honorarium'] > 0 ? $peso($card['honorarium']) : '-' }}</td></tr>
+=======
+                    <tr class="row"><td>Honorarium</td><td>{{ $honorarium > 0 ? $peso($honorarium) : '-' }}</td></tr>
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                     <tr class="total"><td>Gross earnings</td><td style="text-align:right">{{ $peso($card['gross_pay']) }}</td></tr>
                 </table>
             </td>
             <td class="col">
                 <h3>Deductions</h3>
                 <table>
+<<<<<<< HEAD
                     {{-- SSS, PhilHealth, HDMF, PERAA/CEAP and the loans are deducted on the 30th pay period only --}}
+=======
+                    {{-- SSS, PhilHealth, PERAA/CEAP and the loans are deducted on the 30th pay period only. HDMF (fixed 200) is deducted every pay period. --}}
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                     @foreach ($deductionRows as [$label, $key, $only30])
                         <tr class="row">
                             <td>{{ $label }}</td>

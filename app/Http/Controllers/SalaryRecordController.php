@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Payslip;
+<<<<<<< HEAD
+=======
+use App\Support\PayslipPresenter;
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -19,7 +23,11 @@ class SalaryRecordController extends Controller
 
         $cutoff = $request->query('cutoff') === '30th' ? '30th' : '15th';
 
+<<<<<<< HEAD
         $records = Payslip::with('employee')
+=======
+        $records = Payslip::with('employee.user.roles')
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             ->where('cutoff', $cutoff)
             ->where('admin_status', Payslip::APPROVED)
             ->where('hr_status', Payslip::APPROVED)
@@ -37,7 +45,11 @@ class SalaryRecordController extends Controller
                 'count'   => $group->count(),
                 'records' => $group
                     ->sortBy(fn (Payslip $p) => $p->employee?->name)
+<<<<<<< HEAD
                     ->map->toCard()
+=======
+                    ->map(fn (Payslip $p) => PayslipPresenter::card($p))
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                     ->values()
                     ->all(),
             ])

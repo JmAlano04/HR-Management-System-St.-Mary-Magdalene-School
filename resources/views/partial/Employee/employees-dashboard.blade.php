@@ -20,7 +20,10 @@
             'today'  => $today,
             'routes' => [
                 'tasks' => route('tasks.index'),
+<<<<<<< HEAD
                 'banners' => route('dashboard.banners.current'),
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             ],
         ]))"
         @keydown.escape.window="closeTasks()"
@@ -204,7 +207,10 @@
                     const [y, m] = cfg.today.split('-').map(Number);
                     this.year = y;
                     this.month = m - 1;
+<<<<<<< HEAD
                     this.refreshBanners();
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 
                     // Auto-advance the banner every 4.5 seconds
                     setInterval(() => {
@@ -216,6 +222,7 @@
                     this.loadTasks();
                 },
 
+<<<<<<< HEAD
                 async refreshBanners() {
                     try {
                         const response = await fetch(cfg.routes.banners, {
@@ -241,6 +248,8 @@
                     }
                 },
 
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                 // ===== Calendar =====
                 get selectedLabel() {
                     return new Date(this.selected + 'T00:00:00').toLocaleDateString('en-US', {

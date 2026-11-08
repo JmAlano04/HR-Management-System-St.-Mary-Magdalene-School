@@ -32,7 +32,10 @@
             'Absent'                 => 'bg-red-100 text-[#b22222]',
             'Late'                   => 'bg-orange-50 text-amber-800',
             'Half Day'               => 'bg-blue-50 text-blue-800',
+<<<<<<< HEAD
             'Undertime'              => 'bg-amber-100 text-amber-800',
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             'Paid Leave'             => 'bg-violet-50 text-violet-800',
             'Unpaid Leave'           => 'bg-gray-100 text-gray-600',
             'Paid Holiday'           => 'bg-emerald-50 text-emerald-800',
@@ -58,7 +61,11 @@
             'addOpen'    => $errors->attendance->any(),
             'nwdOpen'    => $errors->nwd->any(),
             'old'        => [
+<<<<<<< HEAD
                 'employee_id' => old('employee_id', ''),
+=======
+                'employee_id' => old('employee_id'),
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                 'status'      => old('status', 'Present'),
                 'time_in'     => old('time_in'),
                 'time_out'    => old('time_out'),
@@ -83,6 +90,10 @@
                     {{ $errors->first() }}
                 </div>
             @endif
+<<<<<<< HEAD
+=======
+
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             {{-- Toolbar: search + filters (runs in the database) --}}
             <form method="GET" action="{{ route('attendance.index') }}" x-ref="filters"
                 class="flex flex-wrap items-end gap-3.5 {{ $cardClass }} p-[18px]">
@@ -108,6 +119,7 @@
                             @change="$refs.filters.submit()" class="{{ $inputClass }}">
                     </label>
                 @endunless
+<<<<<<< HEAD
 
                 <label for="departmentFilter" class="{{ $labelClass }} min-w-[180px]">
                     <span>Department</span>
@@ -118,12 +130,42 @@
                         @endforeach
                     </select>
                 </label>
+=======
+                
+{{-- Department filter: standard + database departments --}}
+<label for="departmentFilter" class="{{ $labelClass }} min-w-[180px]">
+    <span>Department</span>
+
+    <select
+        id="departmentFilter"
+        name="department"
+        @change="$refs.filters.submit()"
+        class="{{ $inputClass }}"
+    >
+        <option value="">All Department</option>
+
+        @foreach ($departments as $value => $label)
+            <option
+                value="{{ $value }}"
+                @selected(request('department') === $value)
+            >
+                {{ $label }}
+            </option>
+        @endforeach
+    </select>
+</label>
+
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 
                 <label for="statusFilter" class="{{ $labelClass }} min-w-[180px]">
                     <span>Status</span>
                     <select id="statusFilter" name="status" @change="$refs.filters.submit()" class="{{ $inputClass }}">
                         <option value="">All Status</option>
+<<<<<<< HEAD
                         @foreach (array_merge($statuses, \App\Models\Attendance::NON_WORKING_STATUSES, [\App\Models\Attendance::NWD_REVIEW]) as $status)
+=======
+                        @foreach (array_merge($statuses, [\App\Models\Attendance::NWD_REVIEW]) as $status)
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                             <option value="{{ $status }}" @selected(request('status') === $status)>{{ $status }}</option>
                         @endforeach
                     </select>
@@ -330,7 +372,11 @@
                     <label class="{{ $labelClass }}">
                         Employee ID
                         <select name="employee_id" x-model="form.employee_id" required class="{{ $inputClass }}">
+<<<<<<< HEAD
                             <option value="" :selected="!form.employee_id">Select an employee ID</option>
+=======
+                            <option value="" disabled>Select an employee ID</option>
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                             @foreach ($employees as $employee)
                                 <option value="{{ $employee['id'] }}">{{ $employee['code'] }}</option>
                             @endforeach
@@ -395,7 +441,11 @@
 
                 <span class="text-[0.72rem] font-extrabold uppercase tracking-[0.12em] text-[#b22222]">HR administration</span>
                 <h3 class="mb-1 mt-1.5 text-2xl font-bold tracking-tight text-gray-900">Non-Working Days Management</h3>
+<<<<<<< HEAD
                 <p class="mb-5 text-sm text-gray-500">Saving a non-working day automatically logs all employees as non-working. Existing time logs are retained and flagged for review.</p>
+=======
+                <p class="mb-5 text-sm text-gray-500">Configure holidays and school suspensions. Attendance logs on these dates are flagged for review.</p>
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 
                 <form method="POST" action="{{ route('hr.non-working-days.store') }}" class="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
                     @csrf

@@ -1,6 +1,12 @@
 @props([
+<<<<<<< HEAD
     'taskKey'   => 'dashboardTasks',
     'bannerSlides' => [],
+=======
+    'bannerKey' => 'dashboardPromoSlides',
+    'taskKey'   => 'dashboardTasks',
+    'images'    => ['promote1', 'promote2', 'promote3'],
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 ])
  @auth
     <x-slot name="title">
@@ -22,17 +28,63 @@
             {{-- Promo banner --}}
             <section class="promo-banner relative mb-6 p-4 rounded-[28px] overflow-hidden max-[720px]:p-3 max-[720px]:rounded-3xl">
                 <div class="promo-slides relative overflow-hidden rounded-[20px]" id="promoSlides">
+<<<<<<< HEAD
                     @foreach ($bannerSlides as $i => $slide)
                         <div class="promo-slide hidden [&.active]:block {{ $i === 0 ? 'active' : '' }}">
                             <div class="promo-slide-image relative aspect-[16/6.4] min-h-[300px] overflow-hidden rounded-[20px] bg-white max-[720px]:min-h-[220px] max-[720px]:aspect-[4/3]">
                                 <img src="{{ $slide['url'] }}" alt="{{ $slide['alt'] }}" class="block w-full h-full object-cover object-center" />
+=======
+                    @foreach ($images as $i => $img)
+                        <div class="promo-slide hidden [&.active]:block {{ $i === 0 ? 'active' : '' }}">
+                            <div class="promo-slide-image relative aspect-[16/6.4] min-h-[300px] overflow-hidden rounded-[20px] bg-white max-[720px]:min-h-[220px] max-[720px]:aspect-[4/3]">
+                                <img src="{{ asset('Image/' . $img . '.jpg') }}" alt="{{ $img }}" class="block w-full h-full object-cover object-center" />
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                             </div>
                         </div>
                     @endforeach
                 </div>
                 <div class="promo-controls absolute left-1/2 bottom-[26px] -translate-x-1/2 flex gap-2.5 z-[2]" id="promoControls"></div>
+<<<<<<< HEAD
             </section>
 
+=======
+                <button id="editBannerBtn" class="edit-banner-btn absolute top-[26px] right-[26px] z-[3] grid place-items-center w-11 h-11 border-0 rounded-full bg-white/90 text-gray-900 shadow-[0_10px_30px_rgba(15,23,42,0.05)] cursor-pointer max-[720px]:top-4 max-[720px]:right-4 max-[720px]:w-10 max-[720px]:h-10" type="button">
+                    <i class="fas fa-edit"></i>
+                </button>
+            </section>
+
+            {{-- Banner modal --}}
+            <div id="bannerModal" class="modal hidden fixed inset-0 z-[1000] flex items-center justify-center p-5 bg-black/50 backdrop-blur-lg [&.hidden]:hidden">
+                <div class="modal-content banner-modal-content flex flex-col w-full max-w-[720px] max-h-[calc(100vh-32px)] overflow-hidden bg-white rounded-3xl shadow-[0_28px_70px_rgba(15,23,42,0.2)]">
+                    <div class="modal-header flex justify-between items-center gap-4 pt-6 px-7 pb-5 border-b border-[#ecebea]">
+                        <h3 class="m-0 text-gray-900 text-[1.17em] font-bold">Edit Banner Images</h3>
+                        <button id="closeBannerModal" class="close-btn w-[38px] h-[38px] border-0 rounded-full bg-transparent text-[#b22222] text-[1.4rem] cursor-pointer transition-transform hover:text-[#dc2626] hover:scale-[1.08] active:scale-[0.94]">&times;</button>
+                    </div>
+                    <div class="modal-body flex-1 min-h-0 overflow-y-auto pt-6 px-7 pb-7">
+                        <div class="upload-section grid gap-3">
+                            <div class="upload-area relative overflow-hidden px-5 py-[34px] rounded-[22px] border-2 border-dashed border-gray-300 bg-gray-50 text-center cursor-pointer transition duration-200 hover:-translate-y-px hover:border-[#dc2626] hover:bg-[#fef2f2]" id="uploadArea">
+                                <div class="upload-placeholder">
+                                    <i class="fas fa-cloud-upload-alt block mb-3 text-gray-400 text-[2.8rem]"></i>
+                                    <p class="m-0 mb-2 text-gray-700 font-bold">Click to upload images or drag and drop</p>
+                                    <span class="text-[#6b7280] text-[0.92rem]">Any image format supported by your browser</span>
+                                </div>
+                                <input type="file" id="imageUpload" class="absolute inset-0 opacity-0 cursor-pointer" multiple accept="image/png,image/jpeg" />
+                            </div>
+                            <div class="upload-info flex justify-end items-center gap-3">
+                                <p id="imageCount" class="m-0 mr-auto text-[#6b7280] text-[0.92rem]">0 images selected</p>
+                            </div>
+                            <div class="uploaded-images grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3.5" id="uploadedImages"></div>
+                        </div>
+                        <div class="modal-footer flex items-center gap-3 justify-end pt-1.5 mt-1 max-[720px]:flex-col max-[720px]:items-stretch">
+                            <button type="button" id="resetToDefaults" class="white-btn rounded-[14px] border border-gray-300 bg-white text-[#b22222] px-4 py-3 font-bold cursor-pointer transition duration-200 hover:-translate-y-px hover:border-[rgba(143,36,31,0.28)] active:translate-y-px active:scale-[0.98]">Reset to Defaults</button>
+                            <button type="button" id="saveBannerImages" class="red-btn ml-auto max-[720px]:ml-0 rounded-[14px] border border-transparent bg-[#dc2626] text-white px-4 py-3 font-bold cursor-pointer transition duration-200 hover:-translate-y-px active:translate-y-px active:scale-[0.98]">Save Changes</button>
+                            <button type="button" id="cancelBannerEdit" class="white-btn rounded-[14px] border border-gray-300 bg-white text-[#b22222] px-4 py-3 font-bold cursor-pointer transition duration-200 hover:-translate-y-px hover:border-[rgba(143,36,31,0.28)] active:translate-y-px active:scale-[0.98]">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             {{-- Calendar --}}
             <div class="dashboard-content grid grid-cols-1 gap-6 items-start">
                 <section class="calendar-panel p-7 bg-white max-[720px]:p-3.5">
@@ -55,14 +107,25 @@
 
 <script>
 (function () {
+<<<<<<< HEAD
     const promoSlidesFromServer = @json(collect($bannerSlides)->map(fn ($slide) => ['id' => $slide['id'], 'image' => $slide['url'], 'alt' => $slide['alt']])->values());
     const bannerRefreshUrl = @json(route('dashboard.banners.current'));
+=======
+    const defaultPromoSlides = @json(collect($images)->map(fn ($img) => ['image' => asset('Image/' . $img . '.jpg'), 'alt' => $img])->values());
+    const bannerStorageKey = @json($bannerKey);
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     const taskStorageKey = @json($taskKey);
 
     const TW = {
         redBtn: "red-btn rounded-[14px] border border-transparent bg-[#dc2626] text-white px-4 py-3 font-bold cursor-pointer transition duration-200 hover:-translate-y-px active:translate-y-px active:scale-[0.98]",
         clearBtn: "clear-btn rounded-[14px] border border-gray-300 bg-white text-[#b22222] px-4 py-3 font-bold cursor-pointer transition duration-200 hover:-translate-y-px hover:border-[rgba(143,36,31,0.28)] active:translate-y-px active:scale-[0.98]",
         promoDot: "w-[11px] h-[11px] border-0 rounded-full bg-white cursor-pointer [&.active]:w-[15px] [&.active]:bg-[#b22222]",
+<<<<<<< HEAD
+=======
+        imagePreview: "image-preview relative overflow-hidden rounded-[18px] bg-gray-100 border-2 border-gray-200",
+        imagePreviewImg: "block w-full h-32 object-cover",
+        removeImage: "remove-image absolute top-2 right-2 w-[26px] h-[26px] border-0 rounded-full bg-red-500/90 text-white cursor-pointer",
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         dayBase: "calendar-day grid grid-rows-[auto_1fr] items-start relative overflow-hidden aspect-square p-2.5 rounded-[20px] border bg-white text-gray-900 cursor-pointer transition duration-200 hover:-translate-y-px hover:shadow-[0_12px_24px_rgba(15,23,42,0.08)] max-[720px]:p-[7px] max-[720px]:rounded-xl",
         dayNormal: "border-[#ececec]",
         dayToday: "today border-[#fbcaca] bg-[#fff7f7]",
@@ -89,11 +152,29 @@
     // ---------- Banner ----------
     const promoSlides = document.getElementById("promoSlides");
     const promoControls = document.getElementById("promoControls");
+<<<<<<< HEAD
     let currentPromoSlides = promoSlidesFromServer;
     let promoIndex = 0, promoIntervalId = null;
 
     function renderPromoBanner() {
         const slides = currentPromoSlides;
+=======
+    const bannerModal = document.getElementById("bannerModal");
+    const uploadedImages = document.getElementById("uploadedImages");
+    const imageCount = document.getElementById("imageCount");
+    const bannerMaxDimension = 1920;
+    let promoIndex = 0, promoIntervalId = null, uploadedFiles = [], pendingUploads = [];
+
+    function getStoredPromoSlides() {
+        try {
+            const saved = localStorage.getItem(bannerStorageKey);
+            return saved ? JSON.parse(saved) : defaultPromoSlides;
+        } catch (e) { return defaultPromoSlides; }
+    }
+
+    function renderPromoBanner() {
+        const slides = getStoredPromoSlides();
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         promoSlides.innerHTML = slides.map((slide, i) => `
             <div class="promo-slide hidden [&.active]:block ${i === 0 ? "active" : ""}">
                 <div class="promo-slide-image relative aspect-[16/6.4] min-h-[300px] overflow-hidden rounded-[20px] bg-white max-[720px]:min-h-[220px] max-[720px]:aspect-[4/3]"><img class="block w-full h-full object-cover object-center" src="${slide.image}" alt="${escapeHtml(slide.alt)}" /></div>
@@ -113,13 +194,17 @@
 
     function startPromoTimer(count) {
         clearInterval(promoIntervalId);
+<<<<<<< HEAD
         if (count < 2) return;
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         promoIntervalId = setInterval(() => {
             promoIndex = (promoIndex + 1) % count;
             updatePromoBanner();
         }, 4500);
     }
 
+<<<<<<< HEAD
     function samePromoSlides(first, second) {
         return first.length === second.length && first.every((slide, index) =>
             slide.id === second[index].id && slide.image === second[index].image && slide.alt === second[index].alt
@@ -149,6 +234,81 @@
         } finally {
             window.setTimeout(refreshDashboardBanners, 3000);
         }
+=======
+    function renderUploadedImages() {
+        uploadedImages.innerHTML = "";
+        imageCount.textContent = `${uploadedFiles.length} image${uploadedFiles.length === 1 ? "" : "s"} selected`;
+        uploadedFiles.forEach((slide, index) => {
+            const preview = document.createElement("div");
+            preview.className = TW.imagePreview;
+            preview.innerHTML = `<img class="${TW.imagePreviewImg}" src="${slide.image}" alt="${escapeHtml(slide.alt)}" /><button class="${TW.removeImage}" type="button">&times;</button>`;
+            preview.querySelector("button").addEventListener("click", () => { uploadedFiles.splice(index, 1); renderUploadedImages(); });
+            uploadedImages.appendChild(preview);
+        });
+    }
+
+    function optimizeBannerImage(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const image = new Image();
+                image.onload = () => {
+                    const scale = Math.min(1, bannerMaxDimension / Math.max(image.naturalWidth, image.naturalHeight));
+                    const canvas = document.createElement("canvas");
+                    canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+                    canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+                    canvas.getContext("2d").drawImage(image, 0, 0, canvas.width, canvas.height);
+                    const type = file.type === "image/png" ? "image/png" : "image/jpeg";
+                    resolve({ image: canvas.toDataURL(type, type === "image/jpeg" ? 0.85 : undefined), alt: file.name });
+                };
+                image.onerror = reject;
+                image.src = reader.result;
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function setupBannerEditor() {
+        const uploadArea = document.getElementById("uploadArea");
+        const imageUpload = document.getElementById("imageUpload");
+        const hide = () => bannerModal.classList.add("hidden");
+
+        document.getElementById("editBannerBtn").addEventListener("click", () => {
+            uploadedFiles = getStoredPromoSlides().map(s => ({ ...s }));
+            pendingUploads = [];
+            bannerModal.classList.remove("hidden");
+            renderUploadedImages();
+        });
+        document.getElementById("closeBannerModal").addEventListener("click", hide);
+        document.getElementById("cancelBannerEdit").addEventListener("click", hide);
+        document.getElementById("resetToDefaults").addEventListener("click", () => {
+            localStorage.removeItem(bannerStorageKey);
+            renderPromoBanner();
+            hide();
+        });
+        // input is absolute inset-0, so it already receives the click; don't re-trigger it
+        imageUpload.addEventListener("change", (e) => {
+            const p = Promise.all(Array.from(e.target.files).map(optimizeBannerImage)).then(slides => {
+                uploadedFiles.push(...slides);
+                renderUploadedImages();
+            });
+            pendingUploads.push(p);
+            e.target.value = "";
+        });
+        document.getElementById("saveBannerImages").addEventListener("click", async () => {
+            await Promise.all(pendingUploads);
+            pendingUploads = [];
+            try {
+                localStorage.setItem(bannerStorageKey, JSON.stringify(uploadedFiles));
+            } catch (e) {
+                alert("Images are too large to save. Try fewer or smaller images.");
+                return;
+            }
+            renderPromoBanner();
+            hide();
+        });
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     }
 
     // ---------- Calendar ----------
@@ -217,8 +377,20 @@
 
     window.addEventListener("load", () => {
         renderPromoBanner();
+<<<<<<< HEAD
         renderCalendar();
         refreshDashboardBanners();
+=======
+        setupBannerEditor();
+        renderCalendar();
+    });
+
+    window.addEventListener("hrms:storage", (event) => {
+        const key = event.detail?.key;
+        if (key !== bannerStorageKey && key !== null) return;
+        renderPromoBanner();
+        if (event.cancelable) event.preventDefault();
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     });
 })();
 </script>

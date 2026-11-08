@@ -41,18 +41,35 @@
         x-data="timeCorrections(@js([
             'items' => $cards,
         ]))"
+<<<<<<< HEAD
         @keydown.escape.window="rejectionModalOpen ? closeRejectionModal() : (viewer ? viewer = false : detailId = null)"
+=======
+        @keydown.escape.window="viewer ? viewer = false : detailId = null"
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     >
         <section aria-labelledby="correctionQueueTitle"
             class="mt-2 max-w-[1100px] rounded-[22px] border border-[#f0dada] bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)] sm:p-7">
 
+<<<<<<< HEAD
             {{-- Heading --}}
             <div class="mb-6">
+=======
+            {{-- Heading + pending counter --}}
+            <div class="mb-6 flex flex-col items-start justify-between gap-6 sm:flex-row">
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                 <div>
                     <p class="mb-1.5 text-xs font-extrabold uppercase tracking-[0.08em] text-[#b22222]">Employee requests</p>
                     <h2 id="correctionQueueTitle" class="text-2xl font-bold text-gray-900">Time correction requests</h2>
                     <p class="mt-2 text-gray-500">Review submitted logbook corrections and record your decision.</p>
                 </div>
+<<<<<<< HEAD
+=======
+
+                <div class="w-full min-w-[140px] rounded-[14px] bg-[#fef2f2] px-4 py-3 text-center text-[#b22222] sm:w-auto" aria-live="polite">
+                    <strong class="block text-2xl">{{ $pendingCount }}</strong>
+                    <span class="block text-xs font-bold">Pending {{ $reviewer }} review</span>
+                </div>
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             </div>
 
             {{-- Flash message --}}
@@ -61,17 +78,30 @@
                     {{ session('success') }}
                 </div>
             @endif
+<<<<<<< HEAD
             @if ($errors->has('decision') || $errors->has('rejection_reason'))
                 <div class="mb-4 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">
                     {{ $errors->first('decision') ?: $errors->first('rejection_reason') }}
+=======
+            @if ($errors->has('decision'))
+                <div class="mb-4 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">
+                    {{ $errors->first('decision') }}
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                 </div>
             @endif
 
             {{-- Tabs: Current / Archive --}}
+<<<<<<< HEAD
             <div class="hrms-tablist mb-4" role="tablist" aria-label="Time correction request views">
                 @foreach (['current' => 'Current', 'archive' => 'Archive'] as $key => $label)
                     <a href="{{ route('time-corrections.index', ['view' => $key]) }}" role="tab" aria-selected="{{ $view === $key ? 'true' : 'false' }}"
                         class="hrms-tab font-extrabold">
+=======
+            <div class="mb-4 flex gap-2 border-b border-[#f0dada]" role="tablist" aria-label="Time correction request views">
+                @foreach (['current' => 'Current', 'archive' => 'Archive'] as $key => $label)
+                    <a href="{{ route('time-corrections.index', ['view' => $key]) }}" role="tab" aria-selected="{{ $view === $key ? 'true' : 'false' }}"
+                        class="-mb-px border-b-[3px] px-3.5 py-2.5 font-extrabold transition {{ $view === $key ? 'bg-red-200 rounded-full text-[#b22222]' : 'border-transparent text-gray-500 hover:text-gray-700' }}">
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                         {{ $label }}
                     </a>
                 @endforeach
@@ -113,17 +143,32 @@
             <div class="absolute inset-0 bg-[rgba(17,24,39,0.55)]" @click="detailId = null"></div>
 
             <section role="dialog" aria-modal="true" aria-labelledby="correctionModalTitle"
+<<<<<<< HEAD
                 class="relative max-h-[88vh] w-full max-w-[560px] overflow-auto rounded-xl bg-white p-5 shadow-xl sm:p-6">
 
                 <div class="mb-5 flex items-center justify-between gap-4">
                     <h2 id="correctionModalTitle" class="text-lg font-bold text-gray-900">Time correction details</h2>
                     <button type="button" @click="detailId = null" aria-label="Close details"
                         class="grid h-9 w-9 cursor-pointer place-items-center rounded-lg text-xl leading-none text-gray-500 transition hover:bg-gray-100 hover:text-gray-900">&times;</button>
+=======
+                class="relative max-h-[90vh] w-full max-w-[760px] overflow-auto rounded-[20px] bg-white p-[26px] shadow-[0_30px_80px_rgba(15,23,42,0.25)]">
+
+                <div class="mb-[22px] flex items-center justify-between gap-5">
+                    <h2 id="correctionModalTitle" class="text-[1.35rem] font-bold">Time correction details</h2>
+                    <button type="button" @click="detailId = null" aria-label="Close details"
+                        class="h-9 w-9 cursor-pointer rounded-full bg-gray-100 text-2xl leading-none text-gray-900 transition hover:bg-gray-200">&times;</button>
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                 </div>
 
                 <template x-if="detail">
                     <div>
+<<<<<<< HEAD
                         <div class="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
+=======
+                        <div class="grid gap-6 sm:grid-cols-[minmax(0,1fr)_minmax(220px,0.8fr)]">
+                            {{-- Details --}}
+                            <div class="grid gap-3">
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                                 @foreach ([
                                     ['Employee', 'employee_name'],
                                     ['Date', 'date_label'],
@@ -132,6 +177,7 @@
                                     ['Correct time', 'correct_time'],
                                     ['Note', 'note'],
                                 ] as [$label, $key])
+<<<<<<< HEAD
                                     <p class="grid min-w-0 gap-1 border-b border-gray-100 pb-2">
                                         <strong class="text-xs font-semibold text-gray-500">{{ $label }}</strong>
                                         <span class="break-words text-sm text-gray-900" x-text="detail.{{ $key }}"></span>
@@ -208,6 +254,63 @@
                                 Waiting for HR approval before you can review this request.
                             </p>
                         </template>
+=======
+                                    <p class="grid gap-1 border-b border-gray-100 pb-2.5">
+                                        <strong class="text-[0.78rem] uppercase tracking-[0.04em] text-gray-500">{{ $label }}</strong>
+                                        <span x-text="detail.{{ $key }}"></span>
+                                    </p>
+                                @endforeach
+                            </div>
+
+                            {{-- Image proof --}}
+                            <div class="grid content-start gap-2.5 text-gray-500">
+                                <strong class="text-[0.78rem] uppercase tracking-[0.04em]">Image proof</strong>
+
+                                <template x-if="detail.proof_url && !proofError">
+                                    <img :src="detail.proof_url" alt="Submitted logbook proof" @click="viewer = true" x-on:error="proofError = true"
+                                        class="max-h-80 w-full cursor-zoom-in rounded-xl bg-gray-50 object-contain">
+                                </template>
+                                <span x-show="!detail.proof_url" x-text="'No image proof attached.'"></span>
+                                <span x-show="detail.proof_url && proofError">Image proof unavailable for this request.</span>
+                            </div>
+                        </div>
+
+                        {{-- Approve / Reject (only while this reviewer's status is Pending) --}}
+                      <template x-if="detail.can_decide">
+    <form
+        method="POST"
+        action="{{ route('decide') }}"
+        class="mt-6 flex justify-between gap-4"
+    >
+        @csrf
+        @method('PATCH')
+
+        <input
+            type="hidden"
+            name="time_correction_id"
+            :value="detailId"
+        >
+
+        <button
+            type="submit"
+            name="decision"
+            value="Approved"
+            class="cursor-pointer rounded-[10px] bg-[#15803d] px-[18px] py-[11px] font-extrabold text-white transition hover:-translate-y-px hover:brightness-95 hover:shadow-[0_8px_18px_rgba(15,23,42,0.12)]"
+        >
+            Approve
+        </button>
+
+        <button
+            type="submit"
+            name="decision"
+            value="Rejected"
+            class="cursor-pointer rounded-[10px] bg-[#b22222] px-[18px] py-[11px] font-extrabold text-white transition hover:-translate-y-px hover:brightness-95 hover:shadow-[0_8px_18px_rgba(15,23,42,0.12)]"
+        >
+            Reject
+        </button>
+    </form>
+</template>
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                     </div>
                 </template>
             </section>
@@ -237,11 +340,14 @@
                 detailId: null,
                 viewer: false,
                 proofError: false,
+<<<<<<< HEAD
                 rejectionModalOpen: false,
                 rejectionDraft: '',
                 rejectionReason: '',
                 rejectionError: '',
                 decision: '',
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 
                 get detail() {
                     return this.detailId ? this.items[this.detailId] : null;
@@ -252,6 +358,7 @@
                     this.viewer = false;
                     this.detailId = id;
                 },
+<<<<<<< HEAD
 
                 openRejectionModal() {
                     this.rejectionDraft = '';
@@ -278,6 +385,8 @@
                     this.decision = decision;
                     this.$nextTick(() => form.requestSubmit());
                 },
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             };
         }
     </script>

@@ -67,4 +67,8 @@ class SyncZKTecoAttendance extends Command
             return self::FAILURE;
         }
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120

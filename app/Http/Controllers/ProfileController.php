@@ -203,9 +203,26 @@ class ProfileController extends Controller
 
     private function stepName(Employee $employee): ?string
     {
+<<<<<<< HEAD
         $stepNo = (int) $employee->step_no;
 
         return DB::table('payroll_steps')->where('step_no', $stepNo)->value('name')
             ?: ($stepNo > 0 ? "Step {$stepNo}" : null);
+=======
+        $stepNo = DB::table('payroll_records')
+            ->where('employee_id', $employee->id)
+            ->orderByDesc('period')
+            ->orderByDesc('cutoff')
+            ->value('step_no');
+
+        if ($stepNo) {
+            return DB::table('payroll_steps')->where('step_no', $stepNo)->value('name') ?: "Step {$stepNo}";
+        }
+
+        return DB::table('payslips')
+            ->where('employee_id', $employee->id)
+            ->latest('id')
+            ->value('step_name');
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+<<<<<<< HEAD
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 
@@ -111,4 +112,10 @@ class Banner extends Model
             ]);
         }
     }
+=======
+
+class Banner extends Model
+{
+    protected $fillable = ['path', 'alt', 'sort_order', 'uploaded_by'];
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 }

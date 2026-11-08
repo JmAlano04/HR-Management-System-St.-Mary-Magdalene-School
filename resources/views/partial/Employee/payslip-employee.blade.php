@@ -14,6 +14,10 @@
         months: @js($months),
         month: null,
         slip: null,
+<<<<<<< HEAD
+=======
+        rejecting: false,
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         peso(v) { return '₱' + Number(v || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); },
         get folder() { return this.months.find(m => m.key === this.month) || null; },
         openById(id) {
@@ -22,7 +26,11 @@
                 if (p) { this.month = m.key; this.slip = p; return; }
             }
         },
+<<<<<<< HEAD
         close() { this.slip = null; },
+=======
+        close() { this.rejecting ? this.rejecting = false : this.slip = null; },
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         badge(s) {
             return s === 'Approved' ? 'bg-[#e8f5ec] text-[#21683a]'
                  : s === 'Rejected' ? 'bg-[#fdeaea] text-[#b22222]'
@@ -52,7 +60,19 @@
                 <div>
                     <p class="mb-1.5 text-xs font-extrabold uppercase tracking-[0.08em] text-[#b22222]">Released payroll</p>
                     <h2 class="text-2xl font-bold text-gray-900">My Payslips</h2>
+<<<<<<< HEAD
                     <p class="mt-2 text-gray-500">Open a month to view your payslips.</p>
+=======
+                    <p class="mt-2 text-gray-500">Open a month to view, approve, or reject your payslips.</p>
+                </div>
+                <div class="flex shrink-0 items-center gap-3">
+                    <span class="hidden rounded-md bg-gray-100 px-2.5 py-1.5 text-[0.82rem] font-bold text-gray-600 sm:inline-flex">
+                        {{ $totalReleased ? $totalReleased.' released '.Str::plural('payslip', $totalReleased) : 'No payslips released' }}
+                    </span>
+                    <span class="grid h-[42px] w-[42px] place-items-center rounded-lg bg-[#fef2f2] text-[#b22222]" aria-hidden="true">
+                        <i class="fa-solid fa-file-invoice-dollar"></i>
+                    </span>
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                 </div>
             </div>
 
@@ -63,7 +83,11 @@
                 </div>
             @else
                 {{-- Month folders --}}
+<<<<<<< HEAD
                 <div x-show="!month" class="grid grid-cols-1 gap-3 sm:grid-cols-[repeat(auto-fit,minmax(280px,1fr))]">
+=======
+                <div x-show="!month" class="grid gap-3 sm:grid-cols-1">
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                     <template x-for="m in months" :key="m.key">
                         <button type="button" @click="month = m.key"
                             class="flex cursor-pointer items-center gap-3 rounded-[14px] border border-[#ecebea] bg-gray-50 px-4 py-3.5 text-left transition hover:border-[#b22222] hover:bg-[#fef2f2]">
@@ -98,7 +122,11 @@
                                         <i class="fa-solid fa-file-invoice-dollar" aria-hidden="true"></i>
                                     </span>
                                     <span class="grid min-w-0 flex-1">
+<<<<<<< HEAD
                                         <strong class="text-sm text-gray-900" x-text="p.cutoff_label || p.cutoff"></strong>
+=======
+                                        <strong class="text-sm text-gray-900" x-text="p.period_label"></strong>
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                                         <small class="text-xs text-gray-500" x-text="'Net pay ' + peso(p.net_pay)"></small>
                                     </span>
                                     <span class="rounded-md px-2.5 py-1 text-[0.78rem] font-bold" :class="badge(p.status)" x-text="p.status"></span>
@@ -117,6 +145,7 @@
         <div class="absolute inset-0 bg-[rgba(17,24,39,0.55)]" @click="slip = null"></div>
 
         <section role="dialog" aria-modal="true" aria-labelledby="payslipTitle"
+<<<<<<< HEAD
             class="relative my-auto w-full max-w-[700px] rounded-[24px] bg-white px-2.5 pb-2.5 pt-1.5 shadow-[0_30px_80px_rgba(15,23,42,0.25)]">
             <button type="button" @click="slip = null" aria-label="Close payslip"
                 class="absolute right-3 top-3 h-8 w-8 cursor-pointer rounded-full text-xl leading-none text-gray-500 transition hover:bg-[#fef2f2] hover:text-[#b22222]">&times;</button>
@@ -186,8 +215,116 @@
                         <strong class="text-base tracking-normal" x-text="peso(slip.net_pay)"></strong>
                     </div>
 
+=======
+            class="relative my-auto w-full max-w-[680px] rounded-[20px] bg-white p-[26px] shadow-[0_30px_80px_rgba(15,23,42,0.25)]">
+            <button type="button" @click="slip = null" aria-label="Close payslip"
+                class="absolute right-4 top-4 h-9 w-9 cursor-pointer rounded-full bg-gray-100 text-2xl leading-none text-gray-900 transition hover:bg-gray-200">&times;</button>
+
+            <template x-if="slip">
+                <div class="grid gap-4">
+                    <header class="grid gap-0.5 pr-10">
+                        <strong id="payslipTitle" class="text-[1.2rem] text-gray-900" x-text="slip.employee.name"></strong>
+                        <span class="text-sm text-gray-500" x-text="'ID: ' + slip.employee.number"></span>
+                        <small class="text-xs text-gray-500"
+                            x-text="slip.employee.department + ' | ' + slip.employee.position + ' | ' + (slip.step_name || '—')"></small>
+                    </header>
+
+                    <div class="grid grid-cols-2 gap-2 sm:grid-cols-5">
+                        <div class="grid rounded-md border border-gray-200 bg-gray-50 px-3 py-2"><span class="text-xs text-gray-500">Pay period</span><strong class="text-sm" x-text="slip.period_label"></strong></div>
+                        <div class="grid rounded-md border border-gray-200 bg-gray-50 px-3 py-2"><span class="text-xs text-gray-500">Monthly wage</span><strong class="text-sm" x-text="peso(slip.monthly_wage)"></strong></div>
+                        <div class="grid rounded-md border border-gray-200 bg-gray-50 px-3 py-2"><span class="text-xs text-gray-500">Days worked</span><strong class="text-sm" x-text="slip.days"></strong></div>
+                        <div class="grid rounded-md border border-gray-200 bg-gray-50 px-3 py-2"><span class="text-xs text-gray-500">Hours worked</span><strong class="text-sm" x-text="slip.hours"></strong></div>
+                        <div class="grid rounded-md border border-gray-200 bg-gray-50 px-3 py-2"><span class="text-xs text-gray-500">Late (mins)</span><strong class="text-sm" x-text="slip.late_min"></strong></div>
+                    </div>
+
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <section class="grid content-start gap-1.5 rounded-[14px] border border-[#ecebea] bg-gray-50 p-4 text-sm">
+                            <h3 class="mb-1 text-xs font-extrabold uppercase tracking-[0.08em] text-[#b22222]">Earnings</h3>
+                            <div class="flex justify-between"><span class="text-gray-500">Basic salary</span><strong x-text="peso(slip.basic_pay)"></strong></div>
+                            <div class="flex justify-between"><span class="text-gray-500">Daily rate</span><strong x-text="peso(slip.daily_wage)"></strong></div>
+                            <div class="flex justify-between"><span class="text-gray-500">Honorarium</span><strong x-text="peso(slip.honorarium)"></strong></div>
+                            <div class="mt-1 flex justify-between border-t border-gray-200 pt-2"><span class="font-semibold text-gray-900">Gross earnings</span><strong x-text="peso(slip.gross_pay)"></strong></div>
+                        </section>
+
+                        <section class="grid content-start gap-1.5 rounded-[14px] border border-[#ecebea] bg-gray-50 p-4 text-sm">
+                            <h3 class="mb-1 text-xs font-extrabold uppercase tracking-[0.08em] text-[#b22222]">Deductions</h3>
+                            <template x-for="d in slip.deductions" :key="d[0]">
+                                <div class="flex justify-between"><span class="text-gray-500" x-text="d[0]"></span><strong x-text="peso(d[1])"></strong></div>
+                            </template>
+                            <div class="mt-1 flex justify-between border-t border-gray-200 pt-2"><span class="font-semibold text-gray-900">Total deductions</span><strong x-text="peso(slip.total_deductions)"></strong></div>
+                        </section>
+                    </div>
+
+                    <div class="flex items-center justify-between rounded-[14px] bg-[#b22222] px-4 py-3 text-white">
+                        <span class="text-sm font-extrabold tracking-[0.08em]">NET PAY</span>
+                        <strong class="text-xl" x-text="peso(slip.net_pay)"></strong>
+                    </div>
+
+                    {{-- Decision --}}
+                    <template x-if="slip.status === 'Pending'">
+                        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <p class="text-sm text-gray-500">You can respond only once.</p>
+                            <div class="flex gap-2">
+                                <button type="button" @click="rejecting = true"
+                                    class="min-h-[38px] cursor-pointer rounded-md border border-[#b22222] bg-white px-4 py-2 font-bold text-[#b22222] transition hover:bg-[#b22222] hover:text-white">
+                                    Reject
+                                </button>
+                                <form method="POST" :action="slip.action_url">
+                                    @csrf
+                                    <input type="hidden" name="decision" value="approve">
+                                    <button type="submit"
+                                        class="min-h-[38px] cursor-pointer rounded-md border border-[#b22222] bg-[#b22222] px-4 py-2 font-bold text-white transition hover:bg-white hover:text-[#b22222]">
+                                        <i class="fa-solid fa-check mr-1" aria-hidden="true"></i> Approve
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </template>
+                    <template x-if="slip.status !== 'Pending'">
+                        <p role="status" class="rounded-lg border px-4 py-3 text-sm font-semibold"
+                           :class="slip.status === 'Approved' ? 'border-green-300 bg-green-50 text-green-800' : 'border-[#f0dada] bg-[#fef2f2] text-[#b22222]'"
+                           x-text="slip.status === 'Approved' ? 'Payslip approved' : 'Payslip rejected' + (slip.reason ? ': ' + slip.reason : '')"></p>
+                    </template>
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                 </div>
             </template>
         </section>
     </div>
+<<<<<<< HEAD
+=======
+
+    {{-- ============ Rejection reason modal ============ --}}
+    <div x-show="rejecting && slip" x-cloak x-transition.opacity class="fixed inset-0 z-[70] grid place-items-center p-5">
+        <div class="absolute inset-0 bg-[rgba(17,24,39,0.55)]" @click="rejecting = false"></div>
+
+        <section role="dialog" aria-modal="true" aria-labelledby="rejectPayslipTitle"
+            class="relative w-full max-w-[480px] rounded-[20px] bg-white p-[26px] shadow-[0_30px_80px_rgba(15,23,42,0.25)]">
+            <div class="mb-3 flex items-center justify-between gap-3">
+                <h2 id="rejectPayslipTitle" class="text-[1.2rem] font-bold">Reject payslip</h2>
+                <button type="button" @click="rejecting = false" aria-label="Close rejection dialog"
+                    class="h-9 w-9 cursor-pointer rounded-full bg-gray-100 text-2xl leading-none text-gray-900 transition hover:bg-gray-200">&times;</button>
+            </div>
+            <p class="mb-3 text-gray-500">Please provide a reason for rejecting this payslip.</p>
+
+            <form method="POST" :action="slip?.action_url" class="grid gap-4">
+                @csrf
+                <input type="hidden" name="decision" value="reject">
+                <label class="grid gap-1.5 text-sm font-semibold text-gray-700">
+                    Reason
+                    <textarea name="reason" rows="4" required maxlength="1000"
+                        placeholder="Explain why you are rejecting this payslip"
+                        class="rounded-md border border-gray-300 px-3 py-2.5 font-normal text-gray-900 focus:border-[#b22222] focus:outline-none focus:ring-1 focus:ring-[#b22222]"></textarea>
+                </label>
+                <div class="flex justify-end gap-2">
+                    <button type="button" @click="rejecting = false"
+                        class="min-h-[38px] cursor-pointer rounded-md border border-gray-300 bg-white px-4 py-2 font-bold text-gray-700 transition hover:bg-gray-100">Cancel</button>
+                    <button type="submit"
+                        class="min-h-[38px] cursor-pointer rounded-md border border-[#b22222] bg-[#b22222] px-4 py-2 font-bold text-white transition hover:bg-white hover:text-[#b22222]">
+                        Submit rejection
+                    </button>
+                </div>
+            </form>
+        </section>
+    </div>
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 </div>

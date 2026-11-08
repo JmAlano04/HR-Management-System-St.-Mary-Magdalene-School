@@ -24,12 +24,20 @@ class Payslip extends Model
         'days_worked', 'hours_worked', 'late_minutes',
         'basic_pay', 'daily_wage', 'honorarium', 'gross_pay',
         'malasakitan', 'late_deduction', 'absences_deduction', 'sss', 'sss_loan', 'philhealth',
+<<<<<<< HEAD
         'philhealth_loan', 'peraa_ceap', 'peraa_ceap_loan', 'hdmf', 'hdmf_loan', 'cash_advance',
+=======
+        'peraa_ceap', 'peraa_ceap_loan', 'hdmf', 'hdmf_loan', 'cash_advance',
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         'total_deductions', 'net_pay',
         'sent_to_admin_at',
         'admin_status', 'admin_rejection_reason', 'admin_reviewed_at', 'admin_reviewed_by',
         'hr_status', 'hr_rejection_reason', 'hr_reviewed_at', 'hr_reviewed_by',
+<<<<<<< HEAD
         'released_at',
+=======
+        'released_at', 'archived_at',
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     ];
 
     protected function casts(): array
@@ -40,6 +48,10 @@ class Payslip extends Model
             'admin_reviewed_at'  => 'datetime',
             'hr_reviewed_at'     => 'datetime',
             'released_at'        => 'datetime',
+<<<<<<< HEAD
+=======
+            'archived_at'        => 'datetime',
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             'days_worked'        => 'float',
             'hours_worked'       => 'float',
             'late_minutes'       => 'integer',
@@ -53,7 +65,10 @@ class Payslip extends Model
             'sss'                => 'float',
             'sss_loan'           => 'float',
             'philhealth'         => 'float',
+<<<<<<< HEAD
             'philhealth_loan'    => 'float',
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             'peraa_ceap'         => 'float',
             'peraa_ceap_loan'    => 'float',
             'hdmf'               => 'float',
@@ -94,6 +109,21 @@ class Payslip extends Model
         return $query->whereNotNull('released_at');
     }
 
+<<<<<<< HEAD
+=======
+    /** Not archived: the normal approval queue. */
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->whereNull('archived_at');
+    }
+
+    /** Archived by Admin or HR. */
+    public function scopeArchived(Builder $query): Builder
+    {
+        return $query->whereNotNull('archived_at');
+    }
+
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     public function scopeForEmployee(Builder $query, int $employeeId): Builder
     {
         return $query->where('employee_id', $employeeId);
@@ -168,6 +198,14 @@ class Payslip extends Model
         return $this->released_at !== null;
     }
 
+<<<<<<< HEAD
+=======
+    public function isArchived(): bool
+    {
+        return $this->archived_at !== null;
+    }
+
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     /** Release to the employee. Only allowed once Admin and HR both approved. */
     public function release(): bool
     {
@@ -182,6 +220,7 @@ class Payslip extends Model
      | Cards for the views
      * ------------------------------------------------------------------ */
 
+<<<<<<< HEAD
     public function cutoffDateLabel(): string
     {
         $date = $this->transfer_date ?? $this->released_at ?? $this->sent_to_admin_at ?? $this->created_at;
@@ -201,6 +240,8 @@ class Payslip extends Model
         return $date->format('F j, Y');
     }
 
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     public function toCard(): array
     {
         $e = $this->employee;
@@ -216,7 +257,10 @@ class Payslip extends Model
             'hours_worked'    => $this->hours_worked,
             'late_minutes'    => $this->late_minutes,
             'cutoff'          => $this->cutoff,
+<<<<<<< HEAD
             'cutoff_label'    => $this->cutoffDateLabel(),
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             'basic_pay'       => $this->basic_pay,
             'daily_wage'      => $this->daily_wage,
             'honorarium'      => $this->honorarium,
@@ -224,11 +268,18 @@ class Payslip extends Model
             'deductions'      => [
                 'malasakitan'     => $this->malasakitan,
                 'late'            => $this->late_deduction,
+<<<<<<< HEAD
                 'absences'        => 0.0,
                 'sss'             => $this->sss,
                 'sss_loan'        => $this->sss_loan,
                 'philhealth'      => $this->philhealth,
                 'philhealth_loan' => $this->philhealth_loan,
+=======
+                'absences'        => $this->absences_deduction,
+                'sss'             => $this->sss,
+                'sss_loan'        => $this->sss_loan,
+                'philhealth'      => $this->philhealth,
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                 'peraa_ceap'      => $this->peraa_ceap,
                 'peraa_ceap_loan' => $this->peraa_ceap_loan,
                 'hdmf'            => $this->hdmf,

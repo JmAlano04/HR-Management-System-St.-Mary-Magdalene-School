@@ -1,4 +1,5 @@
 {{-- resources/views/leave-requests/employee.blade.php (Employee: leave balances + request leave) --}}
+<<<<<<< HEAD
   @auth
     <x-slot name="title">
         @if (auth()->user()->hasRole('Employee'))
@@ -7,6 +8,19 @@
     </x-slot>
     @endauth
       <x-slot name="header">
+=======
+{{-- NOTE: if your layout component is not <x-app-layout>, change the opening/closing tag. --}}
+
+    @auth
+        <x-slot name="title">
+            @if (auth()->user()->hasRole('Employee'))
+                Employee Leave Request
+            @endif
+        </x-slot>
+    @endauth
+
+    <x-slot name="header">
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-extrabold leading-tight sm:ml-[10px] md:ml-[20px] lg:ml-[80px] text-red-700">Leave Request</h1>
     </x-slot>
 
@@ -30,7 +44,10 @@
         ]))"
         @keydown.escape.window="detail = null; requestOpen = false">
 
+<<<<<<< HEAD
    
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         @unless ($employee)
             <div class="mb-5 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
                 Your account is not linked to an employee record yet, so you cannot file a request. Please contact HR.
@@ -50,7 +67,11 @@
 
                 @foreach ($cards as [$label, $value, $caption])
                     <article class="flex min-h-[132px] flex-col justify-center gap-1 rounded-[18px] border px-4 py-[18px]
+<<<<<<< HEAD
                         {{ $value === 0 ? 'border-[#b22222]/30 bg-[#fef2f2]' : 'border-gray-900/10 bg-white/70' }}">
+=======
+                        {{ $value === 0 ? 'border-[#b22222]/30 bg-[#fef2f2]' : 'border-[#f0dada] bg-white' }}">
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                         <span class="text-[0.9rem] font-semibold text-gray-600">{{ $label }}</span>
                         <span class="text-[2.4rem] font-extrabold leading-none {{ $value === 0 ? 'text-[#991b1b]' : 'text-[#111827]' }}">{{ $value }}</span>
                         <small class="text-[0.82rem] {{ $value === 0 ? 'text-[#991b1b]' : 'text-gray-500' }}">{{ $caption }}</small>
@@ -81,6 +102,7 @@
         <section class="mt-5 rounded-[24px] border border-[#f0e5e5] bg-white p-5 shadow-[0_20px_50px_rgba(15,23,42,0.08)] sm:p-7">
             <h3 class="mb-4 text-lg font-bold text-[#231f20]" x-text="tab === 'current' ? 'Current Leave Requests' : 'Archived Leave Requests'"></h3>
 
+<<<<<<< HEAD
             <div class="hrms-tablist mb-5" role="tablist" aria-label="Leave request views">
                 <button type="button" role="tab" @click="tab = 'current'"
                     :aria-selected="tab === 'current'"
@@ -92,6 +114,17 @@
                     :aria-selected="tab === 'archive'"
                     :class="tab === 'archive' ? 'bg-[#b22222] text-white' : 'text-gray-700'"
                     class="hrms-tab cursor-pointer font-semibold">
+=======
+            <div class="mb-5 inline-flex gap-1 rounded-xl bg-[#f6f2f2] p-1" role="tablist" aria-label="Leave request views">
+                <button type="button" role="tab" @click="tab = 'current'"
+                    :class="tab === 'current' ? 'bg-[#b22222] text-white' : 'text-gray-700'"
+                    class="inline-flex cursor-pointer items-center gap-2 rounded-[10px] px-[18px] py-2.5 font-semibold">
+                    <i class="fa-regular fa-calendar-days"></i> Current
+                </button>
+                <button type="button" role="tab" @click="tab = 'archive'"
+                    :class="tab === 'archive' ? 'bg-[#b22222] text-white' : 'text-gray-700'"
+                    class="inline-flex cursor-pointer items-center gap-2 rounded-[10px] px-[18px] py-2.5 font-semibold">
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                     <i class="fas fa-box-archive"></i> Archive
                 </button>
             </div>
@@ -151,7 +184,12 @@
             <div class="w-full max-w-[560px] rounded-2xl bg-white p-6 shadow-2xl" role="dialog" aria-modal="true" aria-labelledby="requestLeaveModalTitle">
                 <h2 id="requestLeaveModalTitle" class="mb-4 text-xl font-extrabold text-[#231f20]">Request Leave</h2>
 
+<<<<<<< HEAD
                 <form method="POST" action="{{ route('leave-requests.store') }}" class="grid gap-4">
+=======
+                <form method="POST" action="{{ route('leave-requests.store') }}" class="grid gap-4"
+                    @submit="if (! canSubmit || submitting) { $event.preventDefault(); return; } submitting = true">
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                     @csrf
 
                     <label class="grid gap-2">
@@ -196,7 +234,15 @@
 
                     <div class="flex justify-end gap-3 pt-1">
                         <button type="button" @click="requestOpen = false" class="cursor-pointer rounded-[10px] bg-gray-100 px-5 py-2.5 font-bold text-gray-700 hover:bg-gray-200">Cancel</button>
+<<<<<<< HEAD
                         <button type="submit" class="cursor-pointer rounded-[10px] bg-[#b22222] px-5 py-2.5 font-bold text-white hover:bg-[#8f1c1c]">Submit</button>
+=======
+                        <button type="submit" :disabled="! canSubmit || submitting"
+                            class="cursor-pointer rounded-[10px] bg-[#b22222] px-5 py-2.5 font-bold text-white hover:bg-[#8f1c1c] disabled:cursor-not-allowed disabled:opacity-60">
+                            <span x-show="! submitting">Submit</span>
+                            <span x-show="submitting" x-cloak>Submitting...</span>
+                        </button>
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                     </div>
                 </form>
             </div>
@@ -214,19 +260,31 @@
                 type: cfg.type,
                 start: cfg.start,
                 end: cfg.end,
+<<<<<<< HEAD
+=======
+                submitting: false,
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 
                 get visible() {
                     return this.requests.filter(r => this.tab === 'archive' ? r.archived : ! r.archived);
                 },
 
+<<<<<<< HEAD
                 // Inclusive calendar days (same as the original script)
+=======
+                // Inclusive calendar days
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                 get days() {
                     if (! this.start || ! this.end) return 0;
                     const diff = (new Date(this.end + 'T00:00:00') - new Date(this.start + 'T00:00:00')) / 86400000;
                     return diff >= 0 ? Math.floor(diff) + 1 : 0;
                 },
 
+<<<<<<< HEAD
                 // Live hint only. The server validates the balance again.
+=======
+                // Live hint. The server validates the balance again.
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                 get feedback() {
                     if (! this.type) return { text: '', error: false };
                     const left = this.remaining[this.type];
@@ -238,6 +296,14 @@
                     return { text: `${left} day${left === 1 ? '' : 's'} remaining for this leave type.`, error: false };
                 },
 
+<<<<<<< HEAD
+=======
+                // Submit is enabled only when the type and dates are valid
+                get canSubmit() {
+                    return !! this.type && this.days > 0 && ! this.feedback.error;
+                },
+
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                 badge(status) {
                     return {
                         Approved: 'bg-[#dfeec2] text-[#1d5f3a]',

@@ -16,7 +16,10 @@ class HrmsNotification extends Notification
         public ?string $url = null,
         public string $type = 'info',
         public ?string $dedupeKey = null,
+<<<<<<< HEAD
         public string $from = 'System',
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     ) {
     }
 
@@ -33,7 +36,10 @@ class HrmsNotification extends Notification
             'url'        => $this->url,
             'type'       => $this->type,
             'dedupe_key' => $this->dedupeKey,
+<<<<<<< HEAD
             'from'       => $this->from,
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         ];
     }
 }

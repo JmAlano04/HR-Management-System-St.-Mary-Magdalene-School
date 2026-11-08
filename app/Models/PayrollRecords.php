@@ -15,7 +15,11 @@ class PayrollRecords extends Model
 
     /** Columns Accounting may edit (used for validation and for the JSON the page receives). */
     public const EDITABLE = [
+<<<<<<< HEAD
         'step_no', 'days_worked', 'hours_worked', 'late_minutes', 'undertime_minutes', 'honorarium',
+=======
+        'step_no', 'days_worked', 'hours_worked', 'late_minutes', 'honorarium',
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         'sss', 'sss_loan', 'philhealth', 'peraa_ceap', 'peraa_ceap_loan',
         'hdmf', 'hdmf_loan', 'cash_advance',
     ];
@@ -34,7 +38,10 @@ class PayrollRecords extends Model
         'days_worked'         => 'float',
         'hours_worked'        => 'float',
         'late_minutes'        => 'float',
+<<<<<<< HEAD
         'undertime_minutes'   => 'float',
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         'honorarium'          => 'float',
         'sss'                 => 'float',
         'sss_loan'            => 'float',

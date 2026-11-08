@@ -1,6 +1,10 @@
+<<<<<<< HEAD
 @php($modal = $modal ?? false)
 <section @class(['max-w-2xl' => ! $modal])>
     @unless ($modal)
+=======
+<section>
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     <header>
         <h2 class="text-lg font-medium text-gray-900">
             {{ __('Update Password') }}
@@ -10,34 +14,51 @@
             {{ __('Ensure your account is using a long, random password to stay secure.') }}
         </p>
     </header>
+<<<<<<< HEAD
     @endunless
 
     <form method="post" action="{{ route('password.update') }}" @if ($modal) x-ref="passwordForm" @endif
         class="{{ $modal ? 'grid gap-5' : 'mt-6 space-y-6' }}">
+=======
+
+    <form method="post" action="{{ route('password.update') }}" class="mt-6 space-y-6">
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         @csrf
         @method('put')
 
         <div>
             <x-input-label for="update_password_current_password" :value="__('Current Password')" />
+<<<<<<< HEAD
             <x-text-input id="update_password_current_password" name="current_password" type="password"
                 class="{{ $modal ? 'mt-1 block w-full rounded-md border-red-300 focus:border-red-500 focus:ring-red-500' : 'mt-1 block w-full' }}"
                 autocomplete="current-password" />
+=======
+            <x-text-input id="update_password_current_password" name="current_password" type="password" class="mt-1 block w-full" autocomplete="current-password" />
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             <x-input-error :messages="$errors->updatePassword->get('current_password')" class="mt-2" />
         </div>
 
         <div>
             <x-input-label for="update_password_password" :value="__('New Password')" />
+<<<<<<< HEAD
             <x-text-input id="update_password_password" name="password" type="password"
                 class="{{ $modal ? 'mt-1 block w-full rounded-md border-red-300 focus:border-red-500 focus:ring-red-500' : 'mt-1 block w-full' }}"
                 autocomplete="new-password" />
+=======
+            <x-text-input id="update_password_password" name="password" type="password" class="mt-1 block w-full" autocomplete="new-password" />
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             <x-input-error :messages="$errors->updatePassword->get('password')" class="mt-2" />
         </div>
 
         <div>
             <x-input-label for="update_password_password_confirmation" :value="__('Confirm Password')" />
+<<<<<<< HEAD
             <x-text-input id="update_password_password_confirmation" name="password_confirmation" type="password"
                 class="{{ $modal ? 'mt-1 block w-full rounded-md border-red-300 focus:border-red-500 focus:ring-red-500' : 'mt-1 block w-full' }}"
                 autocomplete="new-password" />
+=======
+            <x-text-input id="update_password_password_confirmation" name="password_confirmation" type="password" class="mt-1 block w-full" autocomplete="new-password" />
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             <x-input-error :messages="$errors->updatePassword->get('password_confirmation')" class="mt-2" />
         </div>
 

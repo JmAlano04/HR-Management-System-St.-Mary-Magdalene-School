@@ -2,9 +2,15 @@
 
 namespace App\Http\Controllers;
 
+<<<<<<< HEAD
 use App\Models\OffboardingCase;
 use App\Models\OffboardingDocument;
 use App\Services\HrmsNotifier;
+=======
+use App\Http\Controllers\Controller;
+use App\Models\OffboardingCase;
+use App\Models\OffboardingDocument;
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -15,6 +21,7 @@ class OffboardingController extends Controller
     /**
      * Offboarding Dashboard — HR-approved cases + modal data.
      */
+<<<<<<< HEAD
     public function index(Request $request): View
     {
         $isHr = auth()->user()->hasRole('HR');
@@ -110,12 +117,29 @@ class OffboardingController extends Controller
             ->orderByDesc('id')
             ->paginate(10)
             ->withQueryString();
+=======
+    public function index(): View
+    {
+        $stats = [
+            'pending'   => OffboardingCase::sentToAdmin()->where('admin_final_approved', false)->count(),
+            'completed' => OffboardingCase::sentToAdmin()->where('admin_final_approved', true)->count(),
+        ];
+
+        $cases = OffboardingCase::query()
+            ->sentToAdmin()
+            ->with(['employee', 'documents'])
+            ->orderBy('admin_final_approved')          // awaiting first
+            ->orderByDesc('sent_to_admin_at')
+            ->orderByDesc('id')
+            ->paginate(10);
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 
         $disk = Storage::disk(OffboardingCase::DOCUMENT_DISK);
 
         // Data para sa Alpine modal, keyed by case id
         $cards = $cases->getCollection()->mapWithKeys(fn (OffboardingCase $c) => [
             $c->id => [
+<<<<<<< HEAD
                 'id' => $c->id,
                 'employee_name' => $c->employee?->name ?? 'Unknown employee',
                 'position' => $c->employee?->position ?? 'N/A',
@@ -196,6 +220,32 @@ class OffboardingController extends Controller
             'monthFilter',
             'yearFilter',
         ));
+=======
+                'id'                => $c->id,
+                'employee_name'     => $c->employee?->name ?? 'Unknown employee',
+                'position'          => $c->employee?->position ?? 'N/A',
+                'reason'            => $c->reason,
+                'last_working_day'  => $c->last_working_day->format('M d, Y'),
+                'message'           => $c->employee_message ?: 'No additional message from the employee.',
+                'approved'          => $c->admin_final_approved,
+                'can_approve'       => $c->can_final_approve,
+                'status_message'    => $c->status_message,
+                'approve_url'       => route('offboarding.approve', $c),
+                'documents'         => $c->documents->map(fn (OffboardingDocument $d) => [
+                    'id'     => $d->id,
+                    'label'  => $d->document_label ?: $d->file_name,
+                    'name'   => $d->file_name,
+                    'status' => $d->review_status,
+                    'hr_ok'  => $d->review_status === 'Approved',
+                    'url'    => $disk->exists($d->file_path)
+                        ? route('offboarding.document', [$c, $d])
+                        : null,
+                ])->values()->all(),
+            ],
+        ]);
+
+        return view('offboarding', compact('cases', 'cards', 'stats'));
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     }
 
     /**
@@ -203,7 +253,10 @@ class OffboardingController extends Controller
      */
     public function approve(Request $request, OffboardingCase $offboardingCase): RedirectResponse
     {
+<<<<<<< HEAD
         abort_unless($request->user()->hasRole('Admin'), 403);
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         $offboardingCase->load('documents');
 
         if (! $offboardingCase->can_final_approve) {
@@ -214,6 +267,7 @@ class OffboardingController extends Controller
 
         $offboardingCase->update([
             'admin_final_approved' => true,
+<<<<<<< HEAD
             'admin_approved_at' => now(),
             'admin_approved_by' => $request->user()?->id,
             'status' => 'Closed',
@@ -377,6 +431,15 @@ class OffboardingController extends Controller
         return back()
             ->with('success', 'Offboarding request sent to Admin for final approval.')
             ->with('offboarding_detail_id', $offboardingCase->id);
+=======
+            'admin_approved_at'    => now(),
+            'admin_approved_by'    => $request->user()?->id,
+            'status'               => 'Closed',
+            'progress'             => 100,
+        ]);
+
+        return back()->with('success', 'Final approval completed.');
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     }
 
     /**
@@ -385,8 +448,12 @@ class OffboardingController extends Controller
     public function document(OffboardingCase $offboardingCase, OffboardingDocument $document)
     {
         abort_unless(
+<<<<<<< HEAD
             (auth()->user()->hasRole('HR') || $offboardingCase->sent_to_admin)
                 && $document->offboarding_case_id === $offboardingCase->id,
+=======
+            $offboardingCase->sent_to_admin && $document->offboarding_case_id === $offboardingCase->id,
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             404
         );
 
@@ -415,7 +482,14 @@ class OffboardingController extends Controller
             }
         }, 200, [
             'Content-Type' => $contentType,
+<<<<<<< HEAD
             'Content-Disposition' => 'inline; filename="'.addslashes($document->file_name).'"',
         ]);
     }
 }
+=======
+            'Content-Disposition' => 'inline; filename="' . addslashes($document->file_name) . '"',
+        ]);
+    }
+}
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120

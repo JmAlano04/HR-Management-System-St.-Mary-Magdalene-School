@@ -39,7 +39,11 @@
                             @case('Accounting')
                             
                                 <p class="mt-2 text-purple-700">
+<<<<<<< HEAD
                                     @include('partial.accounting-dashboard', ['bannerSlides' => $adminBannerSlides])
+=======
+                                    @include('partial.accounting-dashboard')
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                                 </p>
                                 @break
 

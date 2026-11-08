@@ -16,6 +16,11 @@ class LeaveRequest extends Model
     public const APPROVED = 'approved';
     public const REJECTED = 'rejected';
 
+<<<<<<< HEAD
+=======
+    protected $table = 'leave_requests';
+
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     protected $fillable = [
         'user_id',
         'employee_code',
@@ -29,6 +34,7 @@ class LeaveRequest extends Model
         'leave_balance',
         'status',
         'admin_archived',
+<<<<<<< HEAD
         'employee_archived',   // NEW
         'decided_by',
         'decided_at',
@@ -39,6 +45,11 @@ class LeaveRequest extends Model
         'admin_decided_by',
         'admin_decided_at',
         'rejection_reason',
+=======
+        'employee_archived',
+        'decided_by',
+        'decided_at',
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     ];
 
     protected $casts = [
@@ -46,12 +57,21 @@ class LeaveRequest extends Model
         'start_date'        => 'date',
         'end_date'          => 'date',
         'admin_archived'    => 'boolean',
+<<<<<<< HEAD
         'employee_archived' => 'boolean',   // NEW
         'decided_at'        => 'datetime',
         'hr_decided_at'     => 'datetime',
         'admin_decided_at'  => 'datetime',
     ];
 
+=======
+        'employee_archived' => 'boolean',
+        'decided_at'        => 'datetime',
+    ];
+
+    /* ---------- Relationships ---------- */
+
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -74,13 +94,21 @@ class LeaveRequest extends Model
         return $query->where('admin_archived', true);
     }
 
+<<<<<<< HEAD
     // NEW: requests of one user
+=======
+    // Requests of one user
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     public function scopeForUser($query, int $userId)
     {
         return $query->where('user_id', $userId);
     }
 
+<<<<<<< HEAD
     // NEW: approved requests (these are the ones that deduct the balance)
+=======
+    // Approved requests (these are the ones that deduct the balance)
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     public function scopeApproved($query)
     {
         return $query->whereRaw('LOWER(status) = ?', [self::APPROVED]);
@@ -88,9 +116,19 @@ class LeaveRequest extends Model
 
     /* ---------- Accessors ---------- */
 
+<<<<<<< HEAD
     // "Oct 20, 2026 - Oct 22, 2026" (o isang petsa lang kung pareho)
     public function getDateRangeAttribute(): string
     {
+=======
+    // "Oct 20, 2026 - Oct 22, 2026" (or a single date when both are the same)
+    public function getDateRangeAttribute(): string
+    {
+        if (! $this->start_date || ! $this->end_date) {
+            return 'Date unavailable';
+        }
+
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         if ($this->start_date->isSameDay($this->end_date)) {
             return $this->start_date->format('M d, Y');
         }
@@ -100,6 +138,7 @@ class LeaveRequest extends Model
 
     public function getDaysCountAttribute(): int
     {
+<<<<<<< HEAD
         return (int) $this->start_date->diffInDays($this->end_date) + 1;
     }
 
@@ -117,6 +156,18 @@ class LeaveRequest extends Model
             return 'Pending Review';
         }
 
+=======
+        if (! $this->start_date || ! $this->end_date) {
+            return 0;
+        }
+
+        return (int) abs($this->start_date->diffInDays($this->end_date)) + 1;
+    }
+
+    // "Pending" / "Approved" / "Rejected" for display
+    public function getStatusLabelAttribute(): string
+    {
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         return ucfirst(strtolower((string) $this->status));
     }
 }

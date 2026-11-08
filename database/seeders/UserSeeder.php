@@ -41,7 +41,11 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Job Applicant',
                 'email' => 'applicant@example.com',
+<<<<<<< HEAD
                 'password' => 'passwor123',
+=======
+                'password' => 'password123',
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                 'role' => 'Applicant',
             ],
         ];
@@ -63,3 +67,7 @@ class UserSeeder extends Seeder
         }
     }
 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120

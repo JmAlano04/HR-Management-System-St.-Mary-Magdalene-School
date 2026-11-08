@@ -50,13 +50,22 @@
         {{-- Tabs (only shown when the role can see more than one report) --}}
         @if (count($tabs) > 1)
             <div class="mb-5 flex">
+<<<<<<< HEAD
                 <div role="tablist" aria-label="Report department" class="hrms-tablist">
+=======
+                <div role="tablist" aria-label="Report department"
+                    class="inline-flex flex-wrap gap-2 rounded-[14px] border border-[#ecebea] bg-white p-1.5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                     @foreach ($tabs as $i => $t)
                         <button type="button" role="tab" id="{{ $t }}ReportTab"
                             aria-controls="{{ $t }}ReportPanel"
                             :aria-selected="tab === '{{ $t }}'" :tabindex="tab === '{{ $t }}' ? 0 : -1"
                             @click="tab = '{{ $t }}'" @keydown="move($event, {{ $i }})"
+<<<<<<< HEAD
                             class="hrms-tab min-h-[44px] cursor-pointer text-[0.9rem] font-bold"
+=======
+                            class="inline-flex min-h-[44px] cursor-pointer items-center justify-center gap-[9px] rounded-[10px] px-[18px] py-2.5 text-[0.9rem] font-bold transition"
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                             :class="tab === '{{ $t }}' ? 'bg-[#b22222] text-white shadow-[0_4px_12px_rgba(178,34,34,0.2)]' : 'text-gray-500 hover:bg-[#fff5f5] hover:text-[#7f1d1d]'">
                             <i class="fa-solid {{ $tabMeta[$t]['icon'] }}" aria-hidden="true"></i>
                             {{ $tabMeta[$t]['label'] }}
@@ -72,6 +81,7 @@
 
                 <div class="mb-[22px] grid gap-[18px] md:grid-cols-3" aria-label="Attendance totals for the selected month">
                     @foreach ([
+<<<<<<< HEAD
                         ['DAYS WORKED',   $hr['counts']['worked'], 'text-[#080808]'],
                         ['LATE ARRIVALS', $hr['counts']['late'],   'text-[#080808]'],
                         ['ABSENCES',      $hr['counts']['absent'], 'text-[#080808]'],
@@ -80,6 +90,17 @@
                             <span class="text-[0.82rem] font-extrabold tracking-[0.075em] text-[#737d8e]">{{ $label }}</span>
                             <strong class="text-[clamp(2.1rem,3vw,2.65rem)] font-extrabold leading-none tracking-[-0.055em] {{ $color }}">{{ $value }}</strong>
                             <span class="text-[0.86rem] text-[#8791a1]">{{ $hr['period'] }}</span>
+=======
+                        ['DAYS WORKED',   $hr['counts']['worked'], 'text-[#151c2b]'],
+                        ['LATE ARRIVALS', $hr['counts']['late'],   'text-[#151c2b]'],
+                        ['ABSENCES',      $hr['counts']['absent'], 'text-[#151c2b]'],
+                    ] as [$label, $value, $color])
+                        <article class="grid min-h-[150px] content-start gap-2.5 rounded-[28px] border border-[#f0dada] bg-white px-7 py-[25px] shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+                            <span class="text-[0.82rem] font-extrabold tracking-[0.075em] text-[#737d8e]">{{ $label }}</span>
+                          
+                            <span class="text-[0.86rem] text-[#8791a1]">{{ $hr['period'] }}</span>
+                              <strong class="text-[clamp(2.1rem,3vw,2.65rem)] font-extrabold leading-none tracking-[-0.055em] {{ $color }}">{{ $value }}</strong>
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                         </article>
                     @endforeach
                 </div>
@@ -168,6 +189,7 @@
                 <div class="grid gap-[18px]">
 
                     <div class="grid gap-[18px] md:grid-cols-2">
+<<<<<<< HEAD
                         <article class="grid gap-2 rounded-[22px] border border-[#ecebea] bg-white px-6 py-[22px] shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
                             <span class="text-[0.82rem] font-bold uppercase tracking-[0.08em] text-gray-500">Total Salary Given</span>
                             <strong class="text-[clamp(1.8rem,2.3vw,2.5rem)] tracking-[-0.04em] text-gray-900">{{ $peso($acc['salary']) }}</strong>
@@ -181,6 +203,23 @@
                     </div>
 
                     <article x-data="{ showPaidEmployees: false, paidPosition: '' }" class="rounded-[22px] border border-[#ecebea] bg-white px-6 pb-[18px] pt-[22px] shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+=======
+                        <article class="grid gap-2 rounded-[22px] border border-[#f0dada] bg-white px-6 py-[22px] shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+                            <span class="text-[0.82rem] font-bold uppercase tracking-[0.08em] text-gray-500">Total Salary Given</span>
+                            <small class="text-[0.8rem] text-gray-500">{{ $acc['hasData'] ? $acc['period'] : 'No data' }}</small>
+                            <strong class="text-[clamp(1.8rem,2.3vw,2.5rem)] tracking-[-0.04em] text-gray-900">{{ $peso($acc['salary']) }}</strong>
+                            
+                        </article>
+                        <article class="grid gap-2 rounded-[22px] border border-[#f0dada] bg-white px-6 py-[22px] shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+                            <span class="text-[0.82rem] font-bold uppercase tracking-[0.08em] text-gray-500">Total Deducted</span>
+                            <small class="text-[0.8rem] text-gray-500">{{ $acc['hasData'] ? $acc['period'] : 'No data' }}</small>
+                            <strong class="text-[clamp(1.8rem,2.3vw,2.5rem)] tracking-[-0.04em] text-[#b22222]">{{ $peso($acc['deductions']) }}</strong>
+                            
+                        </article>
+                    </div>
+
+                    <article class="rounded-[22px] border border-[#ecebea] bg-white px-6 pb-[18px] pt-[22px] shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                         <div class="mb-[18px] flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                             <div>
                                 <p class="mb-2 text-[0.78rem] font-bold uppercase tracking-[0.08em] text-gray-500">Accounting</p>
@@ -247,6 +286,7 @@
                                 </div>
                             </div>
                         @endif
+<<<<<<< HEAD
 
                         <div class="mt-3 flex justify-center">
                             <button type="button" @click="showPaidEmployees = !showPaidEmployees"
@@ -331,6 +371,8 @@
                                 </p>
                             @endif
                         </section>
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                     </article>
                 </div>
             </section>

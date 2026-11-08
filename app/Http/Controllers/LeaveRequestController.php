@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreLeaveRequest;
 use App\Models\Employee;
 use App\Models\LeaveRequest;
+<<<<<<< HEAD
 use App\Services\HrmsNotifier;
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 use App\Services\LeaveBalanceService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -30,10 +33,15 @@ class LeaveRequestController extends Controller
         // Non-regular: the service already returns only Non-Convertible Leave (5 days)
         $isNonRegular = $this->isNonRegular($employee);
 
+<<<<<<< HEAD
+=======
+        // View file: resources/views/leave-requests/employee.blade.php
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         return view('leave', [
             'employee'     => $employee,
             'balance'      => $balance,
             'remaining'    => $balance ? $this->balances->remainingMap($balance) : [],
+<<<<<<< HEAD
             // Use this in the leave type dropdown. null = regular employee (show every type).
             'isNonRegular' => $isNonRegular,
             'allowedTypes' => $isNonRegular ? [$this->nonRegularType()] : null,
@@ -48,6 +56,23 @@ class LeaveRequestController extends Controller
                 'admin_status'=> ucfirst($r->admin_status ?? LeaveRequest::PENDING),
                 'archived'    => (bool) $r->employee_archived,
                 'archive_url' => route('leave-requests.archive', $r),
+=======
+            // null = regular employee (show every type)
+            'isNonRegular' => $isNonRegular,
+            'allowedTypes' => $isNonRegular ? [$this->nonRegularType()] : null,
+            'requests'     => $requests->map(fn (LeaveRequest $r) => [
+                'id'           => $r->id,
+                'label'        => $r->type,
+                'requested'    => $r->requested_date?->format('M j, Y') ?? $r->created_at->format('M j, Y'),
+                'range'        => $r->date_range . ' (' . $r->days_count . ' day' . ($r->days_count === 1 ? '' : 's') . ')',
+                'reason'       => $r->reason,
+                'status'       => $r->status_label,
+                // The Blade list reads these two. Adjust the column names if yours differ.
+                'hr_status'    => ucfirst((string) ($r->hr_status ?? 'pending')),
+                'admin_status' => ucfirst((string) ($r->admin_status ?? 'pending')),
+                'archived'     => (bool) $r->employee_archived,
+                'archive_url'  => route('leave-requests.archive', $r),
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             ])->values(),
         ]);
     }
@@ -58,6 +83,16 @@ class LeaveRequestController extends Controller
         $user     = $request->user();
         $employee = $user->employee;
 
+<<<<<<< HEAD
+=======
+        // No linked employee record: the form is disabled, but guard the server too
+        if (! $employee) {
+            throw ValidationException::withMessages([
+                'leave_type' => 'Your account is not linked to an employee record. Please contact HR.',
+            ]);
+        }
+
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         $isNonRegular = $this->isNonRegular($employee);
         $nonRegType   = $this->nonRegularType();
 
@@ -88,7 +123,11 @@ class LeaveRequestController extends Controller
             }
         }
 
+<<<<<<< HEAD
         $leaveRequest = LeaveRequest::create([
+=======
+        LeaveRequest::create([
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             'user_id'        => $user->id,
             'employee_code'  => $employee->employee_code,   // adjust to your employees column
             'employee_name'  => $user->name,
@@ -102,6 +141,7 @@ class LeaveRequestController extends Controller
             'reason'         => $data['reason'],
             'leave_balance'  => (string) $remaining,
             'status'         => LeaveRequest::PENDING,
+<<<<<<< HEAD
             'hr_status'      => LeaveRequest::PENDING,
             'admin_status'   => LeaveRequest::PENDING,
         ]);
@@ -111,6 +151,12 @@ class LeaveRequestController extends Controller
         return redirect()
             ->route('leaves.employee.index')
             ->with('success', 'Leave request submitted for review.');
+=======
+        ]);
+
+        // back() avoids a "Route not defined" error if the index route name differs
+        return back()->with('success', 'Leave request submitted for review.');
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     }
 
     public function archive(Request $request, LeaveRequest $leaveRequest): RedirectResponse
@@ -120,7 +166,11 @@ class LeaveRequestController extends Controller
         // forceFill so it works even if employee_archived is not in $fillable
         $leaveRequest->forceFill(['employee_archived' => true])->save();
 
+<<<<<<< HEAD
         return redirect()->route('leaves.employee.index')->with('success', 'Leave request archived.');
+=======
+        return back()->with('success', 'Leave request archived.');
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     }
 
     /** True when the employee is non-regular (same rule the balance service uses). */

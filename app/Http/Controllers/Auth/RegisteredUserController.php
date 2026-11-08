@@ -3,7 +3,10 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+<<<<<<< HEAD
 use App\Models\Banner;
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -21,9 +24,13 @@ class RegisteredUserController extends Controller
      */
     public function create(): View
     {
+<<<<<<< HEAD
         return view('welcome', [
             'homepageBannerSlides' => Banner::slidesFor('homepage'),
         ]);
+=======
+        return view('welcome');
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     }
 
     /**
@@ -47,11 +54,20 @@ class RegisteredUserController extends Controller
 
         event(new Registered($user));
 
+<<<<<<< HEAD
         $user->assignRole('Applicant');
 
         return redirect()
             ->route('login')
             ->with('registration_success', true)
             ->with('registered_email', $user->email);
+=======
+        // Auth::login($user);
+        $assignRole = $user->assignRole('applicant');
+        
+        
+          return redirect()->route('login')
+        ->with('success', 'Registration successful! Please log in.');
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     }
 }

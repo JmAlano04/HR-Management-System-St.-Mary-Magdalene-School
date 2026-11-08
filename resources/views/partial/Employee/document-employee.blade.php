@@ -45,12 +45,22 @@
             class="w-full rounded-[22px] border border-[#ecebea] bg-white p-[26px] shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
 
             {{-- Heading + count --}}
+<<<<<<< HEAD
             <div class="mb-[22px]">
+=======
+            <div class="mb-[22px] flex items-center justify-between gap-4">
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                 <div>
                     <p class="mb-2 text-[0.82rem] font-bold text-gray-500">Requested by HR</p>
                     <h2 id="employeeDocumentsTitle" class="text-[1.45rem] font-bold text-gray-900">Document submissions</h2>
                     <p class="mt-1 text-sm text-gray-500">Upload the documents requested by HR.</p>
                 </div>
+<<<<<<< HEAD
+=======
+                <span class="text-[0.82rem] font-bold text-gray-500">
+                    {{ $boxes->count() ? $boxes->count() . ' submission box' . ($boxes->count() === 1 ? '' : 'es') : 'No submission boxes' }}
+                </span>
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             </div>
 
             {{-- Messages --}}

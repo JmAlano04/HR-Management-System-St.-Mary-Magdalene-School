@@ -4,7 +4,10 @@ namespace App\Services;
 
 use App\Models\Employee;
 use App\Models\LeaveRequest;
+<<<<<<< HEAD
 use Illuminate\Support\Facades\DB;
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 
 /**
  * Server-side version of the old updateLeaveBalances() / getLeaveBalanceForType().
@@ -14,7 +17,10 @@ class LeaveBalanceService
 {
     /** Non-regular employees: the only leave type they can use and its days. */
     public const NON_REGULAR_TYPE = 'Non-Convertible Leave';
+<<<<<<< HEAD
 
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     public const NON_REGULAR_DAYS = 5;
 
     /** regular | non-regular | unknown */
@@ -24,9 +30,15 @@ class LeaveBalanceService
         $value = strtolower(str_replace(['-', '_'], ' ', trim((string) $employee->employment_status)));
 
         return match ($value) {
+<<<<<<< HEAD
             'regular' => 'regular',
             'non regular' => 'non-regular',
             default => 'unknown',
+=======
+            'regular'     => 'regular',
+            'non regular' => 'non-regular',
+            default       => 'unknown',
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         };
     }
 
@@ -39,7 +51,11 @@ class LeaveBalanceService
      */
     public function balances(Employee $employee, ?int $year = null): array
     {
+<<<<<<< HEAD
         $year = $year ?? now()->year;
+=======
+        $year   = $year ?? now()->year;
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         $status = $this->status($employee);
         $nonReg = $status === 'non-regular';
 
@@ -48,6 +64,7 @@ class LeaveBalanceService
         // leave.non_regular.days sa config, kaya hindi na ito magiging 4 (o ibang bilang).
         $nonRegType = (string) config('leave.non_regular.type', self::NON_REGULAR_TYPE);
         $nonRegDays = self::NON_REGULAR_DAYS;
+<<<<<<< HEAD
         $total = (int) config('leave.total', 0);
         $configured = (array) config('leave.types', []);
 
@@ -55,18 +72,30 @@ class LeaveBalanceService
             ->where('year', $year)
             ->max('reset_at');
 
+=======
+        $total      = (int) config('leave.total', 0);
+        $configured = (array) config('leave.types', []);
+
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         // Kapag walang user account ang employee, walang leave requests na maiuugnay
         // (iwas din na mabilang ang mga request na NULL ang user_id).
         $approved = $employee->user_id
             ? LeaveRequest::forUser($employee->user_id)
                 ->approved()
                 ->whereYear('start_date', $year)
+<<<<<<< HEAD
                 ->when($resetAt, fn ($query) => $query->where('decided_at', '>=', $resetAt))
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                 ->get(['type', 'start_date', 'end_date'])
             : collect();
 
         // Non-regular: only the allowed type counts
+<<<<<<< HEAD
         $eligible = $nonReg ? $approved->where('type', $nonRegType) : $approved;
+=======
+        $eligible  = $nonReg ? $approved->where('type', $nonRegType) : $approved;
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         $totalUsed = (int) $eligible->sum(fn (LeaveRequest $r) => $r->days_count);
 
         $totalInitial = $nonReg ? $nonRegDays : $total;
@@ -77,23 +106,40 @@ class LeaveBalanceService
         $types = [];
         foreach ($typeList as $type => $days) {
             $initial = (int) $days;
+<<<<<<< HEAD
             $used = (int) $eligible->where('type', $type)->sum(fn (LeaveRequest $r) => $r->days_count);
 
             $types[$type] = [
                 'initial' => $initial,
                 'used' => $used,
+=======
+            $used    = (int) $eligible->where('type', $type)->sum(fn (LeaveRequest $r) => $r->days_count);
+
+            $types[$type] = [
+                'initial'   => $initial,
+                'used'      => $used,
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                 'remaining' => max(0, $initial - $used),
             ];
         }
 
         return [
             'status' => $status,
+<<<<<<< HEAD
             'total' => [
                 'initial' => $totalInitial,
                 'used' => $totalUsed,
                 'remaining' => max(0, $totalInitial - $totalUsed),
             ],
             'types' => $types,
+=======
+            'total'  => [
+                'initial'   => $totalInitial,
+                'used'      => $totalUsed,
+                'remaining' => max(0, $totalInitial - $totalUsed),
+            ],
+            'types'  => $types,
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         ];
     }
 
@@ -129,4 +175,8 @@ class LeaveBalanceService
 
         return $map;
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120

@@ -39,11 +39,20 @@ return [
         ],
 
         'public' => [
+<<<<<<< HEAD
             'driver'     => 'local',
             'root'       => storage_path('app/public'),
             'url'        => env('APP_URL').'/storage',
             'visibility' => 'public',
             'throw'      => false,
+=======
+            'driver' => 'local',
+            'root' => storage_path('app/public'),
+            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
+            'visibility' => 'public',
+            'throw' => false,
+            'report' => false,
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         ],
 
         's3' => [

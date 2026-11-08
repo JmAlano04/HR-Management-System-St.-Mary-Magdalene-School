@@ -28,8 +28,12 @@ html, body {
 
 body {
     max-width: 1920px;
+<<<<<<< HEAD
     height: auto;
     min-height: 100vh;
+=======
+    height: 1080px;
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     margin: 0 auto;
     padding-top: 90px;
 }
@@ -888,6 +892,7 @@ body {
 }
 
 .login-tab {
+<<<<<<< HEAD
     min-height: 42px;
     padding: 8px 18px;
     border: 1px solid transparent;
@@ -897,10 +902,21 @@ body {
     font-weight: 600;
     cursor: pointer;
     transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease;
+=======
+    padding: 8px 16px;
+    border: 2px solid #ddd;
+    background: white;
+    border-radius: 8px;
+    color: #b22222;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     font-size: 13px;
 }
 
 .login-tab:hover {
+<<<<<<< HEAD
     border-color: #fecaca;
     background: #fff5f5;
     color: #7f1d1d;
@@ -910,6 +926,16 @@ body {
     background: #fee2e2;
     border-color: #fecaca;
     color: #7f1d1d;
+=======
+    border-color: #b22222;
+    background: rgba(178, 34, 34, 0.05);
+}
+
+.login-tab.active {
+    background: white;
+    border-color: #b22222;
+    color: #b22222;
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 }
 
 .login-form { margin-bottom: 18px; }
@@ -1199,7 +1225,11 @@ body {
     .history h1, .facilities h1 { font-size: 28px; }
     .login-modal-inner { padding: 28px 16px 18px; }
     .login-tabs { gap: 6px; }
+<<<<<<< HEAD
     .login-tab { flex: 0 0 auto; text-align: center; }
+=======
+    .login-tab { flex: 1 1 calc(50% - 6px); text-align: center; }
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     .form-row { justify-content: space-between; }
     .FacilitiesModal-img { max-width: 96%; }
 }
@@ -1223,6 +1253,7 @@ body {
 @media (prefers-reduced-motion: reduce) {
     * { animation: none !important; transition: none !important; }
 }
+<<<<<<< HEAD
 
 #registration-success-modal {
     z-index: 1100;
@@ -1266,6 +1297,8 @@ body {
     width: 100%;
     margin-top: 24px;
 }
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 </style>
 @endverbatim
 @endsection
@@ -1275,7 +1308,11 @@ body {
 @section('content')
 
     <header class="topbar">
+<<<<<<< HEAD
         <a class="brand-link" href="{{ route('home') }}" aria-label="Go to home page">
+=======
+        <a class="brand-link" href="HOMEPAGE.html" aria-label="Go to home page">
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             <img class="brand-logo" src="{{ asset('Image/SMMS Logo.png') }}" alt="SMMS Logo">
             <span class="brand">St. Mary Magdalene School</span>
         </a>
@@ -1300,6 +1337,7 @@ body {
         <section class="banner">
             <div class="container banner-container">
                 <div class="slider" id="slider">
+<<<<<<< HEAD
                     @foreach ($homepageBannerSlides as $index => $slide)
                         <div class="slide {{ $index === 0 ? 'active slide--right' : 'slide--top' }}">
                             <img src="{{ $slide['url'] }}" alt="{{ $slide['alt'] }}">
@@ -1307,6 +1345,14 @@ body {
                            
                     @endforeach
                        
+=======
+                    <div class="slide active slide--right">
+                        <img src="{{ asset('Image/homepage1.jpg') }}" alt="banner 1">
+                    </div>
+                    <div class="slide slide--top">
+                        <img src="{{ asset('Image/homepage2.png') }}" alt="banner 2">
+                    </div>
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                 </div>
 
                 <div class="banner-overlay">
@@ -1320,7 +1366,10 @@ body {
         <section class="history">
             <div class="container">
                 <h1>History</h1>
+<<<<<<< HEAD
                  
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                 <div class="history-content">
                     <p>St. Mary Magdalene School (Parochial), Inc. was established in 1961 when Msgr. Eulogio San Juan, the Kawit Parish Priest, envisioned setting up a kindergarten class, which at that time was not being offered by any school in the town. With the help of Mr. Angel S. Colet, the convent became the first classroom, and Mrs. Angelita Quiamson Samaniego served as the pioneer teacher for fifteen enrolled pupils. In 1963, the Department of Education granted the Kindergarten class a permit to operate.</p>
                     <p>The name St. Mary Magdalene School was adopted in honor of the town’s patroness. March 11, 1966 was designated as the school’s Foundation Day, coinciding with the celebration of Msgr. Eulogio San Juan’s birthday. However, history goes beyond its chronological dates. To have a sense of history, it is very important to know where we have come from. Hence, on this day, we are reminded of how the school was formed 62 years ago. Today, we reflect on the school’s early days and how far we have come as a school community.</p>
@@ -1354,6 +1403,7 @@ body {
         {{-- Apply Login Modal --}}
         <x-apply-login-modal />
 
+<<<<<<< HEAD
         @if (session('registration_success'))
             <div class="modal-overlay registration-success-overlay" id="registration-success-modal"
                 role="presentation">
@@ -1372,6 +1422,8 @@ body {
             </div>
         @endif
 
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         {{-- Login Modal --}}
         <x-login-modal />
 
@@ -1381,6 +1433,10 @@ body {
         <div class="footer-container">
             <div class="footer-content">
                 <div class="footer-copyright">
+<<<<<<< HEAD
+=======
+                    <p>Diocese of Imus Catholic Educational System, Inc. © Copyright 2026</p>
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                 </div>
                 <div class="contact-info">
                     <a href="https://mail.google.com/mail/?view=cm&fs=1&to=communications@smms.ph.education" class="contact-link" target="_blank" rel="noopener noreferrer" aria-label="Gmail">
@@ -1570,8 +1626,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const applyLoginModal = document.getElementById('apply-login-modal');
     const applyLoginForm = document.getElementById('apply-login-form');
     const applyLoginSignupLink = document.getElementById('apply-login-signup-link');
+<<<<<<< HEAD
     const registrationSuccessModal = document.getElementById('registration-success-modal');
     const registrationContinueButton = document.getElementById('registration-continue');
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 
     if (signupOpenBtn && signupModal) {
         signupOpenBtn.addEventListener('click', function (e) {
@@ -1607,6 +1666,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+<<<<<<< HEAD
     if (signupForm?.dataset.hasErrors === 'true') {
         openSignupModal();
     }
@@ -1625,6 +1685,8 @@ document.addEventListener('DOMContentLoaded', function () {
         openApplyLoginModal();
     }
 
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     // ----- Password visibility toggles -----
     function updatePasswordIcon(toggle, isVisible) {
         if (isVisible) {
@@ -1704,6 +1766,25 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+<<<<<<< HEAD
+=======
+    if (applyLoginForm) {
+        applyLoginForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const email = document.getElementById('apply-email').value.trim();
+            const password = document.getElementById('apply-password').value.trim();
+
+            if (!email || !password) {
+                alert('Please enter your email and password.');
+                return;
+            }
+
+            alert('Login successful!');
+            closeApplyLoginModal();
+        });
+    }
+
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     // ----- Mobile navigation menu -----
     if (menuToggle && topNav) {
         menuToggle.addEventListener('click', function () {
@@ -1757,9 +1838,86 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 /* ------------------------------------------------------------------
+<<<<<<< HEAD
    Modal overlay-click closing and Escape key
    ------------------------------------------------------------------ */
 document.addEventListener('DOMContentLoaded', function () {
+=======
+   Login tabs, demo login, overlay-click closing, Escape key
+   ------------------------------------------------------------------ */
+const demoCredentials = {
+    admin:      { email: 'admin@stmary.edu',      password: 'password123' },
+    hr:         { email: 'hr@stmary.edu',         password: 'password123' },
+    accounting: { email: 'accounting@stmary.edu', password: 'password123' },
+    employee:   { email: 'john.doe@stmary.edu',   password: 'password123' }
+};
+
+document.addEventListener('DOMContentLoaded', function () {
+    const loginTabs = document.querySelectorAll('.login-tab');
+    const credentialsText = document.getElementById('credentials-text');
+    const loginForm = document.getElementById('login-form');
+    let currentRole = 'admin';
+
+    loginTabs.forEach(tab => {
+        tab.addEventListener('click', function () {
+            const role = this.dataset.role;
+            currentRole = role;
+
+            loginTabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+
+            if (demoCredentials[role] && credentialsText) {
+                const creds = demoCredentials[role];
+                const roleLabel = role.charAt(0).toUpperCase() + role.slice(1);
+                credentialsText.innerHTML = `<strong>${roleLabel}:</strong> ${creds.email} / ${creds.password}`;
+            }
+        });
+    });
+
+    if (loginTabs.length > 0 && credentialsText) {
+        const adminCreds = demoCredentials.admin;
+        credentialsText.innerHTML = `<strong>Admin:</strong> ${adminCreds.email} / ${adminCreds.password}`;
+    }
+
+    if (loginForm) {
+        loginForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
+
+            if (!email || !password) {
+                alert('Please enter email and password');
+                return;
+            }
+
+            const selectedCredentials = demoCredentials[currentRole];
+            if (!selectedCredentials || email !== selectedCredentials.email || password !== selectedCredentials.password) {
+                alert('Invalid email or password for the selected role');
+                return;
+            }
+
+            const dashboardRoutes = {
+                admin:      '../Admin_Dashboard/Admin_Dashboard.html',
+                hr:         '../HR_DASHBOARD/HR_DASHBOARD.html',
+                accounting: '../ACCOUNTING_DASHBOARD/ACC_DASHBOARD.html',
+                employee:   '../EMPLOYEE_DASHBOARD/EMPLOYEE_DASHBOARD.html'
+            };
+
+            const dashboardURL = dashboardRoutes[currentRole];
+
+            if (dashboardURL) {
+                closeLoginModal();
+                sessionStorage.setItem('userRole', currentRole);
+                sessionStorage.setItem('userEmail', email);
+                window.location.href = dashboardURL;
+            } else {
+                alert('Invalid role selected');
+            }
+        });
+    }
+
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     // Close login / apply-login / facilities modals when clicking the dark
     // area outside the box, and wire up their X buttons.
     const modalClosers = {
@@ -1796,5 +1954,9 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
+<<<<<<< HEAD
+=======
+
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 @endverbatim
 @endsection

@@ -6,6 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Employee;
 use App\Models\Payslip;
 use App\Models\PayslipResponse;
+<<<<<<< HEAD
+=======
+use App\Support\PayslipPresenter;
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -19,7 +23,11 @@ class EmployeePayslipController extends Controller
 
         $payslips = Payslip::released()
             ->forEmployee($employee->id)
+<<<<<<< HEAD
             ->with('response')
+=======
+            ->with(['response', 'employee.user.roles'])
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             ->orderByDesc('transfer_date')
             ->orderByDesc('id')
             ->get();
@@ -37,6 +45,10 @@ class EmployeePayslipController extends Controller
         return view('payroll', [
             'employee'      => $employee,
             'months'        => $months,
+<<<<<<< HEAD
+=======
+            'totalReleased' => $payslips->count(),
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             'openPayslipId' => session('open_payslip'),
         ]);
     }
@@ -63,9 +75,12 @@ class EmployeePayslipController extends Controller
 
         $approved = $data['decision'] === 'approve';
 
+<<<<<<< HEAD
         // Approve: updates the existing response row's status to 'Approved'
         //          (or creates it if none exists yet).
         // Reject:  saved the same way as before, with the reason.
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         PayslipResponse::updateOrCreate(
             ['payslip_id' => $payslip->id],
             [
@@ -84,6 +99,7 @@ class EmployeePayslipController extends Controller
 
     private function currentEmployee(Request $request): Employee
     {
+<<<<<<< HEAD
         return Employee::where('user_id', $request->user()->id)->firstOrFail();
     }
 
@@ -119,6 +135,45 @@ class EmployeePayslipController extends Controller
             'total_deductions' => (float) $p->total_deductions,
             'net_pay'          => (float) $p->net_pay,
             'transfer_date'    => $p->transfer_date?->format('M d, Y'),
+=======
+        return Employee::with('user.roles')->where('user_id', $request->user()->id)->firstOrFail();
+    }
+
+    /**
+     * Shape a payslip for the Blade/Alpine front end.
+     * All money figures come from PayslipPresenter, the same builder Accounting, Admin and HR use.
+     */
+    private function present(Payslip $p, Employee $employee): array
+    {
+        $c = PayslipPresenter::card($p);
+        $r = $p->response;
+
+        // [label, amount] pairs, in the shared deduction order
+        $deductions = [];
+        foreach (PayslipPresenter::DEDUCTION_LABELS as $key => $label) {
+            $deductions[] = [$label, $c['deductions'][$key]];
+        }
+
+        return [
+            'id'           => $c['id'],
+            'cutoff'       => $c['cutoff'],
+            'cutoff_day'   => $c['cutoff_day'],
+            'period'       => $c['period'],
+            'period_label' => $c['cutoff_label'],
+            'step_name'    => $c['step_name'],
+            'days'         => $c['days_worked'],
+            'hours'        => $c['hours_worked'],
+            'late_min'     => $c['late_minutes'],
+            'monthly_wage' => $c['monthly_wage'],
+            'basic_pay'    => $c['basic_pay'],
+            'daily_wage'   => $c['daily_wage'],
+            'honorarium'   => $c['honorarium'],
+            'gross_pay'    => $c['gross_pay'],
+            'deductions'   => $deductions,
+            'total_deductions' => $c['total_deductions'],
+            'net_pay'          => $c['net_pay'],
+            'transfer_date'    => $c['transfer_date'],
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             'status'           => $r?->status ?? PayslipResponse::PENDING,
             'reason'           => $r?->reason,
             'action_url'       => route('employee.payslips.respond', $p),
@@ -126,7 +181,11 @@ class EmployeePayslipController extends Controller
                 'name'       => $employee->name,
                 'number'     => $employee->employee_id,
                 'department' => ucfirst($employee->department),
+<<<<<<< HEAD
                 'position'   => $employee->position,
+=======
+                'position'   => $employee->position ?: '-',
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             ],
         ];
     }

@@ -8,7 +8,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+<<<<<<< HEAD
 use Symfony\Component\HttpFoundation\StreamedResponse;
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 
 class ReportController extends Controller
 {
@@ -41,6 +44,7 @@ class ReportController extends Controller
         ]);
     }
 
+<<<<<<< HEAD
     public function exportPaidEmployees(Request $request): StreamedResponse
     {
         $filters = $request->validate([
@@ -97,6 +101,8 @@ class ReportController extends Controller
         return preg_match('/^[=+\-@\t\r]/', $value) ? "'".$value : $value;
     }
 
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     /** Days worked / late / absent for one month, from attendance_records (current + archived). */
     private function attendanceReport(Request $request): array
     {
@@ -201,6 +207,7 @@ class ReportController extends Controller
             ];
         }
         $seriesMax = max(1, ...array_map(fn ($s) => max($s['salary'], $s['deductions']), $series));
+<<<<<<< HEAD
         $paidEmployees = Payslip::query()
             ->with('employee:id,name,position')
             ->whereNotNull('released_at')
@@ -219,6 +226,8 @@ class ReportController extends Controller
             ->sortBy('name')
             ->values()
             ->all();
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 
         return [
             'series'        => $series,
@@ -231,7 +240,10 @@ class ReportController extends Controller
             'salary'        => $salary,
             'deductions'    => $ded,
             'salaryPercent' => $sum > 0 ? $salary / $sum * 100 : 0,
+<<<<<<< HEAD
             'paidEmployees' => $paidEmployees,
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         ];
     }
 

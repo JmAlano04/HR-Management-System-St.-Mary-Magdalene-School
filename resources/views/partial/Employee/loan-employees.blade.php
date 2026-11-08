@@ -11,8 +11,13 @@
     </x-slot>
 
     @php
+<<<<<<< HEAD
         $inputClass = 'w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 transition focus:border-[#b22222] focus:outline-none focus:ring-2 focus:ring-red-700/10';
         $card = 'rounded-xl border border-gray-200 bg-white p-4 sm:p-5';
+=======
+        $inputClass = 'w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-3 text-[15px] text-gray-900 transition focus:border-[#b22222] focus:outline-none focus:ring-4 focus:ring-red-700/10';
+        $card = 'rounded-[20px] bg-white p-[18px] sm:p-6 shadow-[0_10px_30px_rgba(15,23,42,0.05)]';
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 
         // Approval-stage chip colours + labels
         $stageBadge = fn (string $status) => match ($status) {
@@ -38,7 +43,11 @@
                 <p class="mt-1 text-sm">Please contact HR.</p>
             </div>
         @else
+<<<<<<< HEAD
             <section aria-label="Financial Loan Request" class="flex flex-col gap-4">
+=======
+            <section aria-label="Financial Loan Request" class="flex flex-col gap-5">
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 
                 {{-- Flash message --}}
                 @if (session('status'))
@@ -52,20 +61,58 @@
                     <h2 class="text-lg font-extrabold text-gray-900">My loan balances</h2>
                     <p class="mb-4 mt-1 text-sm text-gray-500">Outstanding approved loan balances after repayments on your payslips.</p>
 
+<<<<<<< HEAD
                   @php $cashAdvanceBalance = $balances['byType']['Cash Advance'] ?? 0; @endphp
                   <div class="flex items-center justify-between border-t border-gray-100 pt-3">
                       <span class="text-sm font-medium text-gray-600">Cash Advance</span>
                       <strong class="text-base font-bold text-gray-900">{{ $peso($cashAdvanceBalance) }}</strong>
                   </div>
+=======
+                  <div class="grid grid-cols-1 gap-[14px] sm:grid-cols-2 xl:grid-cols-3">
+
+                        {{-- Total Outstanding --}}
+                        <div class="flex items-center gap-3.5 rounded-2xl bg-[#fff7f7] p-[18px]">
+                            <i class="fa-solid fa-wallet text-2xl text-[#b22222]"></i>
+                            <div class="min-w-0">
+                                <p class="mb-1 text-sm font-semibold text-gray-500">
+                                    Total outstanding
+                                </p>
+                                <p class="text-xl font-extrabold leading-none text-gray-900">
+                                    {{ $peso($balances['total']) }}
+                                </p>
+                                
+                            </div>
+                        </div>
+
+                        {{-- Balance by Loan Type --}}
+                        @foreach ($balances['byType'] as $type => $amount)
+                            <div class="rounded-2xl border border-[#f0dada] bg-white p-[18px]">
+                                <p class="mb-1 text-sm font-semibold text-gray-500">
+                                    {{ $type }}
+                                </p>
+                                <p class="text-xl font-extrabold leading-none text-gray-900">
+                                    {{ $peso($amount) }}
+                                </p>
+                              
+                            </div>
+                        @endforeach
+
+                    </div>
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                 </div>
 
                 {{-- Request form --}}
                 <form method="POST" action="{{ route('loan.loan-employee.store') }}"
+<<<<<<< HEAD
                     x-data="{ type: @js(old('loan_type', 'Cash Advance')), amount: @js(old('amount', '')), reason: @js(old('reason', '')), limit: {{ \App\Models\LoanRequest::CASH_ADVANCE_LIMIT }} }"
+=======
+                    x-data="{ type: @js(old('loan_type', '')), amount: @js(old('amount', '')), reason: @js(old('reason', '')), limit: {{ \App\Models\LoanRequest::CASH_ADVANCE_LIMIT }} }"
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                     class="{{ $card }}">
                     @csrf
 
                     <h2 class="text-lg font-extrabold text-gray-900">Request a financial loan</h2>
+<<<<<<< HEAD
                     <p class="mb-4 mt-1 text-sm text-gray-500">Your request is reviewed by HR first, then Accounting, with Admin providing final approval.</p>
 
                     <div class="grid gap-3.5 md:grid-cols-2">
@@ -75,6 +122,21 @@
                             <div class="{{ $inputClass }} flex items-center text-left">Cash Advance</div>
                             @error('loan_type') <span class="text-xs font-semibold text-red-600">{{ $message }}</span> @enderror
                         </div>
+=======
+                    <p class="mb-4 mt-1 text-sm text-gray-500">Submit your request for review by HR, Accounting, and Admin.</p>
+
+                    <div class="grid gap-3.5 md:grid-cols-2">
+                        <label for="loanType" class="flex flex-col gap-2 text-sm font-bold text-gray-600">
+                            <span>Loan type <span class="text-[#b22222]">*</span></span>
+                            <select id="loanType" name="loan_type" x-model="type" required class="{{ $inputClass }}">
+                                <option value="" disabled>Select a loan type</option>
+                                @foreach (\App\Models\LoanRequest::TYPES as $t)
+                                    <option value="{{ $t }}">{{ $t }}</option>
+                                @endforeach
+                            </select>
+                            @error('loan_type') <span class="text-xs font-semibold text-red-600">{{ $message }}</span> @enderror
+                        </label>
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 
                         <label for="loanAmount" class="flex flex-col gap-2 text-sm font-bold text-gray-600">
                             <span>Amount requested (PHP) <span class="text-[#b22222]">*</span></span>
@@ -98,9 +160,15 @@
                         @error('reason') <span class="text-xs font-semibold text-red-600">{{ $message }}</span> @enderror
                     </label>
 
+<<<<<<< HEAD
                     <div class="mt-3 flex justify-end">
                         <button type="submit"
                             class="rounded-lg bg-[#b22222] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#9a1d1d] focus:outline-none focus:ring-2 focus:ring-red-700/20">
+=======
+                    <div class="mt-4 flex justify-end">
+                        <button type="submit"
+                            class="rounded-xl bg-[#b22222] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#9a1d1d] focus:outline-none focus:ring-4 focus:ring-red-700/20">
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                             Send for validation <i class="fa-solid fa-arrow-right ml-1.5"></i>
                         </button>
                     </div>
@@ -129,11 +197,20 @@
                     </div>
 
                     {{-- Tabs --}}
+<<<<<<< HEAD
                     <div class="hrms-tablist mt-4" role="tablist" aria-label="Loan request records">
                         @foreach ([false => 'Active requests', true => 'Archive'] as $isArchive => $label)
                             <a href="{{ route('loans.employee.index', $isArchive ? ['tab' => 'archived'] : []) }}"
                                 role="tab" aria-selected="{{ $archived === $isArchive ? 'true' : 'false' }}"
                                 class="hrms-tab text-sm font-bold">
+=======
+                    <div class="mt-4 flex gap-2 border-b border-gray-100" role="tablist" aria-label="Loan request records">
+                        @foreach ([false => 'Active requests', true => 'Archive'] as $isArchive => $label)
+                            <a href="{{ route('loans.employee.index', $isArchive ? ['tab' => 'archived'] : []) }}"
+                                role="tab" aria-selected="{{ $archived === $isArchive ? 'true' : 'false' }}"
+                                class="-mb-px border-b-2 px-4 py-2.5 text-sm font-bold transition
+                                    {{ $archived === $isArchive ? 'border-[#b22222] text-[#b22222]' : 'border-transparent text-gray-500 hover:text-gray-800' }}">
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                                 {{ $label }}
                             </a>
                         @endforeach
@@ -172,14 +249,22 @@
 
                             <div class="mt-4 flex flex-col gap-3.5">
                                 @foreach ($loans as $loan)
+<<<<<<< HEAD
                                     <article class="flex flex-col gap-3 rounded-lg border border-gray-200 p-3 transition lg:flex-row lg:items-center lg:justify-between">
+=======
+                                    <article class="flex flex-col gap-4 rounded-2xl border border-gray-100 p-4 transition hover:bg-[#fff7f7] lg:flex-row lg:items-center lg:justify-between">
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                                         <div class="flex min-w-0 gap-3">
                                             @unless ($archived)
                                                 <input type="checkbox" name="ids[]" value="{{ $loan->id }}" x-show="selecting" x-cloak
                                                     x-model.number="selected" aria-label="Select this request"
                                                     class="mt-1 size-4 shrink-0 accent-[#b22222]">
                                             @endunless
+<<<<<<< HEAD
                                             <div class="min-w-0">
+=======
+                                            <div class="min-w-0 ">
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                                                 <div class="flex flex-wrap items-baseline gap-x-3">
                                                     <h3 class="font-extrabold text-gray-900">{{ $loan->loan_type }}</h3>
                                                     <strong class="text-[#b22222]">{{ $peso($loan->amount) }}</strong>
@@ -192,8 +277,14 @@
                                         <div class="flex shrink-0 flex-wrap items-start gap-2" aria-label="Approval progress">
                                             @foreach (['hr' => 'HR', 'accounting' => 'Accounting', 'admin' => 'Admin'] as $key => $stage)
                                                 @php $s = $loan->effectiveStatus($key); @endphp
+<<<<<<< HEAD
                                                 <div class="rounded-full px-2.5 py-1.5 text-xs {{ $stageBadge($s) }}">
                                                     <strong class="font-bold">{{ $stage }}: {{ $stageLabel($stage, $s) }}</strong>
+=======
+                                                <div class="max-w-[180px] rounded-xl px-3 py-2 text-xs {{ $stageBadge($s) }}">
+                                                    <span class="block font-semibold opacity-70">{{ $stage }}</span>
+                                                    <strong class="block font-bold">{{ $stageLabel($stage, $s) }}</strong>
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                                                     @if ($s === 'rejected' && $loan->{$key . '_rejection_reason'})
                                                         <small class="mt-1 block break-words" title="{{ $loan->{$key . '_rejection_reason'} }}">
                                                             Reason: {{ $loan->{$key . '_rejection_reason'} }}

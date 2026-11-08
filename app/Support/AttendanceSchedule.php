@@ -15,6 +15,7 @@ class AttendanceSchedule
     /** Hours worked below this value = Half Day. */
     public const HALF_DAY_HOURS = 4;
 
+<<<<<<< HEAD
     public const HALF_DAY_CLOCK_OUT_START = '12:00';
 
     public const HALF_DAY_CLOCK_OUT_END = '13:00';
@@ -23,6 +24,8 @@ class AttendanceSchedule
 
     public const UNDERTIME_END = '16:30';
 
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     public function __construct(
         public string $start,
         public string $end,
@@ -31,6 +34,7 @@ class AttendanceSchedule
         public int $graceMinutes = 0,
     ) {}
 
+<<<<<<< HEAD
     public static function isMaintenanceRole(?string $role): bool
     {
         $normalizedRole = preg_replace('/[^a-z]/', '', strtolower(trim((string) $role)));
@@ -57,6 +61,8 @@ class AttendanceSchedule
             && ($date->dayOfWeek !== Carbon::SATURDAY || self::isMaintenanceRole($role));
     }
 
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     /**
      * Resolve the schedule based on the employee's role and the date.
      */
@@ -65,7 +71,11 @@ class AttendanceSchedule
         $role = strtolower(trim((string) $role));
 
         // Maintenance: 6:00 AM - 3:00 PM (1 hr lunch = 8 hrs work).
+<<<<<<< HEAD
         if (self::isMaintenanceRole($role)) {
+=======
+        if (in_array($role, self::MAINTENANCE_ROLES, true)) {
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             return new self('06:00', '15:00', '12:00', '13:00', 0);
         }
 
@@ -120,6 +130,7 @@ class AttendanceSchedule
             : 0;
     }
 
+<<<<<<< HEAD
     public function undertimeMinutes(?Carbon $timeOut): int
     {
         if (! $timeOut) {
@@ -136,6 +147,8 @@ class AttendanceSchedule
         return (int) ceil($timeOut->diffInSeconds($end) / 60);
     }
 
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     /**
      * Hours worked. No overtime: time is capped between the
      * scheduled start and end, and the lunch break is deducted.
@@ -149,10 +162,15 @@ class AttendanceSchedule
         $start = $this->at($this->start, $timeIn);
         $end = $this->at($this->end, $timeIn);
 
+<<<<<<< HEAD
         // Arrivals within the grace period receive the full scheduled hours.
         $graceEnd = $start->copy()->addMinutes($this->graceMinutes);
         $in = $timeIn->lessThanOrEqualTo($graceEnd) ? $start : $timeIn;
         // Early time-in / late time-out are not counted (no overtime).
+=======
+        // Early time-in / late time-out are not counted (no overtime).
+        $in = $timeIn->lessThan($start) ? $start : $timeIn;
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         $out = $timeOut->greaterThan($end) ? $end : $timeOut;
 
         if ($out->lessThanOrEqualTo($in)) {
@@ -183,6 +201,7 @@ class AttendanceSchedule
             return 'Absent';
         }
 
+<<<<<<< HEAD
         if ($timeOut
             && $timeOut->greaterThanOrEqualTo($this->at(self::HALF_DAY_CLOCK_OUT_START, $timeOut))
             && $timeOut->lessThanOrEqualTo($this->at(self::HALF_DAY_CLOCK_OUT_END, $timeOut))) {
@@ -193,6 +212,8 @@ class AttendanceSchedule
             return 'Undertime';
         }
 
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         if ($timeOut && $this->hoursWorked($timeIn, $timeOut) < self::HALF_DAY_HOURS) {
             return 'Half Day';
         }
@@ -213,4 +234,8 @@ class AttendanceSchedule
             .' - '
             .Carbon::createFromTimeString($this->lunchEnd)->format('g:i A');
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120

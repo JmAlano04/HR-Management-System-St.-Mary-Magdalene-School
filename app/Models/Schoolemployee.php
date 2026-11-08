@@ -2,8 +2,11 @@
 
 namespace App\Models;
 
+<<<<<<< HEAD
 use App\Casts\EncryptedOrPlaintext;
 use App\Models\Concerns\ExcludesInternalStaff;
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,8 +15,11 @@ use Illuminate\Support\Str;
 
 class SchoolEmployee extends Model
 {
+<<<<<<< HEAD
     use ExcludesInternalStaff;
 
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     protected $table = 'employees'; // existing table (2026_10_17_102132_create_employee_table)
 
     public const DEPARTMENTS = [
@@ -40,9 +46,16 @@ class SchoolEmployee extends Model
         return [
             'birthday'          => 'date',
 
+<<<<<<< HEAD
             'address'           => EncryptedOrPlaintext::class,
             'emergency_name'    => EncryptedOrPlaintext::class,
             'emergency_contact' => EncryptedOrPlaintext::class,
+=======
+            // AES-256 via APP_KEY (these columns are TEXT in SQL)
+            'address'           => 'encrypted',
+            'emergency_name'    => 'encrypted',
+            'emergency_contact' => 'encrypted',
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         ];
     }
 
@@ -67,6 +80,7 @@ class SchoolEmployee extends Model
             ]);
     }
 
+<<<<<<< HEAD
     /** Distinct role types stored in the database: [value => label]. */
     public static function roleTypesInDatabase(): Collection
     {
@@ -85,6 +99,8 @@ class SchoolEmployee extends Model
             ]);
     }
 
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     /** Standard departments + any extra value already stored in SQL. */
     public static function departmentOptions(): Collection
     {
@@ -95,6 +111,7 @@ class SchoolEmployee extends Model
 
     public function scopeFilter(Builder $query, array $filters): Builder
     {
+<<<<<<< HEAD
         $search = $filters['search'] ?? null;
         $search = is_string($search) ? trim($search) : '';
         $department = $filters['department'] ?? null;
@@ -109,16 +126,34 @@ class SchoolEmployee extends Model
                     $q->whereRaw("LOWER(name) LIKE ? ESCAPE '!'", [$pattern])
                       ->orWhereRaw("LOWER(employee_id) LIKE ? ESCAPE '!'", [$pattern])
                       ->orWhereRaw("LOWER(position) LIKE ? ESCAPE '!'", [$pattern]);
+=======
+        return $query
+            ->when(filled($filters['search'] ?? null), function ($q) use ($filters) {
+                $term = '%' . trim($filters['search']) . '%';
+                $q->where(function ($q) use ($term) {
+                    $q->where('name', 'like', $term)
+                      ->orWhere('employee_id', 'like', $term)
+                      ->orWhere('position', 'like', $term);
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                 });
             })
             // Department must be a value that exists in SQL
             ->when(
+<<<<<<< HEAD
                 $department !== '' && static::departmentsInDatabase()->has($department),
                 fn ($q) => $q->where('department', $department)
             )
             ->when(
                 $roleType !== '' && static::roleTypesInDatabase()->has($roleType),
                 fn ($q) => $q->where('role_type', $roleType)
+=======
+                filled($filters['department'] ?? null) && static::departmentsInDatabase()->has($filters['department']),
+                fn ($q) => $q->where('department', $filters['department'])
+            )
+            ->when(
+                filled($filters['role_type'] ?? null) && array_key_exists($filters['role_type'], self::ROLE_TYPES),
+                fn ($q) => $q->where('role_type', $filters['role_type'])
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             );
     }
 

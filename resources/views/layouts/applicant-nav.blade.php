@@ -36,13 +36,21 @@
     <div class="mx-auto flex max-w-[1920px] items-center gap-4 px-4 py-4 sm:px-8 lg:px-12 lg:py-5">
 
         {{-- Logo and school name --}}
+<<<<<<< HEAD
         <a href="{{ route('dashboard') }}" class="flex min-w-0 flex-1 items-center gap-2 sm:gap-4">
+=======
+        <a href="{{ route('dashboard') }}" class="flex shrink-0 items-center gap-4">
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             <img
                 src="{{ asset('Image/SMMS Logo.png') }}"
                 alt="School Logo"
                 class="h-[45px] w-[45px] shrink-0 object-contain lg:h-[60px] lg:w-[60px]"
             >
+<<<<<<< HEAD
             <span class="min-w-0 truncate text-[clamp(15px,2.2vw,30px)] font-extrabold leading-tight text-[#b22222]">
+=======
+            <span class="text-[clamp(18px,2.2vw,30px)] font-extrabold leading-tight text-[#b22222]">
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                 St. Mary Magdalene School
             </span>
         </a>
@@ -65,8 +73,11 @@
             type="button"
             @click="open = !open"
             class="ml-auto text-[#b22222] lg:hidden"
+<<<<<<< HEAD
             :aria-expanded="open.toString()"
             aria-controls="applicant-mobile-menu"
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             aria-label="Toggle menu"
         >
             <i class="fa-solid text-xl" :class="open ? 'fa-xmark' : 'fa-bars'"></i>
@@ -76,11 +87,15 @@
     {{-- Mobile dropdown --}}
     <div
         x-show="open"
+<<<<<<< HEAD
         id="applicant-mobile-menu"
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         x-transition
         x-cloak
         class="max-h-[80vh] overflow-y-auto border-t border-gray-100 px-3 py-3 lg:hidden"
     >
+<<<<<<< HEAD
         <nav class="grid gap-1" aria-label="Applicant menu">
             @foreach ($menu as $item)
                 @php $active = request()->routeIs($item['match']); @endphp
@@ -98,6 +113,9 @@
                 </a>
             @endforeach
         </nav>
+=======
+
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 
         {{-- Log out (mobile) --}}
         <form method="POST" action="{{ route('logout') }}" class="mt-3 border-t border-gray-100 pt-3">
@@ -114,7 +132,11 @@
 
 <nav  x-data="{ open: false }"
     @keydown.escape.window="open = false"
+<<<<<<< HEAD
     class="sticky hidden bg-white shadow-[0_1px_8px_rgba(0,0,0,0.08)] lg:block"
+=======
+    class="sticky  bg-white shadow-[0_1px_8px_rgba(0,0,0,0.08)]"
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     >
   <div class="mx-auto flex max-w-[1920px] items-center gap-4 px-4 py-4 sm:px-8 lg:px-12 lg:py-5">
      {{-- Desktop links (scrolls sideways if too long, scrollbar hidden) --}}

@@ -44,11 +44,16 @@
         class="px-4 pb-12 sm:px-6 lg:px-10"
         x-data="leaveRequests(@js([
             'items' => $cards,
+<<<<<<< HEAD
             'balanceUrl' => route('leaves.balances'),
             'balanceResetUrl' => route('leaves.balances.reset'),
             'csrfToken' => csrf_token(),
         ]))"
         @keydown.escape.window="handleEscape()"
+=======
+        ]))"
+        @keydown.escape.window="detailId = null"
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     >
         {{-- ============ Overview ============ --}}
         <section aria-label="Leave overview" class="mt-2 grid max-w-[1100px] gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -63,13 +68,26 @@
         <section aria-labelledby="leaveQueueTitle"
             class="mt-6 max-w-[1100px] rounded-[22px] border border-[#f0dada] bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)] sm:p-7">
 
+<<<<<<< HEAD
             {{-- Heading --}}
             <div class="mb-6">
+=======
+            {{-- Heading + pending counter --}}
+            <div class="mb-6 flex flex-col items-start justify-between gap-6 sm:flex-row">
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                 <div>
                     <p class="mb-1.5 text-xs font-extrabold uppercase tracking-[0.08em] text-[#b22222]">Employee requests</p>
                     <h2 id="leaveQueueTitle" class="text-2xl font-bold text-gray-900">All leave requests</h2>
                     <p class="mt-2 text-gray-500">Review submitted leave requests, record your decision, and archive finished ones.</p>
                 </div>
+<<<<<<< HEAD
+=======
+
+                <div class="w-full min-w-[140px] rounded-[14px] bg-[#fef2f2] px-4 py-3 text-center text-[#b22222] sm:w-auto" aria-live="polite">
+                    <strong class="block text-2xl">{{ $counts['pending'] }}</strong>
+                    <span class="block text-xs font-bold">Pending review</span>
+                </div>
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             </div>
 
             {{-- Flash messages --}}
@@ -78,6 +96,7 @@
                     {{ session('success') }}
                 </div>
             @endif
+<<<<<<< HEAD
             @if ($errors->has('decision') || $errors->has('rejection_reason'))
                 <div class="mb-4 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">
                     {{ $errors->first('decision') ?: $errors->first('rejection_reason') }}
@@ -90,16 +109,44 @@
                     @foreach (['current' => 'Current', 'archive' => 'Archive'] as $key => $label)
                         <a href="{{ route('leaves.index', ['view' => $key]) }}" role="tab" aria-selected="{{ $view === $key ? 'true' : 'false' }}"
                             class="hrms-tab font-extrabold">
+=======
+            @if ($errors->has('decision'))
+                <div class="mb-4 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">
+                    {{ $errors->first('decision') }}
+                </div>
+            @endif
+
+            {{-- Tabs: Current / Archive (+ Clear Archive) --}}
+            <div class="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-[#f0dada]">
+                <div class="flex gap-2" role="tablist" aria-label="Leave request views">
+                    @foreach (['current' => 'Current', 'archive' => 'Archive'] as $key => $label)
+                        <a href="{{ route('leaves.index', ['view' => $key]) }}" role="tab" aria-selected="{{ $view === $key ? 'true' : 'false' }}"
+                            class="-mb-px border-b-[3px] px-3.5 py-2.5 font-extrabold  transition {{ $view === $key ? 'text-[#b22222] bg-red-200 rounded-full' : 'border-transparent 0 text-gray-500 hover:text-gray-700' }}">
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                             {{ $label }}
                         </a>
                     @endforeach
                 </div>
+<<<<<<< HEAD
                 @if (auth()->user()->hasRole('HR'))
                     <button type="button" @click="openLeaveBalances()"
                         class="mb-1 inline-flex min-h-[44px] cursor-pointer items-center justify-center gap-2 rounded-[14px] bg-[#b22222] px-5 py-2.5 font-extrabold text-white transition hover:bg-[#951717] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#b22222] focus-visible:ring-offset-2">
                         <i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i>
                         Leave balances
                     </button>
+=======
+
+                @if ($view === 'archive' && $requests->total() > 0)
+                    <form method="POST" action="{{ route('leave.archive.clear') }}"
+                        onsubmit="return confirm('Permanently delete all archived leave requests?');" class="mb-1.5">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit"
+                            class="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-[#dc2626] bg-white px-3.5 py-2 text-sm font-bold text-[#b91c1c] transition hover:bg-[#fef2f2]">
+                        
+                        </button>
+                    </form>
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                 @endif
             </div>
 
@@ -122,12 +169,20 @@
 
                             <span class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-[7px] text-[0.82rem] font-extrabold {{ $view === 'archive' ? 'border-[#ecebea] bg-white text-gray-500' : $badge($req->status) }}">
                                 <i class="fa-solid fa-circle text-[0.58rem]" aria-hidden="true"></i>
+<<<<<<< HEAD
                                 {{ $view === 'archive' ? 'Archived' : $req->status_label }}
+=======
+                                {{ $view === 'archive' ? 'Archived' : ucfirst($req->status) }}
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                             </span>
                         </button>
 
                         {{-- Archive (current view only) --}}
+<<<<<<< HEAD
                         @if ($view === 'current' && in_array($req->status, ['approved', 'rejected'], true))
+=======
+                        @if ($view === 'current')
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                             <form method="POST" action="{{ route('leave.archive', $req) }}" class="m-0">
                                 @csrf
                                 @method('PATCH')
@@ -180,8 +235,11 @@
                             ['Reason', 'reason'],
                             ['Leave balance', 'leave_balance'],
                             ['Status', 'status'],
+<<<<<<< HEAD
                             ['HR review', 'hr_status'],
                             ['Admin review', 'admin_status'],
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                         ] as [$label, $key])
                             <div class="flex flex-col gap-1 border-b border-gray-100 pb-2.5 last:border-0 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                                 <span class="shrink-0 text-[0.78rem] font-bold uppercase tracking-[0.04em] text-gray-500">
@@ -197,14 +255,20 @@
                             <form method="POST" :action="detail.status_url" class="mt-6 flex justify-between gap-4">
                                 @csrf
                                 @method('PATCH')
+<<<<<<< HEAD
                                 <input type="hidden" name="decision" :value="decision">
                                 <input type="hidden" name="rejection_reason" :value="rejectionReason">
 
                                 <button type="button" @click="submitDecision($event.currentTarget.closest('form'), 'approved')"
+=======
+
+                                <button type="submit" name="decision" value="approved"
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                                     class="cursor-pointer rounded-[10px] bg-[#15803d] px-[18px] py-[11px] font-extrabold text-white transition hover:-translate-y-px hover:brightness-95 hover:shadow-[0_8px_18px_rgba(15,23,42,0.12)]">
                                     Approve
                                 </button>
 
+<<<<<<< HEAD
                                 <button type="button" @click="openRejectionModal()"
                                     class="cursor-pointer rounded-[10px] bg-[#b22222] px-[18px] py-[11px] font-extrabold text-white transition hover:-translate-y-px hover:brightness-95 hover:shadow-[0_8px_18px_rgba(15,23,42,0.12)]">
                                     Reject
@@ -242,10 +306,19 @@
                         <p x-show="detail?.rejection_reason" class="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-800">
                             <strong>Rejection reason:</strong> <span x-text="detail?.rejection_reason"></span>
                         </p>
+=======
+                                <button type="submit" name="decision" value="rejected"
+                                    class="cursor-pointer rounded-[10px] bg-[#b22222] px-[18px] py-[11px] font-extrabold text-white transition hover:-translate-y-px hover:brightness-95 hover:shadow-[0_8px_18px_rgba(15,23,42,0.12)]">
+                                    Reject
+                                </button>
+                            </form>
+                        </template>
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                     </div>
                 </template>
             </section>
         </div>
+<<<<<<< HEAD
 
         @if (auth()->user()->hasRole('HR'))
             <div x-show="leaveBalancesOpen" x-cloak x-transition.opacity
@@ -324,6 +397,8 @@
                 </section>
             </div>
         @endif
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     </div>
 
     <script>
@@ -331,6 +406,7 @@
             return {
                 items: cfg.items,
                 detailId: null,
+<<<<<<< HEAD
                 rejectionModalOpen: false,
                 rejectionDraft: '',
                 rejectionReason: '',
@@ -346,12 +422,15 @@
                 leaveBalanceResetMessage: '',
                 leaveBalances: [],
                 leaveBalanceYear: null,
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 
                 get detail() {
                     return this.detailId ? this.items[this.detailId] : null;
                 },
 
                 openDetail(id) {
+<<<<<<< HEAD
                     this.rejectionModalOpen = false;
                     this.detailId = id;
                 },
@@ -467,3 +546,11 @@
             };
         }
     </script>
+=======
+                    this.detailId = id;
+                },
+            };
+        }
+    </script>
+
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120

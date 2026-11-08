@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\LoanRequest;
+<<<<<<< HEAD
 use App\Services\HrmsNotifier;
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -57,7 +60,13 @@ class EmployeeLoanController extends Controller
             return back()->withInput()->withErrors(['amount' => 'Cash Advance requests are limited to PHP 2,000.00.']);
         }
 
+<<<<<<< HEAD
         $loan = LoanRequest::create([
+=======
+        // hr/accounting/admin status default to "pending" in the DB; the view shows
+        // later stages as "locked" via LoanRequest::effectiveStatus().
+        LoanRequest::create([
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             'employee_id'  => $employee->id,
             'loan_type'    => $data['loan_type'],
             'amount'       => $data['amount'],
@@ -65,9 +74,13 @@ class EmployeeLoanController extends Controller
             'requested_at' => now(),
         ]);
 
+<<<<<<< HEAD
         HrmsNotifier::loanSubmitted($loan);
 
         return redirect()->route('loans.employee.index')->with('status', 'Request sent to HR for validation.');
+=======
+    return redirect()->route('loans.employee.index')->with('status', 'Request sent to HR for validation.');
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     }
 
     /** POST /employee/loan-requests/archive  (ids[]) */

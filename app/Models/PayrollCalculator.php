@@ -45,8 +45,13 @@ class PayrollCalculator
         $days  = $num('days_worked');
         $hours = $num('hours_worked');
 
+<<<<<<< HEAD
         // Absences are not deducted in either the 15th or 30th pay period.
         $absences = 0.0;
+=======
+        // Absences: days short of the scheduled workdays, at the full daily wage
+        $absences = max(0.0, self::SCHEDULED_WORKDAYS - $days) * $wage;
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 
         // Late: minutes, capped by the minutes actually missing (if any are missing)
         $missingMinutes = max(0.0, $days * self::FULL_DAY_HOURS * 60 - $hours * 60);

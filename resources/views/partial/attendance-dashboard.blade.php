@@ -3,13 +3,21 @@
      @auth
     <x-slot name="title">
         @if (auth()->user()->hasRole('Admin'))
+<<<<<<< HEAD
             Admin Attendance Monitoring
+=======
+            Admin Attendance Management
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         @elseif (auth()->user()->hasRole('HR'))
             HR Attendance Management
         @elseif (auth()->user()->hasRole('Accounting'))
             Accounting Attendance Management
         @elseif (auth()->user()->hasRole('Employee'))
+<<<<<<< HEAD
             Employee Attendance Monitoring
+=======
+            Employee Attendance Management
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         @elseif (auth()->user()->hasRole('Applicant'))
             Applicant Dashboard
         @else
@@ -25,10 +33,17 @@
 
         // Look of the status badges
         $badge = fn (string $status) => match (strtolower($status)) {
+<<<<<<< HEAD
             'present'  => 'bg-emerald-50 text-emerald-800',
             'absent'   => 'bg-red-100 text-[#b22222]',
             'late'     => 'bg-orange-50 text-amber-800',
             'half day' => 'bg-blue-50 text-blue-800',
+=======
+            'present'  => 'bg-[#ecfdf5] text-[#065f46]',
+            'absent'   => 'bg-[#fee2e2] text-[#b22222]',
+            'late'     => 'bg-[#fff7ed] text-[#92400e]',
+            'half day' => 'bg-[#eff6ff] text-[#1e40bulkFormaf]',
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             default    => 'bg-gray-100 text-gray-600',
         };
 
@@ -150,6 +165,7 @@
             @endif
 
             {{-- Tabs: Current Month / Archive --}}
+<<<<<<< HEAD
             <div class="hrms-tablist my-3" role="tablist" aria-label="Attendance views">
                 <a href="{{ route('attendance.index', ['view' => 'current']) }}" role="tab" aria-selected="{{ ! $isArchive ? 'true' : 'false' }}"
                     class="hrms-tab font-bold">
@@ -157,6 +173,15 @@
                 </a>
                 <a href="{{ route('attendance.index', ['view' => 'archive']) }}" role="tab" aria-selected="{{ $isArchive ? 'true' : 'false' }}"
                     class="hrms-tab font-bold">
+=======
+            <div class="my-3 flex gap-2.5" role="tablist" aria-label="Attendance views">
+                <a href="{{ route('attendance.index', ['view' => 'current']) }}" role="tab" aria-selected="{{ ! $isArchive ? 'true' : 'false' }}"
+                    class="inline-flex items-center gap-2 rounded-full border px-3 py-2 font-bold transition {{ ! $isArchive ? 'border-[#f5c2c2] bg-[#fee2e2] text-[#7f1d1d]' : 'border-transparent text-gray-500 hover:text-gray-700' }}">
+                    <i class="fa-solid fa-calendar-days" aria-hidden="true"></i> Current Month
+                </a>
+                <a href="{{ route('attendance.index', ['view' => 'archive']) }}" role="tab" aria-selected="{{ $isArchive ? 'true' : 'false' }}"
+                    class="inline-flex items-center gap-2 rounded-full border px-3 py-2 font-bold transition {{ $isArchive ? 'border-[#f5c2c2] bg-[#fee2e2] text-[#7f1d1d]' : 'border-transparent text-gray-500 hover:text-gray-700' }}">
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                     <i class="fa-solid fa-box-archive" aria-hidden="true"></i> Archive
                 </a>
             </div>
@@ -195,15 +220,24 @@
                 </form>
 
                 {{-- Attendance table --}}
+<<<<<<< HEAD
                 <div class="overflow-x-auto rounded-2xl border border-gray-100 bg-white">
                     <table class="w-full min-w-[900px] table-fixed border-collapse text-sm">
                         <thead class="bg-slate-50">
                             <tr class="text-left font-bold text-gray-900">
                                 <th x-show="selectMode" x-cloak class="w-10 border-b border-gray-100 px-2 py-3 text-center">
+=======
+                <div class="overflow-x-auto rounded-xl border border-[#f3f4f6] bg-white">
+                    <table class="w-full min-w-[820px] border-collapse">
+                        <thead class="bg-slate-50">
+                            <tr>
+                                <th x-show="selectMode" x-cloak class="w-px border-b border-[#f3f4f6] px-3 py-5 text-center">
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                                     <input type="checkbox" aria-label="Select all rows" @change="toggleAll($event.target.checked)"
                                         :checked="selected.length && selected.length === pageIds.length"
                                         class="h-[18px] w-[18px] cursor-pointer accent-[#b22222]">
                                 </th>
+<<<<<<< HEAD
                                 <th class="w-[21%] border-b border-gray-100 px-2.5 py-3">Employee</th>
                                 <th class="w-[14%] border-b border-gray-100 px-2.5 py-3">Employee Type</th>
                                 <th class="w-[14%] border-b border-gray-100 px-2.5 py-3">Department</th>
@@ -212,10 +246,16 @@
                                 <th class="w-[8%] border-b border-gray-100 px-2.5 py-3 text-center">Time Out</th>
                                 <th class="w-[10%] border-b border-gray-100 px-2.5 py-3 text-center">Hours Worked</th>
                                 <th class="w-[14%] border-b border-gray-100 px-2.5 py-3 text-center">Status</th>
+=======
+                                @foreach (['Employee ID', 'Name', 'Department', 'Date', 'Time In', 'Time Out', 'Hours Worked', 'Status'] as $heading)
+                                    <th class="whitespace-nowrap border-b border-[#f3f4f6] px-2 py-5 text-left font-bold text-gray-900">{{ $heading }}</th>
+                                @endforeach
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                             </tr>
                         </thead>
                         <tbody>
                             @forelse ($records as $record)
+<<<<<<< HEAD
                                 <tr class="border-t border-gray-100 font-semibold text-gray-900 transition-colors hover:bg-red-50/40">
                                     <td x-show="selectMode" x-cloak class="border-b border-gray-100 px-2 py-3 text-center">
                                         <input type="checkbox" name="ids[]" form="bulkForm" value="{{ $record['id'] }}" x-model="selected"
@@ -234,6 +274,23 @@
                                     <td class="whitespace-nowrap border-b border-gray-100 px-2.5 py-3 text-center">{{ $record['hours'] }}</td>
                                     <td class="border-b border-gray-100 px-2.5 py-3 text-center">
                                         <span class="inline-block whitespace-nowrap rounded-full px-2 py-1 text-xs font-bold {{ $badge($record['status']) }}">{{ $record['status'] }}</span>
+=======
+                                <tr class="transition-colors hover:bg-gray-50">
+                                    <td x-show="selectMode" x-cloak class="border-b border-[#f3f4f6] px-3 py-5 text-center">
+                                        <input type="checkbox" name="ids[]" form="bulkForm" value="{{ $record['id'] }}" x-model="selected"
+                                            aria-label="Select row {{ $record['employee_code'] ?? 'N/A' }}"
+                                            class="h-[18px] w-[18px] cursor-pointer accent-[#b22222]">
+                                    </td>
+                                    <td class="whitespace-nowrap border-b border-[#f3f4f6] px-2 py-5 font-semibold">{{ $record['employee_code'] ?? 'N/A' }}</td>
+                                    <td class="border-b border-[#f3f4f6] px-2 py-5 font-semibold">{{ $record['name'] ?? 'Unknown employee' }}</td>
+                                    <td class="border-b border-[#f3f4f6] px-2 py-5 font-semibold">{{ $record['department_label'] }}</td>
+                                    <td class="whitespace-nowrap border-b border-[#f3f4f6] px-2 py-5 font-semibold">{{ \Illuminate\Support\Carbon::parse($record['date'])->format('M d, Y') }}</td>
+                                    <td class="whitespace-nowrap border-b border-[#f3f4f6] px-2 py-5 font-semibold">{{ $record['time_in'] }}</td>
+                                    <td class="whitespace-nowrap border-b border-[#f3f4f6] px-2 py-5 font-semibold">{{ $record['time_out'] }}</td>
+                                    <td class="border-b border-[#f3f4f6] px-2 py-5 font-semibold">{{ $record['hours'] }}</td>
+                                    <td class="border-b border-[#f3f4f6] px-2 py-5">
+                                        <span class="inline-block whitespace-nowrap rounded-full px-2.5 py-1.5 text-[0.9rem] font-bold {{ $badge($record['status']) }}">{{ $record['status'] }}</span>
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                                     </td>
                                 </tr>
                             @empty

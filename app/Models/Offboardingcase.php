@@ -42,8 +42,11 @@ class OffboardingCase extends Model
         'status',
         'progress',
         'requirements_sent_at',
+<<<<<<< HEAD
         'required_documents',
         'completed_interviews',
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         'rejection_reason',
         'sent_to_admin',
         'sent_to_admin_at',
@@ -53,6 +56,7 @@ class OffboardingCase extends Model
     ];
 
     protected $casts = [
+<<<<<<< HEAD
         'last_working_day' => 'date',
         'requirements_sent_at' => 'datetime',
         'required_documents' => 'array',
@@ -61,6 +65,14 @@ class OffboardingCase extends Model
         'sent_to_admin_at' => 'datetime',
         'admin_final_approved' => 'boolean',
         'admin_approved_at' => 'datetime',
+=======
+        'last_working_day'     => 'date',
+        'requirements_sent_at' => 'datetime',
+        'sent_to_admin'        => 'boolean',
+        'sent_to_admin_at'     => 'datetime',
+        'admin_final_approved' => 'boolean',
+        'admin_approved_at'    => 'datetime',
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     ];
 
     public function employee(): BelongsTo
@@ -91,7 +103,11 @@ class OffboardingCase extends Model
     // True once HR has released the document requirements to the employee
     public function requirementsSent(): bool
     {
+<<<<<<< HEAD
         return $this->requirements_sent_at !== null || $this->sent_to_admin;
+=======
+        return $this->requirements_sent_at !== null;
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     }
 
     // Labels the employee may upload against (interview clearances excluded)
@@ -100,6 +116,7 @@ class OffboardingCase extends Model
         return array_values(array_diff(self::REQUIRED_DOCUMENTS, self::INTERVIEW_LABELS));
     }
 
+<<<<<<< HEAD
     public function getRequiredDocumentLabelsAttribute(): array
     {
         return $this->required_documents ?: self::REQUIRED_DOCUMENTS;
@@ -191,33 +208,55 @@ class OffboardingCase extends Model
             && $this->status === 'Open'
             && $this->all_documents_approved
             && count(array_diff($requiredInterviews, $this->completed_interviews ?? [])) === 0;
+=======
+    /* ---------- Accessors ---------- */
+
+    // Every submitted document must be approved by HR (and there must be at least one)
+    public function getAllDocumentsApprovedAttribute(): bool
+    {
+        return $this->documents->isNotEmpty()
+            && $this->documents->every(fn (OffboardingDocument $d) => $d->review_status === 'Approved');
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     }
 
     public function getCanFinalApproveAttribute(): bool
     {
         return $this->sent_to_admin
             && ! $this->admin_final_approved
+<<<<<<< HEAD
             && $this->status !== 'Rejected'
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             && $this->all_documents_approved;
     }
 
     // Admin-side label (used by the admin offboarding dashboard)
     public function getStatusLabelAttribute(): string
     {
+<<<<<<< HEAD
         return match (true) {
             $this->admin_final_approved => 'Final approved',
             $this->status === 'Rejected' => 'Rejected',
             default => 'Awaiting final approval',
         };
+=======
+        return $this->admin_final_approved ? 'Final approved' : 'Awaiting final approval';
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     }
 
     public function getStatusMessageAttribute(): string
     {
         return match (true) {
+<<<<<<< HEAD
             $this->admin_final_approved => 'Final approval has been completed.',
             $this->status === 'Rejected' => ($this->sent_to_admin ? 'Admin' : 'HR').' rejected this offboarding request. Reason: '.($this->rejection_reason ?: 'No reason provided.'),
             $this->all_documents_approved => 'All submitted documents are approved by HR.',
             default => 'Final approval is available after HR approves every submitted document.',
+=======
+            $this->admin_final_approved       => 'Final approval has been completed.',
+            $this->all_documents_approved     => 'All submitted documents are approved by HR.',
+            default                           => 'Final approval is available after HR approves every submitted document.',
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         };
     }
 
@@ -225,6 +264,7 @@ class OffboardingCase extends Model
     public function getEmployeeStatusLabelAttribute(): string
     {
         return match (true) {
+<<<<<<< HEAD
             $this->status === 'Rejected' => 'Rejected',
             $this->status === 'Closed' => 'Closed',
             $this->admin_final_approved => 'Final approved',
@@ -235,3 +275,17 @@ class OffboardingCase extends Model
         };
     }
 }
+=======
+            $this->status === 'Rejected'   => 'Rejected',
+            $this->status === 'Closed'     => 'Closed',
+            $this->admin_final_approved    => 'Final approved',
+            $this->sent_to_admin           => 'With Admin for final approval',
+            $this->documents->isNotEmpty() => 'Documents submitted',
+            $this->requirementsSent()      => 'Documents requested',
+            default                        => 'Awaiting HR review',
+        };
+    }
+
+    
+}
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120

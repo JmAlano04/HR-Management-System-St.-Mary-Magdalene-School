@@ -9,20 +9,44 @@ use Illuminate\Support\Facades\Auth;
 
 class SchoolEmployeeController extends Controller
 {
+<<<<<<< HEAD
+=======
+    /**
+     * Allowed role types. The stored value and the label are the same text,
+     * so they match the options in the Role Type filter of the view.
+     */
+    private const ROLE_TYPES = [
+        'Administrative Staff' => 'Administrative Staff',
+        'Teaching Staff'       => 'Teaching Staff',
+        'Maintenance Staff'    => 'Maintenance Staff',
+        'Support Staff'        => 'Support Staff',
+    ];
+
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     /** School employee directory (view only, sensitive data masked). */
     public function index(Request $request)
     {
         $authId = Auth::id();
 
         $employees = SchoolEmployee::query()
+<<<<<<< HEAD
             ->excludeInternalStaff()
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             // Hide the logged-in user's own employee record.
             // whereNull keeps records that have no linked account.
             ->where(fn ($q) => $q
                 ->whereNull('user_id')
                 ->orWhere('user_id', '!=', $authId))
             // Search + department filters run in the database (see SchoolEmployee::scopeFilter)
+<<<<<<< HEAD
             ->filter($request->only(['search', 'department', 'role_type']))
+=======
+            ->filter($request->only(['search', 'department']))
+            // Role type filter is applied here so it uses the four role types above
+            ->when(array_key_exists((string) $request->role_type, self::ROLE_TYPES),
+                fn ($q) => $q->where('role_type', $request->role_type))
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             ->orderBy('name')
             ->paginate(12)
             ->withQueryString();
@@ -51,7 +75,11 @@ class SchoolEmployeeController extends Controller
             'employees'         => $employees,
             'cards'             => $cards,
             'filterDepartments' => SchoolEmployee::departmentsInDatabase(),
+<<<<<<< HEAD
             'roleTypes'         => SchoolEmployee::roleTypesInDatabase(),
+=======
+            'roleTypes'         => self::ROLE_TYPES,
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         ]);
     }
 }

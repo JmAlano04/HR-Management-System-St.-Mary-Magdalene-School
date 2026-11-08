@@ -113,12 +113,16 @@
             await this.post('{{ route('notifications.read-all') }}');
             this.load();
         },
+<<<<<<< HEAD
         init() {
             this.load();
             this.timer = setInterval(() => {
                 if (document.visibilityState === 'visible') this.load();
             }, 5000);
         }
+=======
+        init() { this.load(); this.timer = setInterval(() => this.load(), 30000); }
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
      }"
      @click.outside="open = false"
      @keydown.escape.window="open = false">

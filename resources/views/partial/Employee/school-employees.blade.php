@@ -20,7 +20,18 @@
         // Uses the controller's list if it passed one, otherwise reads the database here.
         $filterDepartments = $filterDepartments ?? \App\Models\SchoolEmployee::departmentsInDatabase();
 
+<<<<<<< HEAD
         $roleTypes = collect($roleTypes ?? []);
+=======
+        // Role types: the stored value and the label are the same text.
+        // Uses the controller's list if it passed one.
+        $roleTypes = $roleTypes ?? [
+            'Administrative Staff' => 'Administrative Staff',
+            'Teaching Staff'       => 'Teaching Staff',
+            'Maintenance Staff'    => 'Maintenance Staff',
+            'Support Staff'        => 'Support Staff',
+        ];
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     @endphp
 
     <div
@@ -66,7 +77,11 @@
                     </select>
                 </label>
 
+<<<<<<< HEAD
                 @if (request()->filled('search') || request()->filled('department') || request()->filled('role_type'))
+=======
+                @if (request()->hasAny(['search', 'department', 'role_type']))
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                     <a href="{{ route('employee.school-employees') }}"
                         class="rounded-xl border border-gray-200 px-4 py-3 text-sm font-bold text-gray-600 transition hover:bg-gray-50">
                         Clear

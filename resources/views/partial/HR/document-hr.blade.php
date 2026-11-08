@@ -60,8 +60,15 @@
                 ] as [$label, $count, $note])
                     <article class="rounded-[18px] border border-[#f3e0e0] bg-white px-6 py-[22px] shadow-[0_8px_20px_rgba(15,23,42,0.06)]">
                         <p class="mb-2 text-[0.85rem] uppercase tracking-[0.08em] text-gray-900"><strong>{{ $label }}</strong></p>
+<<<<<<< HEAD
                         <h2 class="text-[2.3rem] font-extrabold leading-tight text-gray-900">{{ $count }}</h2>
                         <p class="mt-2.5 text-[0.95rem] text-gray-900">{{ $note }}</p>
+=======
+                       
+                        <p class="mt-2.5 text-[0.95rem] text-gray-900">{{ $note }}</p>
+
+                        <h2 class="text-[2.3rem] font-extrabold leading-tight text-gray-900">{{ $count }}</h2>
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                     </article>
                 @endforeach
             </div>
@@ -76,7 +83,11 @@
             </div>
 
             <form method="POST" action="{{ route('boxes.store') }}"
+<<<<<<< HEAD
                 class="grid items-end gap-3.5 lg:grid-cols-[1.2fr_1fr_0.8fr_1.2fr]">
+=======
+                class="grid items-end gap-3.5 lg:grid-cols-[1.2fr_1fr_0.8fr_auto]">
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                 @csrf
 
                 <div class="grid gap-[7px]">
@@ -100,6 +111,7 @@
                     <p class="text-xs font-semibold text-red-600">{{ $errors->first('deadline') }}</p>
                 </div>
 
+<<<<<<< HEAD
                 <div class="grid gap-[7px]">
                     <label for="submissionBoxEmployee" class="text-[0.88rem] font-bold text-gray-700">Send to employee</label>
                     <select id="submissionBoxEmployee" name="employee_id" class="{{ $fieldClass }}">
@@ -113,6 +125,8 @@
                     <p class="text-xs font-semibold text-red-600">{{ $errors->first('employee_id') }}</p>
                 </div>
 
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                 <div class="grid gap-[7px] lg:col-span-3">
                     <label for="submissionBoxInstructions" class="text-[0.88rem] font-bold text-gray-700">Instructions</label>
                     <textarea id="submissionBoxInstructions" name="instructions" rows="2" maxlength="1000"
@@ -135,7 +149,10 @@
                             <strong class="block text-gray-900" x-text="b.name"></strong>
                             <span class="mt-1 block text-[0.9rem] text-gray-500"
                                 x-text="b.type + (b.deadline ? ' · Due ' + b.deadline : ' · No deadline')"></span>
+<<<<<<< HEAD
                             <span class="mt-1 block text-xs text-gray-500" x-text="'Sent to: ' + b.recipient"></span>
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                             <p class="mt-1 text-[0.9rem] text-gray-500" x-show="b.instructions" x-text="b.instructions"></p>
                         </div>
                         <span class="shrink-0 rounded-full px-2.5 py-1.5 text-[0.78rem] font-bold"

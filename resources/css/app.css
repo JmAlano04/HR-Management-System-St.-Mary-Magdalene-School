@@ -2,11 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+<<<<<<< HEAD
 html {
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
 }
 
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 @utility no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -14,6 +17,7 @@ html {
     &::-webkit-scrollbar {
         display: none;
     }
+<<<<<<< HEAD
 }
 
 :where([role="dialog"], .modal-card, .modal-content, .login-modal-content) {
@@ -211,4 +215,6 @@ html {
     .hrms-tab {
         transition: none;
     }
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 }

@@ -21,7 +21,11 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
+<<<<<<< HEAD
         <title>{{ $title ?? (request()->routeIs('profile.edit') && in_array($role, ['HR', 'Admin', 'Accounting', 'Employee'], true) ? "{$role} My Account" : config('app.name', 'HR Management System')) }}</title>
+=======
+        <title>{{ $title ?? config('app.name', 'HR Management System') }}</title>
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 
         {{-- Favicons --}}
         <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
@@ -53,6 +57,7 @@
              class="min-h-screen overflow-x-hidden bg-gray-100">
 
             @auth
+<<<<<<< HEAD
                 <div data-system-updates
                      data-update-url="{{ route('system-updates.current') }}"
                      data-current-version="{{ $systemDataVersion ?? 0 }}"></div>
@@ -68,6 +73,8 @@
                         Refresh now
                     </button>
                 </div>
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 
                 {{-- Applicant: top navigation (applicants receive no notifications) --}}
                 @hasanyrole('Applicant')
@@ -100,7 +107,11 @@
 
                         <!-- Page Heading -->
                         @isset($header)
+<<<<<<< HEAD
                             <div class="app-page-heading min-w-0 flex-1 truncate">
+=======
+                            <div class="min-w-0 flex-1 truncate">
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                                 {{ $header }}
                             </div>
                         @endisset
@@ -110,7 +121,11 @@
                     <div class="mr-3 flex shrink-0 items-center gap-2 sm:mr-0 sm:gap-4">
 
                         <!-- Notification bell -->
+<<<<<<< HEAD
                         <x-notification-bell />
+=======
+                        {{-- <x-notification-bell /> --}}
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 
                         <!-- Profile dropdown -->
                         <x-dropdown align="right" width="48" content-classes=" p-2 bg-white">
@@ -118,7 +133,11 @@
                                 {{-- Phone: avatar + chevron only. md+: name and role too. Extra right margin on desktop (lg). --}}
                                 <button type="button"
                                         class="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white py-1.5 pl-1.5 pr-3 text-base shadow-sm transition hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-700 sm:gap-3 sm:py-2 sm:pl-2 sm:pr-4 sm:text-lg lg:mr-[70px]"
+<<<<<<< HEAD
                                         aria-label="Account Menu">
+=======
+                                        aria-label="Account menu">
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                                     <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-red-700 text-xs font-bold text-white sm:h-9 sm:w-9 sm:text-sm">
                                         {{ $initials }}
                                     </span>
@@ -165,7 +184,11 @@
                 @endauth
 
                 <!-- Page Content -->
+<<<<<<< HEAD
                 <main class="app-content min-w-0">
+=======
+                <main class="min-w-0">
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                     {{ $slot }}
                 </main>
             </div>

@@ -16,26 +16,41 @@
 
         // Status badge / banner look
         $statusUi = match ($status) {
+<<<<<<< HEAD
             'qualified', 'approved' => ['label' => 'Qualified', 'icon' => 'fa-circle-check', 'badge' => 'bg-green-100 text-green-800', 'box' => 'border-[#28a745] from-[#d4edda] to-[#c3e6cb] text-[#155724]', 'msg' => 'Congratulations! HR will contact you with the next steps.'],
             'hr_approved' => ['label' => 'Pending Review', 'icon' => 'fa-hourglass-half', 'badge' => 'bg-yellow-100 text-yellow-800', 'box' => 'border-[#ffc107] from-[#fff3cd] to-[#ffeaa7] text-[#856404]', 'msg' => 'Your application is awaiting final review by Admin.'],
             'hr_rejected' => ['label' => 'Not Qualified', 'icon' => 'fa-circle-xmark', 'badge' => 'bg-red-100 text-red-800', 'box' => 'border-[#dc3545] from-[#f8d7da] to-[#f5c6cb] text-[#721c24]', 'msg' => 'Thank you for applying. Unfortunately, your application was not successful.'],
             'rejected' => ['label' => 'Not Qualified',   'icon' => 'fa-circle-xmark',  'badge' => 'bg-red-100 text-red-800',       'box' => 'border-[#dc3545] from-[#f8d7da] to-[#f5c6cb] text-[#721c24]', 'msg' => 'Thank you for applying. Unfortunately, your application was not successful.'],
             'pending'   => ['label' => 'Pending Review',  'icon' => 'fa-hourglass-half', 'badge' => 'bg-yellow-100 text-yellow-800', 'box' => 'border-[#ffc107] from-[#fff3cd] to-[#ffeaa7] text-[#856404]', 'msg' => $application?->interview_completed_at ? 'Your interview is complete. HR will review your application first, followed by Admin.' : 'Your application is awaiting interview and HR review.'],
+=======
+            'qualified' => ['label' => 'Qualified',       'icon' => 'fa-circle-check',  'badge' => 'bg-green-100 text-green-800',   'box' => 'border-[#28a745] from-[#d4edda] to-[#c3e6cb] text-[#155724]', 'msg' => 'Congratulations! HR will contact you with the next steps.'],
+            'rejected'  => ['label' => 'Not Qualified',   'icon' => 'fa-circle-xmark',  'badge' => 'bg-red-100 text-red-800',       'box' => 'border-[#dc3545] from-[#f8d7da] to-[#f5c6cb] text-[#721c24]', 'msg' => 'Thank you for applying. Unfortunately, your application was not successful.'],
+            'pending'   => ['label' => 'Pending Review',  'icon' => 'fa-hourglass-half', 'badge' => 'bg-yellow-100 text-yellow-800', 'box' => 'border-[#ffc107] from-[#fff3cd] to-[#ffeaa7] text-[#856404]', 'msg' => 'Your application is being reviewed by Admin and HR.'],
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             default     => ['label' => 'Not Submitted',   'icon' => 'fa-file-circle-plus', 'badge' => 'bg-gray-100 text-gray-700',  'box' => 'border-gray-300 from-gray-50 to-gray-100 text-gray-700',      'msg' => 'You have not submitted an application yet.'],
         };
 
         // Progress timeline: done = green, current = red, upcoming = gray
         $submitted   = (bool) $application;
         $hasInterview = $submitted && $application->interview_date;
+<<<<<<< HEAD
         $interviewCompleted = $submitted && $application->interview_completed_at;
         $decided     = in_array($status, ['qualified', 'approved', 'hr_rejected', 'rejected'], true);
         $rejected    = in_array($status, ['hr_rejected', 'rejected'], true);
+=======
+        $decided     = in_array($status, ['qualified', 'rejected'], true);
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 
         $timeline = [
             ['label' => 'Application Submitted', 'desc' => $submitted ? 'Submitted ' . $application->created_at->format('M j, Y') : 'Fill out the application form',      'done' => $submitted],
             ['label' => 'Documents Received',    'desc' => $submitted ? 'Resume, cover letter and application letter' : 'Upload your required PDFs',                         'done' => $submitted],
+<<<<<<< HEAD
             ['label' => 'Interview',             'desc' => $interviewCompleted ? 'Completed ' . $application->interview_completed_at->format('M j, Y') : ($hasInterview ? 'Scheduled ' . $application->interview_date->format('F j, Y') : 'Waiting for schedule'), 'done' => (bool) $interviewCompleted],
             ['label' => 'Final Decision',        'desc' => $decided ? $statusUi['label'] : ($status === 'hr_approved' ? 'Waiting for Admin approval' : 'Awaiting HR and Admin approval'), 'done' => $decided],
+=======
+            ['label' => 'Interview',             'desc' => $hasInterview ? $application->interview_date->format('F j, Y') : 'Waiting for schedule',                         'done' => $hasInterview],
+            ['label' => 'Final Decision',        'desc' => $decided ? $statusUi['label'] : 'Waiting for Admin and HR',                                                      'done' => $decided],
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         ];
         $currentIndex = collect($timeline)->search(fn ($t) => ! $t['done']); // false when all done
 
@@ -110,7 +125,11 @@
                             <h3 class="mt-3 text-2xl font-bold">{{ $statusUi['label'] }}</h3>
                             <p class="mt-2 max-w-md font-semibold">{{ $statusUi['msg'] }}</p>
 
+<<<<<<< HEAD
                             @if (in_array($status, ['hr_rejected', 'rejected'], true) && $application->rejection_reason)
+=======
+                            @if ($status === 'rejected' && $application->rejection_reason)
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                                 <p class="mt-2 max-w-md text-sm font-medium">{{ $application->rejection_reason }}</p>
                             @endif
 
@@ -133,6 +152,7 @@
                                 <li class="relative flex gap-4">
                                     {{-- connecting line --}}
                                     @unless ($loop->last)
+<<<<<<< HEAD
                                         <span class="absolute left-5 top-10 h-full w-[3px] -translate-x-1/2 {{ $t['done'] ? 'bg-[#28a745]' : 'bg-gray-200' }}"
                                             @if ($i === 2 && $rejected) style="background-color: #dc3545;" @endif></span>
                                     @endunless
@@ -152,6 +172,18 @@
                                     <div class="pb-2">
                                         <p class="font-bold {{ $i === 3 && $rejected ? 'text-[#dc3545]' : ($t['done'] ? 'text-[#28a745]' : ($current ? 'text-[#b22222]' : 'text-gray-400')) }}"
                                             @if ($i === 3 && $rejected) style="color: #dc3545;" @endif>{{ $t['label'] }}</p>
+=======
+                                        <span class="absolute left-5 top-10 h-full w-[3px] -translate-x-1/2 {{ $t['done'] ? 'bg-[#28a745]' : 'bg-gray-200' }}"></span>
+                                    @endunless
+
+                                    <span class="z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-base font-bold
+                                        {{ $t['done'] ? 'bg-[#28a745] text-white shadow-[0_6px_20px_rgba(40,167,69,0.25)]' : ($current ? 'scale-110 bg-[#b22222] text-white shadow-[0_6px_20px_rgba(178,34,34,0.35)]' : 'bg-gray-200 text-gray-400') }}">
+                                        @if ($t['done']) <i class="fa-solid fa-check"></i> @else {{ $i + 1 }} @endif
+                                    </span>
+
+                                    <div class="pb-2">
+                                        <p class="font-bold {{ $t['done'] ? 'text-[#28a745]' : ($current ? 'text-[#b22222]' : 'text-gray-400') }}">{{ $t['label'] }}</p>
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                                         <p class="text-sm text-gray-500">{{ $t['desc'] }}</p>
                                     </div>
                                 </li>
@@ -172,12 +204,15 @@
                                         <div><dt class="inline font-semibold text-gray-800">Date: </dt><dd class="inline text-gray-600">{{ $application->interview_date->format('F j, Y') }}</dd></div>
                                         <div><dt class="inline font-semibold text-gray-800">Time: </dt><dd class="inline text-gray-600">{{ $application->interview_time ?? 'To be announced' }}</dd></div>
                                         <div><dt class="inline font-semibold text-gray-800">Location: </dt><dd class="inline text-gray-600">{{ $application->interview_location ?? 'St. Mary Magdalene School' }}</dd></div>
+<<<<<<< HEAD
                                         <div>
                                             <dt class="inline font-semibold text-gray-800">Status: </dt>
                                             <dd class="inline font-semibold {{ $interviewCompleted ? 'text-green-700' : 'text-amber-700' }}">
                                                 {{ $interviewCompleted ? 'Interview completed' : 'Scheduled' }}
                                             </dd>
                                         </div>
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                                     </dl>
                                 @else
                                     <p class="text-sm text-gray-500">No interview scheduled yet. Please check back soon.</p>

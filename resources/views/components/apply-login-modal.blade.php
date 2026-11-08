@@ -6,12 +6,16 @@
                     <div class="login-header">
                         <h2>Login to Apply</h2>
                     </div>
+<<<<<<< HEAD
                  @include('auth.login', [
                      'formId' => 'apply-login-form',
                      'emailInputId' => 'apply-email',
                      'passwordInputId' => 'apply-password',
                      'loginContext' => 'apply',
                  ])
+=======
+                 @include('auth.login')
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                     <div class="login-note">Don’t have an account? <a href="#" id="apply-login-signup-link">Sign up</a></div>
                 </div>
             </div>

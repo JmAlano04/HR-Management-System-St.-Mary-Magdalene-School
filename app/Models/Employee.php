@@ -2,16 +2,22 @@
 
 namespace App\Models;
 
+<<<<<<< HEAD
 use App\Casts\EncryptedOrPlaintext;
 use App\Models\Concerns\ExcludesInternalStaff;
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Employee extends Model
 {
+<<<<<<< HEAD
     use ExcludesInternalStaff;
 
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
     public const DEPARTMENTS = [
         'elementary' => 'Elementary',
         'highschool' => 'High School',
@@ -81,6 +87,7 @@ class Employee extends Model
             'birthday'          => 'date',
             'education'         => 'array',
 
+<<<<<<< HEAD
             'address'           => EncryptedOrPlaintext::class,
             'emergency_name'    => EncryptedOrPlaintext::class,
             'emergency_contact' => EncryptedOrPlaintext::class,
@@ -89,6 +96,17 @@ class Employee extends Model
             'philhealth_number' => EncryptedOrPlaintext::class,
             'pagibig_number'    => EncryptedOrPlaintext::class,
             'tin'               => EncryptedOrPlaintext::class,
+=======
+            // AES-256 (encrypted automatically on save, decrypted on read)
+            'address'           => 'encrypted',
+            'emergency_name'    => 'encrypted',
+            'emergency_contact' => 'encrypted',
+            'phone'             => 'encrypted',
+            'sss_number'        => 'encrypted',
+            'philhealth_number' => 'encrypted',
+            'pagibig_number'    => 'encrypted',
+            'tin'               => 'encrypted',
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
         ];
     }
 
@@ -123,7 +141,10 @@ class Employee extends Model
             'email'             => $this->email,
             'birthday'          => $this->birthday->toDateString(),
             'birthday_label'    => $this->birthday->format('F j, Y'),
+<<<<<<< HEAD
             'gender'            => $this->gender,
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
             'address'           => $this->address,
             'emergency_name'    => $this->emergency_name,
             'emergency_contact' => $this->emergency_contact,

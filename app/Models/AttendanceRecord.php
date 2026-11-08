@@ -12,6 +12,7 @@ class AttendanceRecord extends Model
 {
     use HasFactory;
 
+<<<<<<< HEAD
     public const STATUSES = [
         'Present',
         'Absent',
@@ -22,6 +23,9 @@ class AttendanceRecord extends Model
         'Non-Working Day',
         'Non-Working Day Review',
     ];
+=======
+    public const STATUSES = ['Present', 'Absent', 'Late', 'Half Day'];
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 
     // Mga department value sa employees table -> label na ipinapakita
     public const DEPARTMENT_LABELS = [

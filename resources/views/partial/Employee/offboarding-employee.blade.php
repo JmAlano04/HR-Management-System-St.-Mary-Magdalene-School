@@ -17,7 +17,10 @@
         $closed    = $case && $case->status === 'Closed';
         $rejected  = $case && $case->status === 'Rejected';
         $hasCase   = (bool) $case;
+<<<<<<< HEAD
         $completedInterviews = $case?->completed_interviews ?? [];
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 
         $interviewRows = collect($requiredLabels)->filter(fn ($l) => in_array($l, $interviewLabels, true));
         $documentRows  = collect($requiredLabels)->reject(fn ($l) => in_array($l, $interviewLabels, true));
@@ -46,7 +49,11 @@
             </div>
         @endif
 
+<<<<<<< HEAD
         <div class="mt-2 grid max-w-[1100px] grid-cols-1 items-start gap-6">
+=======
+        <div class="mt-2 grid max-w-[1100px] items-start gap-6 lg:grid-cols-2">
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
 
             {{-- ============ Request panel ============ --}}
             <section class="rounded-[22px] border border-[#f0dada] bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)] sm:p-7">
@@ -56,6 +63,12 @@
                         <h2 class="text-2xl font-bold text-gray-900">Start your resignation clearance</h2>
                         <p class="mt-2 text-gray-500">Send your request to HR to receive your required clearance documents and next steps.</p>
                     </div>
+<<<<<<< HEAD
+=======
+                    <span class="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-lg bg-[#fef2f2] text-[#b22222]" aria-hidden="true">
+                        <i class="fa-solid fa-file-signature"></i>
+                    </span>
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                 </div>
 
                 @if (! $hasCase)
@@ -139,7 +152,11 @@
                     <article class="grid gap-4 rounded-[14px] border border-[#ecebea] bg-gray-50 p-4">
                         <div class="flex flex-wrap items-center justify-between gap-2">
                             <span class="inline-flex items-center rounded-md px-2.5 py-1.5 text-[0.82rem] font-bold {{ $rejected ? 'bg-[#fdeaea] text-[#b22222]' : 'bg-[#fff5d6] text-[#8a5a00]' }}">
+<<<<<<< HEAD
                                 {{ $case->employee_status_label }}
+=======
+                                {{ $case->status_label }}
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                             </span>
                             <span class="text-sm text-gray-500">Last day: {{ $case->last_working_day->format('M d, Y') }}</span>
                         </div>
@@ -165,7 +182,11 @@
                                     </div>
                                     <ul class="grid list-none gap-2 p-0">
                                         @foreach ($interviewRows as $label)
+<<<<<<< HEAD
                                             @php $status = in_array($label, $completedInterviews, true) ? 'Done' : 'Pending'; @endphp
+=======
+                                            @php $status = ($documents[$label]->review_status ?? null) === 'Approved' ? 'Done' : 'Pending'; @endphp
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                                             <li class="flex items-center justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2.5">
                                                 <span class="text-sm font-semibold text-gray-900">{{ $label }}</span>
                                                 <span class="rounded-md px-2.5 py-1 text-[0.78rem] font-bold {{ $badge($status) }}">{{ $status }}</span>
@@ -175,11 +196,14 @@
                                 </section>
                             @endif
 
+<<<<<<< HEAD
                             @if ($case->sent_to_admin)
                                 <p class="rounded-md border border-[#f0dada] bg-white px-3 py-3 text-sm text-gray-600">
                                     HR approved your documents and sent the request to Admin for final review. Uploads are closed while the final review is in progress.
                                 </p>
                             @else
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                             {{-- Documents and clearances (upload) --}}
                             <form method="POST" action="{{ route('employee.offboarding.documents.store', $case) }}"
                                   enctype="multipart/form-data" class="grid gap-3">
@@ -197,9 +221,13 @@
                                             $status = $doc->review_status ?? 'Required';
                                             $locked = $status === 'Approved';
                                         @endphp
+<<<<<<< HEAD
                                         <li
                                             :class="files[@js($label)] ? 'border-[#b22222] bg-[#fffafa] shadow-sm' : 'border-gray-200 bg-white'"
                                             class="grid gap-2 rounded-md border px-3 py-2.5 transition duration-150 hover:border-[#d98b8b] hover:bg-[#fffafa] hover:shadow-sm motion-reduce:transition-none">
+=======
+                                        <li class="grid gap-2 rounded-md border border-gray-200 bg-white px-3 py-2.5">
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                                             <div class="flex items-start justify-between gap-3">
                                                 <div class="grid min-w-0 gap-0.5">
                                                     <span class="text-sm font-semibold text-gray-900">{{ $label }}</span>
@@ -208,18 +236,29 @@
                                                     @endif
                                                 </div>
                                                 <div class="flex shrink-0 items-center gap-2">
+<<<<<<< HEAD
+=======
+                                                    <span class="rounded-md px-2.5 py-1 text-[0.78rem] font-bold {{ $badge($status) }}">{{ $status }}</span>
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                                                     @if ($status === 'Rejected' && ! empty($doc->rejection_reason))
                                                         <button type="button" @click="notes = @js($doc->rejection_reason)"
                                                             class="cursor-pointer text-xs font-bold text-[#b22222] underline">Notes</button>
                                                     @endif
+<<<<<<< HEAD
                                                     <span class="rounded-md px-2.5 py-1 text-[0.78rem] font-bold {{ $badge($status) }}">{{ $status }}</span>
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                                                 </div>
                                             </div>
 
                                             @unless ($locked)
+<<<<<<< HEAD
                                                 <label
                                                     :class="files[@js($label)] ? 'bg-[#fef2f2] text-[#921c1c]' : 'text-[#b22222]'"
                                                     class="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm font-semibold transition duration-150 hover:bg-[#fef2f2] hover:text-[#921c1c] active:scale-[0.98] focus-within:outline-none focus-within:ring-2 focus-within:ring-[#b22222] focus-within:ring-offset-2 motion-reduce:transition-none">
+=======
+                                                <label class="flex cursor-pointer items-center gap-2 text-sm font-semibold text-[#b22222]">
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                                                     <i class="fa-solid fa-arrow-up-from-bracket text-xs" aria-hidden="true"></i>
                                                     <span x-text="files[@js($label)]
                                                         ? 'Change file'
@@ -249,7 +288,10 @@
                                     </button>
                                 </div>
                             </form>
+<<<<<<< HEAD
                             @endif
+=======
+>>>>>>> e05b184454bbf6ba7bf5b37b088389827694a120
                         @endif
                     </article>
                 @endif

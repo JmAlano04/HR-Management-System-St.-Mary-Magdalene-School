@@ -1,63 +1,275 @@
-<<<<<<< HEAD
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# St. Mary Magdalene School – HRMS
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A web-based **Human Resource Management System (HRMS)** with **biometric attendance** built for St. Mary Magdalene School (Parochial), Inc., Kawit, Cavite. It centralizes employee records, attendance, payroll support, and recruitment in one platform with role-based access.
 
-## About Laravel
+> Built with **Laravel**. Replace the placeholders marked `<...>` with your own details.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Table of Contents
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- [Features](#features)
+- [User Roles](#user-roles)
+- [Tech Stack](#tech-stack)
+- [Requirements](#requirements)
+- [Installation (Step by Step)](#installation-step-by-step)
+- [Biometric Attendance Setup](#biometric-attendance-setup)
+- [Default Accounts](#default-accounts)
+- [Running in Production](#running-in-production)
+- [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
+- [License](#license)
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## Features
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- Role-based access control (Admin, HR, Accounting, Employee, Applicant)
+- Biometric attendance logging (time in / time out)
+- Employee 201 file / profile management
+- Leave and attendance monitoring
+- Payroll support and accounting reports
+- Recruitment portal: job postings, online application, applicant tracking
+- Secure login and authentication
+- Responsive interface (desktop and mobile)
 
-## Laravel Sponsors
+## User Roles
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+| Role | Access |
+|------|--------|
+| **Admin** | Full system control: users, roles, settings, all modules |
+| **HR** | Employee records, attendance, leave, job postings, applicant review |
+| **Accounting** | Payroll, deductions, financial and attendance-based reports |
+| **Employee** | Personal profile, own attendance records, leave requests, payslips |
+| **Applicant** | Register, view openings, submit application and requirements |
 
-### Premium Partners
+## Tech Stack
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+- **Backend:** Laravel `<version>` (PHP `<version>`)
+- **Database:** MySQL / MariaDB
+- **Frontend:** Blade, Tailwind CSS / Bootstrap `<confirm>`, Vite
+- **Attendance:** Biometric device integration `<device model, e.g. ZKTeco>`
+
+## Requirements
+
+Make sure these are installed first:
+
+- PHP **8.2** or higher (check `composer.json` for the exact version)
+- Composer 2.x
+- Node.js 18+ and npm
+- MySQL 8+ or MariaDB 10.4+
+- Git
+- PHP extensions: `openssl`, `pdo`, `mbstring`, `tokenizer`, `xml`, `ctype`, `json`, `bcmath`, `fileinfo`, `gd`
+
+Local options: **XAMPP**, **Laragon** (recommended on Windows), or **Laravel Herd**.
+
+---
+
+## Installation (Step by Step)
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/<your-username>/<your-repo>.git
+cd <your-repo>
+```
+
+### 2. Install PHP dependencies
+
+```bash
+composer install
+```
+
+### 3. Install frontend dependencies
+
+```bash
+npm install
+```
+
+### 4. Create the environment file
+
+```bash
+cp .env.example .env
+```
+
+On Windows Command Prompt use: `copy .env.example .env`
+
+### 5. Generate the application key
+
+```bash
+php artisan key:generate
+```
+
+### 6. Create the database
+
+Create an empty database (for example `hrms_db`) using phpMyAdmin, HeidiSQL, or the MySQL CLI:
+
+```sql
+CREATE DATABASE hrms_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+
+### 7. Configure `.env`
+
+Open `.env` and update:
+
+```env
+APP_NAME="SMMS HRMS"
+APP_ENV=local
+APP_DEBUG=true
+APP_URL=http://localhost:8000
+APP_TIMEZONE=Asia/Manila
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=hrms_db
+DB_USERNAME=root
+DB_PASSWORD=
+
+MAIL_MAILER=smtp
+MAIL_HOST=<smtp-host>
+MAIL_PORT=587
+MAIL_USERNAME=<email>
+MAIL_PASSWORD=<password>
+MAIL_FROM_ADDRESS=<email>
+MAIL_FROM_NAME="${APP_NAME}"
+```
+
+### 8. Run migrations and seeders
+
+```bash
+php artisan migrate --seed
+```
+
+This creates all tables and seeds the default roles and accounts.
+
+### 9. Link the storage folder
+
+```bash
+php artisan storage:link
+```
+
+Needed for uploaded files such as profile photos and applicant requirements.
+
+### 10. Build frontend assets
+
+```bash
+npm run build
+```
+
+For development with hot reload use `npm run dev` instead.
+
+### 11. Start the application
+
+```bash
+php artisan serve
+```
+
+Open **http://localhost:8000** in your browser.
+
+---
+
+## Biometric Attendance Setup
+
+> Adjust this section to match your device and integration method.
+
+1. Connect the biometric device to the same network as the server.
+2. Set the device IP and port in `.env`:
+
+```env
+BIOMETRIC_IP=192.168.1.201
+BIOMETRIC_PORT=4370
+```
+
+3. Make sure the server can reach the device (`ping 192.168.1.201`).
+4. Register each employee in the device using the same **Employee ID** as in the HRMS.
+5. Sync attendance logs (if using a command or scheduler):
+
+```bash
+php artisan attendance:sync
+```
+
+6. To sync automatically, add the Laravel scheduler to cron (Linux):
+
+```bash
+* * * * * cd /path-to-project && php artisan schedule:run >> /dev/null 2>&1
+```
+
+On Windows, create a Task Scheduler job that runs `php artisan schedule:run` every minute.
+
+## Default Accounts
+
+After seeding, you can log in with the accounts below. **Change all passwords immediately after first login.**
+
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | `smms.administrator00@gmail.com` | `password123` |
+| HR | `smms.hr00@gmail.com` | `password123` |
+| Accounting | `smms.finance.officer@gmail.com` | `password123` |
+| Employee | `juan.delacruz@gmail.com` | `password123` |
+
+Applicants register through the **Apply Now** button on the landing page.
+
+> Update this table to match your actual seeders.
+
+---
+
+## Running in Production
+
+```bash
+composer install --no-dev --optimize-autoloader
+php artisan migrate --force
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+npm run build
+```
+
+Set these in `.env`:
+
+```env
+APP_ENV=production
+APP_DEBUG=false
+```
+
+Point your web server (Nginx or Apache) document root to the `/public` folder, and make `storage` and `bootstrap/cache` writable:
+
+```bash
+chmod -R 775 storage bootstrap/cache
+```
+
+## Troubleshooting
+
+| Problem | Fix |
+|---------|-----|
+| `No application encryption key has been specified` | Run `php artisan key:generate` |
+| `SQLSTATE[HY000] [1049] Unknown database` | Create the database and check `DB_DATABASE` in `.env` |
+| Images/uploads not showing | Run `php artisan storage:link` |
+| Styles not loading | Run `npm install && npm run build` |
+| Permission denied on `storage` | `chmod -R 775 storage bootstrap/cache` |
+| Changes in `.env` not applied | Run `php artisan config:clear` |
+| Class not found after pulling updates | Run `composer dump-autoload` |
 
 ## Contributing
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+1. Fork the repository
+2. Create a branch: `git checkout -b feature/your-feature`
+3. Commit your changes: `git commit -m "Add your feature"`
+4. Push to the branch: `git push origin feature/your-feature`
+5. Open a Pull Request
 
-## Code of Conduct
+## Developer
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+**Developed by:** `<Your Full Name>`
+**Role:** Full-Stack Developer
+**Email:** `<your-email>`
+**GitHub:** [@`<username>`](https://github.com/<username>)
+**Facebook:** [`<Your Name>`](https://facebook.com/<username>)
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
-=======
-# HR-Management-System-St.-Mary-Magdalene-School
->>>>>>> 8e390fb930755364bc03702d7fc5236280e5f8d1
+This project is proprietary software of St. Mary Magdalene School (Parochial), Inc. Unauthorized copying or distribution is not permitted. `<Change this if you use an open-source license.>`
+
+---
+
+**Developed for St. Mary Magdalene School, Kawit, Cavite.**

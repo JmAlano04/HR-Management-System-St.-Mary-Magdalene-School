@@ -1,9 +1,10 @@
 # St. Mary Magdalene School – HRMS
 
-A web-based **Human Resource Management System (HRMS)** with **biometric attendance** built for St. Mary Magdalene School (Parochial), Inc., Kawit, Cavite. It centralizes employee records, attendance, payroll support, and recruitment in one platform with role-based access.
+A web-based **Human Resource Management System (HRMS)** with **biometric attendance** built for St. Mary Magdalene School, Kawit, Cavite. It centralizes employee records, attendance, payroll support, and recruitment in one platform with role-based access.
 
-> Built with **Laravel**. Replace the placeholders marked `<...>` with your own details.
-
+> 🎓 **Capstone Project** – Submitted in partial fulfillment of the requirements for the degree of `<Bachelor of Science in Information Technology / Computer Science>`, `<University / College Name>`, `<School Year, e.g. 2025–2026>`.
+>
+> Built with **Laravel**.
 ---
 
 ## Table of Contents
@@ -45,16 +46,16 @@ A web-based **Human Resource Management System (HRMS)** with **biometric attenda
 
 ## Tech Stack
 
-- **Backend:** Laravel `<version>` (PHP `<version>`)
-- **Database:** MySQL / MariaDB
-- **Frontend:** Blade, Tailwind CSS / Bootstrap `<confirm>`, Vite
-- **Attendance:** Biometric device integration `<device model, e.g. ZKTeco>`
+- **Backend:** Laravel `12` (PHP `8.3`)
+- **Database:** MySQL
+- **Frontend:** Blade, Tailwind CSS, Vite
+- **Attendance:** Biometric device integration `ZKTeco x-628-c`
 
 ## Requirements
 
 Make sure these are installed first:
 
-- PHP **8.2** or higher (check `composer.json` for the exact version)
+- PHP **8.3** or higher (check `composer.json` for the exact version)
 - Composer 2.x
 - Node.js 18+ and npm
 - MySQL 8+ or MariaDB 10.4+
@@ -70,7 +71,7 @@ Local options: **XAMPP**, **Laragon** (recommended on Windows), or **Laravel Her
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/<your-username>/<your-repo>.git
+git clone https://github.com/JmAlano04/HR-Management-System-St.-Mary-Magdalene-School.git
 cd <your-repo>
 ```
 
@@ -102,10 +103,12 @@ php artisan key:generate
 
 ### 6. Create the database
 
-Create an empty database (for example `hrms_db`) using phpMyAdmin, HeidiSQL, or the MySQL CLI:
+Create an empty database (for example `smms_db`) using phpMyAdmin, HeidiSQL, or the MySQL CLI:
+
+upload the sql file into database, go in database folder
 
 ```sql
-CREATE DATABASE hrms_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE smms_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
 ### 7. Configure `.env`
@@ -122,7 +125,7 @@ APP_TIMEZONE=Asia/Manila
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_DATABASE=hrms_db
+DB_DATABASE=smms_db
 DB_USERNAME=root
 DB_PASSWORD=
 
@@ -177,11 +180,11 @@ Open **http://localhost:8000** in your browser.
 2. Set the device IP and port in `.env`:
 
 ```env
-BIOMETRIC_IP=192.168.1.201
+BIOMETRIC_IP=192.168.10.201
 BIOMETRIC_PORT=4370
 ```
 
-3. Make sure the server can reach the device (`ping 192.168.1.201`).
+3. Make sure the server can reach the device (`ping 192.168.10.201`).
 4. Register each employee in the device using the same **Employee ID** as in the HRMS.
 5. Sync attendance logs (if using a command or scheduler):
 
@@ -258,18 +261,27 @@ chmod -R 775 storage bootstrap/cache
 4. Push to the branch: `git push origin feature/your-feature`
 5. Open a Pull Request
 
-## Developer
+## Capstone Information
 
-**Developed by:** `<Your Full Name>`
-**Role:** Full-Stack Developer
-**Email:** `<your-email>`
-**GitHub:** [@`<username>`](https://github.com/<username>)
-**Facebook:** [`<Your Name>`](https://facebook.com/<username>)
+| | |
+|---|---|
+| **Project Title** | Human Resource Management System with Biometric Attendance for St. Mary Magdalene School |
+| **Client / Partner Institution** | St. Mary Magdalene School (Parochial), Inc., Kawit, Cavite |
+| **University / College** | `<University / College Name>` |
+| **Program** | `<Course / Program>` |
+| **Academic Year** | `<2025–2026>` |
+| **Capstone Adviser** | `<Adviser Name>` |
 
-## License
+## Development Team
 
-This project is proprietary software of St. Mary Magdalene School (Parochial), Inc. Unauthorized copying or distribution is not permitted. `<Change this if you use an open-source license.>`
+| Name | Role | GitHub |
+|------|------|--------|
+| `<Full Name>` | Lead Developer | [@username](https://github.com/JmAlano04) |
+| `<Full Name>` | Backend Developer | [@username](https://github.com/JmAlano04) |
+| `<Full Name>` | UI/UX Designer / Documenter | [@username](https://github.com/JmAlano04) |
+
+**Contact:** `jenmaralano11@gmail.com`
 
 ---
 
-**Developed for St. Mary Magdalene School, Kawit, Cavite.**
+**A capstone project developed for St. Mary Magdalene School, Kawit, Cavite.**
